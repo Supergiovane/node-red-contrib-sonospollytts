@@ -13,7 +13,6 @@ module.exports = function(RED) {
     var os = require('os'); // Retrieve the local IP
     var sonos = require('sonos');
 	var aMessageQueue=[]; // Array of incoming TTS messages
-    var sonos = require('sonos');
     var SonosClient;
     var iVoice;
     var sNoderedURL; // Stores the node.red URL and port
