@@ -22,5 +22,76 @@ Quality Node-Red nodes
         <br/>
         If some music is playing, the node will wait for the music to stop, before playing the TTS message.
     </p>
-
+<br/>
+<p>
+<code>
+[
+    {
+        "id": "2a7223f6.d28e0c",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "7948293a.159a68",
+        "type": "inject",
+        "z": "2a7223f6.d28e0c",
+        "name": "",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 70,
+        "y": 120,
+        "wires": [
+            [
+                "140491c3.4c7e0e"
+            ]
+        ]
+    },
+    {
+        "id": "140491c3.4c7e0e",
+        "type": "function",
+        "z": "2a7223f6.d28e0c",
+        "name": "",
+        "func": "node.send({payload:\"Ciao, volevo dire una cosa molto importante. Sa, la dico lostesso, vado? Si, vado. Io sono una riga molto lunga e posso avere lo stato playing\"});\nnode.send({payload:\"Riga12\"});\nnode.send({payload:\"Altra riga molto lunga, con stato playing sicuramente trappato. Altrimenti va da via i ciap.\"});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 210,
+        "y": 120,
+        "wires": [
+            [
+                "4e75a6d3.bc73c8"
+            ]
+        ]
+    },
+    {
+        "id": "4e75a6d3.bc73c8",
+        "type": "sonospollytts",
+        "z": "2a7223f6.d28e0c",
+        "name": "",
+        "voice": "0",
+        "ssml": false,
+        "dir": "/tmp",
+        "sonosipaddress": "192.168.1.109",
+        "noderedipaddress": "192.168.1.131",
+        "noderedport": "1880",
+        "config": "ea5ffe92.83e9",
+        "x": 420,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "ea5ffe92.83e9",
+        "type": "sonospollytts-config",
+        "z": "",
+        "name": "bbb"
+    }
+]
+</code>
+</p>
     
