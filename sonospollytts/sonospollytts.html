@@ -1,0 +1,218 @@
+<!-- CONFIG -->
+
+<script type="text/x-red" data-template-name="sonospollytts-config">
+
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-user"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-accessKey"><i class="fa fa-user"></i> Polly Access key</label>
+        <input type="text" id="node-config-input-accessKey">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-secretKey"><i class="fa fa-user"></i> Polly Secret key</label>
+        <input type="password" id="node-config-input-secretKey">
+    </div>
+
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('sonospollytts-config',
+    {
+        category: 'config',
+        defaults:
+        {
+            name:
+            {
+                value: ""
+            }
+        },
+        credentials:
+        {
+            accessKey:
+            {
+                type: 'text'
+            },
+            secretKey:
+            {
+                type: 'password'
+            }
+        },
+        label: function()
+        {
+            return this.name || "";
+        },
+        oneditprepare: function()
+          {
+           
+          }
+    });
+</script>
+
+
+
+
+<script type="text/x-red" data-template-name="sonospollytts">
+    <div class="form-row">
+        <label for="node-input-config"><i class="icon-tag"></i> Polly Config</label>
+        <input type="text" id="node-input-config">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-voice"><i class="icon-tag"></i> Polly Voice</label>
+        <select id="node-input-voice">
+            <option value='0'>Joanna (en-US)</option>
+            <option value='1'>Mizuki (ja-JP)</option>
+            <option value='2'>Filiz (tr-TR)</option>
+            <option value='3'>Astrid (sv-SE)</option>
+            <option value='4'>Maxim (ru-RU)</option>
+            <option value='5'>Tatyana (ru-RU)</option>
+            <option value='6'>Carmen (ro-RO)</option>
+            <option value='7'>Ines (pt-PT)</option>
+            <option value='8'>Cristiano (pt-PT)</option>
+            <option value='9'>Vitoria (pt-BR)</option>
+            <option value='10'>Ricardo (pt-BR)</option>
+            <option value='11'>Maja (pl-PL)</option>
+            <option value='12'>Jan (pl-PL)</option>
+            <option value='13'>Ewa (pl-PL)</option>
+            <option value='14'>Ruben (nl-NL)</option>
+            <option value='15'>Lotte (nl-NL)</option>
+            <option value='16'>Liv (nb-NO)</option>
+            <option value='17'>Giorgio (it-IT)</option>
+            <option value='18'>Carla (it-IT)</option>
+            <option value='19'>Karl (is-IS)</option>
+            <option value='20'>Dora (is-IS)</option>
+            <option value='21'>Mathieu (fr-FR)</option>
+            <option value='22'>Celine (fr-FR)</option>
+            <option value='23'>Chantal (fr-CA)</option>
+            <option value='24'>Penelope (es-US)</option>
+            <option value='25'>Miguel (es-US)</option>
+            <option value='26'>Enrique (es-ES)</option>
+            <option value='27'>Conchita (es-ES)</option>
+            <option value='28'>Geraint (en-GBLS)</option>
+            <option value='29'>Salli (en-US)</option>
+            <option value='30'>Kimberly (en-US)</option>
+            <option value='31'>Kendra (en-US)</option>
+            <option value='32'>Justin (en-US)</option>
+            <option value='33'>Joey (en-US)</option>
+            <option value='34'>Ivy (en-US)</option>
+            <option value='35'>Raveena (en-IN)</option>
+            <option value='36'>Emma (en-GB)</option>
+            <option value='37'>Brian (en-GB)</option>
+            <option value='38'>Amy (en-GB)</option>
+            <option value='39'>Russell (en-AU)</option>
+            <option value='40'>Nicole (en-AU)</option>
+            <option value='41'>Marlene (de-DE)</option>
+            <option value='42'>Hans (de-DE)</option>
+            <option value='43'>Naja (da-DK)</option>
+            <option value='44'>Mads (da-DK)</option>
+            <option value='45'>Gwyneth (cy-GB)</option>
+            <option value='46'>Jacek (pl-PL)</option>
+            <option value='47'>Matthew (en-US)</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label></label>
+        <input type="checkbox" id="node-input-ssml" style="margin-left: 0px; vertical-align: top; width: auto !important;"> <label style="width:auto !important;"> Enable SSML</label>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-dir"><i class="icon-tag"></i> Polly Cache</label>
+        <input type="text" id="node-input-dir">
+    </div>
+    <div class="form-row">
+        <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Sonos IP</label>
+        <input type="text" id="node-input-sonosipaddress">
+    </div>
+    <div class="form-row">
+        <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
+        <input type="text" id="node-input-noderedipaddress">
+    </div>
+    <div class="form-row">
+        <label for="node-input-noderedport"><i class="fa fa-globe"></i> Node-Red Port, normally 1880</label>
+        <input type="text" id="node-input-noderedport">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="sonospollytts">
+
+    <p>
+        This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
+    </p>
+    <p>
+        This is a very early alpha, so use at your own risk.<br/>
+        Please visit the Gitub's page for the development progress.
+    </p>
+    <p>
+    USE: Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
+    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
+    router/firewall's DHCP Server).
+    /p>
+    <p>
+    Send to the node, a payload with the text you want to speed out. For example <code>{payload:"Hello there!"}</code>.<br/>
+    You can send multiple messages at once. The node will handle the queue.
+    /p>
+
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('sonospollytts',
+    {
+        category: 'output',
+        color: '#ffe6ff',
+        defaults:
+        {
+            name:
+            {
+                value: ""
+            },
+            voice:
+            {
+                value: "0",
+                required: true
+            },
+            ssml:
+            {
+                value: false,
+                required: true
+            },
+            dir:
+            {
+                value: "/tmp",
+                required: true
+            },
+            sonosipaddress:
+            {
+                value: "",
+                required:true,
+                type:"text"
+            },
+            noderedipaddress:
+            {
+                value: "",
+                required:true,
+                type:"text"
+            },
+            noderedport:
+            {
+                value: "1880",
+                required:true,
+                type:"text"
+            },
+            config:
+            {
+                type: "sonospollytts-config",
+                required: true
+            }
+        },
+        inputs: 1,
+        
+        icon: "sonospollytts.png",
+        label: function()
+        {
+            return this.name || "sonospollytts";
+        }
+    });
+</script>
