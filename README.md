@@ -23,7 +23,7 @@ Quality Node-Red nodes
         If some music is playing, the node will wait for the music to stop, before playing the TTS message.
     </p>
 <br/>
-<p>
+<p> SAMPLE FLOW:<br/>
 <code>
 [
     {
