@@ -15,7 +15,8 @@
     "polly",
     "amazon",
     "tts",
-    "sonos"
+    "sonos",
+    "sonospollytts"
   ],
   "node-red": {
     "nodes": {
