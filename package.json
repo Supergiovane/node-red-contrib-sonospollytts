@@ -38,13 +38,13 @@
     "path": "^0.12.7",
     "path-exists": "^3.0.0",
     "slug": "^0.9.1",
-    "sonos": "^1.0.0"
+    "sonos": "^1.1.1"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
     "eslint-config-google": "^0.7.1"
   },
   "engines": {
-    "node": ">=6.11.2"
+    "node": ">=8.9.4"
   }
 }
