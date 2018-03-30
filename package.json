@@ -45,6 +45,6 @@
     "eslint-config-google": "^0.7.1"
   },
   "engines": {
-    "node": ">=6.12.3"
+    "node": ">=8.9.4"
   }
 }

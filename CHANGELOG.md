@@ -1,8 +1,8 @@
 # Node-Red
 
 <p>
-<b>Version 0.0.7</b><br/>
-- Backward compatibility with node 6.12.x onwards
+<b>Version 0.0.9</b><br/>
+- Minor fixes
 <br/>
 </p>
 <p>
