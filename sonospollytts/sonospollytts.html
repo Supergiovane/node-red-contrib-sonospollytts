@@ -131,6 +131,10 @@
         <input type="text" id="node-input-sonosvolume">
     </div>
     <div class="form-row">
+        <label for="node-input-sonoshailing"><i class="fa fa-globe"></i> Sonos Hailing</label>
+        <input type="text" id="node-input-sonoshailing">
+    </div>
+    <div class="form-row">
         <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
         <input type="text" id="node-input-noderedipaddress">
     </div>
@@ -197,6 +201,12 @@
             {
                 value: "20",
                 required:true,
+                type:"text"
+            },
+            sonoshailing:
+            {
+                value: "/tmp/hailing.mp3",
+                required:false,
                 type:"text"
             },
             noderedipaddress:
