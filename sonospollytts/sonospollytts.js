@@ -21,6 +21,7 @@ module.exports = function(RED) {
     var sSonosPlayState="stopped"; // Play state
     var sSonosTrackTitle=""; // Track title
     var sPollyState="done"; // Polly State
+    
 
     AWS.config.update({
         region: 'us-east-1'
@@ -509,6 +510,7 @@ module.exports = function(RED) {
                 fill: 'yellow',
                 shape: 'dot',
                 text: 'downloading'});
+            RED.log.info('HandleQueue - Polly is downloading the file, exit');
             oTimer=setTimeout(function(){HandleQueue(node);},1000);
             return;
         }
@@ -516,7 +518,7 @@ module.exports = function(RED) {
         var state=sSonosPlayState;
 
             // Log state for debug.
-            // RED.log.info('HandleQueue - State: ' + state);
+        //RED.log.info('HandleQueue - State: ' + state);
 
             
         
@@ -585,8 +587,8 @@ module.exports = function(RED) {
            RED.log.info('Leggi filename: ' + filename);
 
             // Check if cached
-                pathExists(filename).then(cached => {
-                if (cached) {
+                pathExists(filename).then(res => {
+                if (res) {
                     // Cached
                     // Play
                     PlaySonos(filename);
@@ -598,8 +600,7 @@ module.exports = function(RED) {
                 node.status({
                 fill: 'yellow',
                 shape: 'dot',
-                text: 'requesting'
-            });
+                text: 'requesting'});
 
            
             var params = {
@@ -612,11 +613,7 @@ module.exports = function(RED) {
 
             synthesizeSpeech([polly, params])
                 .then(data => {
-                  // Play
-                //PlaySonos(filename);
-                
                 return [filename, data.AudioStream];
-
             }).then(cacheSpeech).then(function() {
                     // Success
                     node.status({});
@@ -703,18 +700,25 @@ module.exports = function(RED) {
 // ---------------------- SONOS ----------------------------
         function PlaySonos(_songuri)
         {
-            // Polly has ended downloading file
-            sPollyState="done";
-
+            
             var sUrl= sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
             
             
             // Log
-            RED.log.info("Playsonos requesting: " + sUrl);
+            // RED.log.info("Playsonos requesting: " + sUrl);
 
               SonosClient.play(sUrl).then(success => {
+                    // Polly has ended downloading file
+                    sPollyState="done";
+                    
+                    RED.log.info("Playsonos.play: " + sUrl);
+
                     //RED.log.info("Playsonos playing: " + success);
-              }).catch(err => { RED.log.info("Playsonos playing error: " + err)  });
+              }).catch(err => { 
+                 // Polly has ended downloading file
+                 sPollyState="done";  
+                RED.log.info("Playsonos playing error: " + err);
+              });
 
         }
 
