@@ -21,7 +21,9 @@ module.exports = function(RED) {
     var sSonosPlayState="stopped"; // Play state
     var sSonosTrackTitle=""; // Track title
     var sPollyState="done"; // Polly State
+    var iTimeoutPollyState=0;
     var sHailingFile=""; // Hailing file
+
 
     AWS.config.update({
         region: 'us-east-1'
@@ -483,19 +485,26 @@ module.exports = function(RED) {
           sHailingFile=config.sonoshailing;
           if(sHailingFile=="hailing.mp3"){
                 RED.log.info('Moving hailing.mp3 to temp dir');
+                // This line opens the file as a readable stream
+                var readStream = fs.createReadStream(__dirname +"/"+sHailingFile);
+
+                // This will wait until we know the readable stream is actually valid before piping
+                readStream.on('open', function () {
+                    // This just pipes the read stream to the response object (which goes to the client)
+                    readStream.pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
+                });
+
+                // This catches any errors that happen while creating the readable stream (usually invalid names)
+                readStream.on('error', function(err) {
+                    RED.log.info('Error moving hailing.mp3 to temp dir: ' + err);
+                });
                 
-                try {
-                    fs.createReadStream(sHailingFile).pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
-                    
-                } catch (error) {
-                    
-                }
 
           }else if(sHailingFile==""){
                 // Remove the hailing.mp3 default file
                 
                 RED.log.info('Deleting hailing.mp3 from temp dir');
-                pathExists(path.join(config.dir, sHailingFile)).then(res => {
+                pathExists(path.join(config.dir, "hailing.mp3")).then(res => {
                     if (res) {
                         fs.unlinkSync(path.join(config.dir, "hailing.mp3"));
                         }
@@ -534,6 +543,12 @@ module.exports = function(RED) {
     // Handle the queue
     function HandleQueue(node){
        
+        iTimeoutPollyState+=1; // Increase Timeout
+        if (iTimeoutPollyState>15) {
+            iTimeoutPollyState=0;
+            sPollyState="idle";
+            RED.log.info('HandleQueue - Polly is in downloading Timeout');
+        } 
         // Check if Polly is downloading the file (in case the phrase is very long)
         if(sPollyState=="transitional")
         {

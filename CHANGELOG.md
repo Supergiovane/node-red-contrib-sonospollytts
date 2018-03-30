@@ -1,5 +1,10 @@
 # Node-Red
 <p>
+<b>Version 0.0.14/b><br/>
+- Hailing bug fixes
+<br/>
+</p>
+<p>
 <b>Version 0.0.13</b><br/>
 - Minor bug fixes
 <br/>
