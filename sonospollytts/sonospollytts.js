@@ -504,7 +504,11 @@ module.exports = function(RED) {
         // Check if Polly is downloading the file (in case the phrase is very long)
         if(sPollyState=="transitional")
         {
-            RED.log.info('HandleQueue - Polly is downloading the file, exit');
+            // Not cached
+            node.status({
+                fill: 'yellow',
+                shape: 'dot',
+                text: 'downloading'});
             oTimer=setTimeout(function(){HandleQueue(node);},1000);
             return;
         }
@@ -512,7 +516,7 @@ module.exports = function(RED) {
         var state=sSonosPlayState;
 
             // Log state for debug.
-        RED.log.info('HandleQueue - State: ' + state);
+            // RED.log.info('HandleQueue - State: ' + state);
 
             
         
