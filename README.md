@@ -24,7 +24,7 @@ Quality Node-Red nodes
     Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
     Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. Leave blank for disabling the hailing. Put again hailing.mp3 to restore the hailing<br/>
     Node-Red IP: set IP of your node-red<br/>
-    Node-Red Port: normalli 1880. If you've changed the default port, adjust this field consequently<br/>
+    Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
     </p>
     <p>
     Known issues:<br/>
