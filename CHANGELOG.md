@@ -1,6 +1,6 @@
 # Node-Red
 <p>
-<b>Version 0.0.12</b><br/>
+<b>Version 0.0.13</b><br/>
 - Minor fixes
 <br/>
 </p>

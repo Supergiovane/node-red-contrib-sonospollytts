@@ -151,8 +151,20 @@
     </p>
     <p>
         This is a very early alpha, so use at your own risk.<br/>
-        Please visit the Gitub's page for the development progress.
+        Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a>
     </p>
+
+    <b>CONFIG:</b><br/>
+    Polly Config: create a config with your AWS credentials<br/>
+    Polly Voice: select your preferred voice<br/>
+    Polly Cache: leave it as is<br/>
+    Sonos IP: insert your sonos's IP<br/>
+    Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
+    Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. Leave blank for disabling the hailing. Put again hailing.mp3 to restore the hailing<br/>
+    Node-Red IP: set IP of your node-red<br/>
+    Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
+    </p>
+
     <p>
     USE: Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
     doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
@@ -205,7 +217,7 @@
             },
             sonoshailing:
             {
-                value: "/tmp/hailing.mp3",
+                value: "hailing.mp3",
                 required:false,
                 type:"text"
             },

@@ -482,37 +482,25 @@ module.exports = function(RED) {
           // Check if the file already exist
           sHailingFile=config.sonoshailing;
           if(sHailingFile=="hailing.mp3"){
-                // The hailing file is the standard file on GitHub
-                pathExists(path.join(node.dir, sHailingFile)).then(res => {
-                if (res) {
-                            // Copy the file from installation dir to /tmp
-                            RED.log.info('Moving hailing.mp3 to temp dir');
-                            try {
-                                fs.createReadStream(sHailingFile).pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
-                            } catch (error) {
-                                
-                            }
-                            /* // Download the file via GitHub
-                            RED.log.info('Download hailing.mp3 from GitHub');
-                            var http = require('http');
-                            var request = http.get("http://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/hailing.mp3?raw=true", function(response) {
-                            var file = fs.createWriteStream(path.join(node.dir, sHailingFile));
-                            response.pipe(file);
-                            file.on('finish', function() {
-                                file.close();
-                                 RED.log.info('Finish downloading hailing.mp3 from GitHub');
-                              }); 
-                        });*/
-                    }
-                });
-          }else if(sHailingFile==""){
-                // Remove the hailing.mp3 default file
+                RED.log.info('Moving hailing.mp3 to temp dir');
+                
                 try {
-                    RED.log.info('Deleting hailing.mp3 from temp dir');
-                    fs.unlinkSync(path.join(config.dir, sHailingFile));
+                    fs.createReadStream(sHailingFile).pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
+                    
                 } catch (error) {
                     
                 }
+
+          }else if(sHailingFile==""){
+                // Remove the hailing.mp3 default file
+                
+                RED.log.info('Deleting hailing.mp3 from temp dir');
+                pathExists(path.join(config.dir, sHailingFile)).then(res => {
+                    if (res) {
+                        fs.unlinkSync(path.join(config.dir, "hailing.mp3"));
+                        }
+                    });
+            
                 
           }
           
