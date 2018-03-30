@@ -543,15 +543,17 @@ module.exports = function(RED) {
     // Handle the queue
     function HandleQueue(node){
        
-        iTimeoutPollyState+=1; // Increase Timeout
-        if (iTimeoutPollyState>15) {
-            iTimeoutPollyState=0;
-            sPollyState="idle";
-            RED.log.info('HandleQueue - Polly is in downloading Timeout');
-        } 
+        
         // Check if Polly is downloading the file (in case the phrase is very long)
         if(sPollyState=="transitional")
         {
+            iTimeoutPollyState+=1; // Increase Timeout
+            if (iTimeoutPollyState>15) {
+                iTimeoutPollyState=0;
+                sPollyState="idle";
+                RED.log.info('HandleQueue - Polly is in downloading Timeout');
+            } 
+
             // Not cached
             node.status({
                 fill: 'yellow',
