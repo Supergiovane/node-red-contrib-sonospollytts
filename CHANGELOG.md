@@ -1,7 +1,7 @@
 # Node-Red
 
 <p>
-<b>Version 0.0.9</b><br/>
+<b>Version 0.0.8</b><br/>
 - Minor fixes
 <br/>
 </p>
