@@ -17,6 +17,7 @@ module.exports = function(RED) {
     var iVoice;
     var sNoderedURL; // Stores the node.red URL and port
     var oTimer;
+    var sSonosVolume; // Sonos Volume
 
     AWS.config.update({
         region: 'us-east-1'
@@ -453,6 +454,14 @@ module.exports = function(RED) {
         // Start the TTS queue timer
         oTimer=setTimeout(function(){HandleQueue(node);},1000);
 
+        // Get default sonos volume
+        sSonosVolume=config.sonosvolume;
+        SonosClient.setVolume(sSonosVolume).then(volume => {
+          
+           }).catch(err => { 
+             node.error(JSON.stringify(err));
+             node.status({fill:"red", shape:"dot", text:"failed to set volume"});
+            });
        
         this.on('input', function(msg) {
             if(!_.isString(msg.payload)){

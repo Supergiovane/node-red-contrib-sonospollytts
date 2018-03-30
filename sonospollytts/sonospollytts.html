@@ -127,6 +127,10 @@
         <input type="text" id="node-input-sonosipaddress">
     </div>
     <div class="form-row">
+        <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Sonos Volume</label>
+        <input type="text" id="node-input-sonosvolume">
+    </div>
+    <div class="form-row">
         <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
         <input type="text" id="node-input-noderedipaddress">
     </div>
@@ -186,6 +190,12 @@
             sonosipaddress:
             {
                 value: "",
+                required:true,
+                type:"text"
+            },
+            sonosvolume:
+            {
+                value: "20",
                 required:true,
                 type:"text"
             },
