@@ -562,6 +562,8 @@ module.exports = function(RED) {
             RED.log.info('HandleQueue - Polly is downloading the file, exit');
             oTimer=setTimeout(function(){HandleQueue(node);},1000);
             return;
+        }else{
+            iTimeoutPollyState=0; // Reset Timer
         }
 
         var state=sSonosPlayState;
