@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-sonospollytts",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Node-Red TTS with Sonos and Amazon Polly",
   "main": "index.js",
   "scripts": {
@@ -45,6 +45,6 @@
     "eslint-config-google": "^0.7.1"
   },
   "engines": {
-    "node": ">=8.9.4"
+    "node": ">=6.12.3"
   }
 }
