@@ -1,7 +1,7 @@
 # Node-Red
 
 <p>
-<b>Version 0.0.9</b><br/>
+<b>Version 0.0.11</b><br/>
 - Hailing sound added. Before the first TTS message of the message queue, plays a file .mp3 to recall attention
 <br/>
 </p>
