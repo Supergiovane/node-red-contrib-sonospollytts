@@ -15,11 +15,10 @@ Quality Node-Red nodes
     Send to the node, a payload with the text you want to speed out. For example <code>{payload:"Hello there!"}</code>.<br/>
     You can send multiple messages at once. The node will handle the queue.
     </p>
-    <br/>
     <p>
     <b>CONFIG:</b><br/>
     Polly Config: create a config with your AWS credentials<br/>
-    Polly Voide: select your preferred voice<br/>
+    Polly Voice: select your preferred voice<br/>
     Polly Cache: leave it as is<br/>
     Sonos IP: insert your sonos's IP<br/>
     Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
