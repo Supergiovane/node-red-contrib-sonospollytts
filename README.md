@@ -17,9 +17,15 @@ Quality Node-Red nodes
     </p>
     <br/>
     <p>
-    # Config:
-    Send to the node, a payload with the text you want to speed out. For example <code>{payload:"Hello there!"}</code>.<br/>
-    You can send multiple messages at once. The node will handle the queue.
+    <b>CONFIG:</b><br/>
+    Polly Config: create a config with your AWS credentials<br/>
+    Polly Voide: select your preferred voice<br/>
+    Polly Cache: leave it as is<br/>
+    Sonos IP: insert your sonos's IP<br/>
+    Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
+    Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. Leave blank for disabling the hailing. Put again hailing.mp3 to restore the hailing<br/>
+    Node-Red IP: set IP of your node-red<br/>
+    Node-Red Port: normalli 1880. If you've changed the default port, adjust this field consequently<br/>
     </p>
     <p>
     Known issues:<br/>
