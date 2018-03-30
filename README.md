@@ -4,7 +4,7 @@ Quality Node-Red nodes
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
     </p>
     <p>
-        <b>This is a very early alpha, so use at your own risk!<b><br/>
+        <b>This is a very early alpha, so use at your own risk!<b/><br/>
     </p>
     <p>
     USE: Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
