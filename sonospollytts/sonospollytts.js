@@ -487,7 +487,11 @@ module.exports = function(RED) {
                 if (res) {
                             // Copy the file from installation dir to /tmp
                             RED.log.info('Moving hailing.mp3 to temp dir');
-                            fs.createReadStream(sHailingFile).pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
+                            try {
+                                fs.createReadStream(sHailingFile).pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
+                            } catch (error) {
+                                
+                            }
                             /* // Download the file via GitHub
                             RED.log.info('Download hailing.mp3 from GitHub');
                             var http = require('http');
