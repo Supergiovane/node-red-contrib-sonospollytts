@@ -21,8 +21,7 @@ Quality Node-Red nodes
     - If the Sonos device is set to LineIn, TVin or other physical input, the node doesn't work. You need to play something via Sonos App, then stop the play. Then the node will work again
         <br/>
         - If some music is playing, the node will wait for the music to stop, before playing the TTS message.
-        <br/>
-        - No Volume control for now
+       
     </p>
 <br/>
 <p> SAMPLE FLOW:<br/>
