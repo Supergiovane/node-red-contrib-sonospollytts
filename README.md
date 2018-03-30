@@ -4,7 +4,7 @@ Quality Node-Red nodes
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
     </p>
     <p>
-        This is a very early alpha, so use at your own risk!<br/>
+        <b>This is a very early alpha, so use at your own risk!<b><br/>
     </p>
     <p>
     USE: Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
@@ -16,6 +16,11 @@ Quality Node-Red nodes
     You can send multiple messages at once. The node will handle the queue.
     </p>
     <br/>
+    <p>
+    # Config:
+    Send to the node, a payload with the text you want to speed out. For example <code>{payload:"Hello there!"}</code>.<br/>
+    You can send multiple messages at once. The node will handle the queue.
+    </p>
     <p>
     Known issues:<br/>
     - If the Sonos device is set to LineIn, TVin or other physical input, the node doesn't work. You need to play something via Sonos App, then stop the play. Then the node will work again

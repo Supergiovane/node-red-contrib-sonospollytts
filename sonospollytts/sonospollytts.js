@@ -21,7 +21,7 @@ module.exports = function(RED) {
     var sSonosPlayState="stopped"; // Play state
     var sSonosTrackTitle=""; // Track title
     var sPollyState="done"; // Polly State
-    
+    var sHailingFile=""; // Hailing file
 
     AWS.config.update({
         region: 'us-east-1'
@@ -476,7 +476,43 @@ module.exports = function(RED) {
             sSonosTrackTitle=track.title;
             //RED.log.info('SonosClient.on Paystate: ' + JSON.stringify(track));
             //RED.log.info('SonosClient.on CurrentTrack: ' + sSonosTrackTitle);
-          })
+          });
+
+          // Downloads hailing.mp3
+          // Check if the file already exist
+          sHailingFile=config.sonoshailing;
+          if(sHailingFile=="hailing.mp3"){
+                // The hailing file is the standard file on GitHub
+                pathExists(path.join(node.dir, sHailingFile)).then(res => {
+                if (res) {
+                            // Copy the file from installation dir to /tmp
+                            RED.log.info('Moving hailing.mp3 to temp dir');
+                            fs.createReadStream(sHailingFile).pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
+                            /* // Download the file via GitHub
+                            RED.log.info('Download hailing.mp3 from GitHub');
+                            var http = require('http');
+                            var request = http.get("http://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/hailing.mp3?raw=true", function(response) {
+                            var file = fs.createWriteStream(path.join(node.dir, sHailingFile));
+                            response.pipe(file);
+                            file.on('finish', function() {
+                                file.close();
+                                 RED.log.info('Finish downloading hailing.mp3 from GitHub');
+                              }); 
+                        });*/
+                    }
+                });
+          }else if(sHailingFile==""){
+                // Remove the hailing.mp3 default file
+                try {
+                    RED.log.info('Deleting hailing.mp3 from temp dir');
+                    fs.unlinkSync(path.join(config.dir, sHailingFile));
+                } catch (error) {
+                    
+                }
+                
+          }
+          
+          
 
         this.on('input', function(msg) {
             if(!_.isString(msg.payload)){
@@ -484,10 +520,14 @@ module.exports = function(RED) {
                 return;
             }
 
-            // Add the message to the array
+           // If the queue is empty, add the hailing file first
+            if (aMessageQueue.length==0) {
+                // If the field sonoshailing is not empty, add the hailing to the queue
+                aMessageQueue.push(sHailingFile);
+            }
+             // Add the message to the array
             aMessageQueue.push(msg.payload);
-            // Log state for debug.
-            // RED.log.info('PollyNode - queued: ' + msg.payload);
+ 
 
         });
 
@@ -567,7 +607,14 @@ module.exports = function(RED) {
     {
             // Log
             //RED.log.info('Leggi: ' + msg);
-
+            // If the msg contains a string .mp3, skip polly and go to Playsonos
+            if(msg.indexOf(".mp3")!==-1){
+                PlaySonos(path.join(node.dir, sHailingFile)); 
+                return;
+            }
+        
+         
+            
             var polly = node.Pollyconfig.polly;
             var outputFormat = 'mp3';
 
@@ -594,7 +641,7 @@ module.exports = function(RED) {
                     PlaySonos(filename);
                     return;
                     //return node.send([msg, null]);
-                }
+                };
 
                 // Not cached
                 node.status({
@@ -643,6 +690,7 @@ module.exports = function(RED) {
 
     function cacheSpeech([path, data]){
         return new Promise((resolve, reject) => {
+            //RED.log.info("cacheSpeech path " + path);
             fs.writeFile(path, data, function(err) {
             if (err !== null) return reject(err);
             resolve();
@@ -728,8 +776,10 @@ module.exports = function(RED) {
                 var url_parts = url.parse(req.url, true);
                 var query = url_parts.query;
                //res.download(query.f);
-
-                res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
+               
+               RED.log.info("Playsonos RED.httpAdmin search " + query.f);
+               
+               res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
                 if (fs.existsSync(query.f)) {
                     var readStream = fs.createReadStream(query.f);
                     readStream.pipe(res);
