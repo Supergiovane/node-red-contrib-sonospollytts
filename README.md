@@ -4,8 +4,8 @@ Quality Node-Red nodes
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
     </p>
     <p>
-        <b>This is a very early alpha, so use at your own risk!</b><br/>
-        Wish you support us?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/><br/>
+        <b>This is a very early alpha, so use at your own risk!</b><br/><br/>
+        Do you want to support us?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/><br/>
         Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a>
     </p>
     <p>
