@@ -542,8 +542,10 @@ module.exports = function(RED) {
 
     // Handle the queue
     function HandleQueue(node){
-       
-        
+
+        var state=sSonosPlayState;
+        //RED.log.info('HandleQueue - State: ' + state);
+
         // Check if Polly is downloading the file (in case the phrase is very long)
         if(sPollyState=="transitional")
         {
@@ -566,10 +568,10 @@ module.exports = function(RED) {
             iTimeoutPollyState=0; // Reset Timer
         }
 
-        var state=sSonosPlayState;
+        
 
-            // Log state for debug.
-        //RED.log.info('HandleQueue - State: ' + state);
+        // Log state for debug.
+        //RED.log.info('HandleQueue - State: ' + state + " Track:" + sSonosTrackTitle);
 
             
         
@@ -579,7 +581,7 @@ module.exports = function(RED) {
                 // It's playing something. Check what's playing.
                 // If Music, then stop the music and play the TTS message
                 // If playing TTS message, waits until it's finished.
-                if (state!="playing" ||  (state="playing" && sSonosTrackTitle.indexOf("tts.mp3")==-1))
+                if (state=="stopped" || state=="paused" || (state=="playing" && sSonosTrackTitle.indexOf(".mp3")==-1))
                 {
 
                     var sMsg=aMessageQueue[0];
@@ -616,75 +618,79 @@ module.exports = function(RED) {
     // Reas the text via Polly
     function Leggi(msg,node)
     {
-            // Log
-            //RED.log.info('Leggi: ' + msg);
-            // If the msg contains a string .mp3, skip polly and go to Playsonos
-            if(msg.indexOf(".mp3")!==-1){
-                PlaySonos(path.join(node.dir, sHailingFile)); 
-                return;
-            }
+        // Play directly files starting with http://
+        if (msg.toLowerCase().startsWith("http://")) {
+            PlaySonos(msg); 
+            return;
+        }
+
+        // If the msg contains a string .mp3, skip polly and go to Playsonos
+        if(msg.indexOf(".mp3")!==-1){
+            PlaySonos(path.join(node.dir, sHailingFile)); 
+            return;
+        }
+    
         
-         
-            
-            var polly = node.Pollyconfig.polly;
-            var outputFormat = 'mp3';
+        
+        var polly = node.Pollyconfig.polly;
+        var outputFormat = 'mp3';
 
-            var filename = getFilename(msg, iVoice, node.ssml, outputFormat);
+        var filename = getFilename(msg, iVoice, node.ssml, outputFormat);
 
-            var cacheDir = node.dir;
+        var cacheDir = node.dir;
 
-            if (!setupDirectory(cacheDir)) {
-                notifyError(node, msg, 'Unable to set up cache directory: ' + cacheDir);
+        if (!setupDirectory(cacheDir)) {
+            notifyError(node, msg, 'Unable to set up cache directory: ' + cacheDir);
+            return;
+        }
+
+        // Store it
+        filename = path.join(node.dir, filename);
+
+            // Log
+        RED.log.info('Leggi filename: ' + filename);
+
+        // Check if cached
+            pathExists(filename).then(res => {
+            if (res) {
+                // Cached
+                // Play
+                PlaySonos(filename);
                 return;
-            }
-
-            // Store it
-            filename = path.join(node.dir, filename);
-
-             // Log
-           RED.log.info('Leggi filename: ' + filename);
-
-            // Check if cached
-                pathExists(filename).then(res => {
-                if (res) {
-                    // Cached
-                    // Play
-                    PlaySonos(filename);
-                    return;
-                    //return node.send([msg, null]);
-                };
-
-                // Not cached
-                node.status({
-                fill: 'yellow',
-                shape: 'dot',
-                text: 'requesting'});
-
-           
-            var params = {
-                OutputFormat: outputFormat,
-                SampleRate: '22050',
-                Text: msg,
-                TextType: node.ssml ? 'ssml' : 'text',
-                VoiceId: iVoice
+                //return node.send([msg, null]);
             };
 
-            synthesizeSpeech([polly, params])
-                .then(data => {
-                return [filename, data.AudioStream];
-            }).then(cacheSpeech).then(function() {
-                    // Success
-                    node.status({});
-                    //node.send([msg, null]);
+            // Not cached
+            node.status({
+            fill: 'yellow',
+            shape: 'dot',
+            text: 'requesting'});
 
-                    // Play
-                    PlaySonos(filename);
+        
+        var params = {
+            OutputFormat: outputFormat,
+            SampleRate: '22050',
+            Text: msg,
+            TextType: node.ssml ? 'ssml' : 'text',
+            VoiceId: iVoice
+        };
+
+        synthesizeSpeech([polly, params])
+            .then(data => {
+            return [filename, data.AudioStream];
+        }).then(cacheSpeech).then(function() {
+                // Success
+                node.status({});
+                //node.send([msg, null]);
+
+                // Play
+                PlaySonos(filename);
 
 
-                }).catch(error => {
-                notifyError(node, filename, error);
-                 });
-        });
+            }).catch(error => {
+            notifyError(node, filename, error);
+                });
+         });
     }
 
     function synthesizeSpeech([polly, params]){
@@ -757,55 +763,57 @@ module.exports = function(RED) {
    
 
 // ---------------------- SONOS ----------------------------
-        function PlaySonos(_songuri)
-        {
+function PlaySonos(_songuri){
+    
+    var sUrl="";
+
+    // Play directly files starting with http://
+    if (_songuri.toLowerCase().startsWith("http://")) {
+        sUrl=_songuri;
+    }else{
+        sUrl= sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
+    }
+    
+    SonosClient.play(sUrl).then(success => {
+      
+        // Polly has ended downloading file
+        sPollyState="done";
+        
+        RED.log.info("Playsonos.play: " + sUrl);
+
+        }).catch(err => { 
+            // Polly has ended downloading file
+            sPollyState="done";  
+            RED.log.info("Playsonos playing error: " + err);
+        });
+
+    }
+
+    RED.httpAdmin.get("/tts/tts.mp3", function(req, res) {
+        try {
+            var url = require('url');
+            var url_parts = url.parse(req.url, true);
+            var query = url_parts.query;
+            //res.download(query.f);
             
-            var sUrl= sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
+            RED.log.info("Playsonos RED.httpAdmin search " + query.f);
             
-            
-            // Log
-            // RED.log.info("Playsonos requesting: " + sUrl);
-
-              SonosClient.play(sUrl).then(success => {
-                    // Polly has ended downloading file
-                    sPollyState="done";
-                    
-                    RED.log.info("Playsonos.play: " + sUrl);
-
-                    //RED.log.info("Playsonos playing: " + success);
-              }).catch(err => { 
-                 // Polly has ended downloading file
-                 sPollyState="done";  
-                RED.log.info("Playsonos playing error: " + err);
-              });
-
-        }
-
-        RED.httpAdmin.get("/tts/tts.mp3", function(req, res) {
-            try {
-                var url = require('url');
-                var url_parts = url.parse(req.url, true);
-                var query = url_parts.query;
-               //res.download(query.f);
-               
-               RED.log.info("Playsonos RED.httpAdmin search " + query.f);
-               
-               res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
-                if (fs.existsSync(query.f)) {
-                    var readStream = fs.createReadStream(query.f);
-                    readStream.pipe(res);
-                    res.end;
-                }else
-                {
-                    RED.log.info("Playsonos RED.httpAdmin file not found: " + query.f);
-                    res.write("File not found");
-                    res.end();
-                }
-              
-            } catch (error) {
-                RED.log.info("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
+            res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
+            if (fs.existsSync(query.f)) {
+                var readStream = fs.createReadStream(query.f);
+                readStream.pipe(res);
+                res.end;
+            }else
+            {
+                RED.log.info("Playsonos RED.httpAdmin file not found: " + query.f);
+                res.write("File not found");
+                res.end();
             }
             
-        });
+        } catch (error) {
+            RED.log.info("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
+        }
+        
+    });
 
 }

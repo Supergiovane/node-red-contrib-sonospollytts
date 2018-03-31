@@ -155,20 +155,21 @@
     </p>
 
     <b>CONFIG:</b><br/>
-    Polly Config: create a config with your AWS credentials<br/>
-    Polly Voice: select your preferred voice<br/>
-    Polly Cache: leave it as is<br/>
-    Sonos IP: insert your sonos's IP<br/>
-    Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
-    Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. Leave blank for disabling the hailing. Put again hailing.mp3 to restore the hailing<br/>
-    Node-Red IP: set IP of your node-red<br/>
-    Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
+    <b>Polly Config:</b> create a config with your AWS credentials<br/>
+    <b>Polly Voice:</b> select your preferred voice<br/>
+    <b>Polly Cache:</b> leave it as is<br/>
+    <b>Sonos IP:</b> insert your sonos's IP<br/>
+    <b>Sonos Volume:</b> set the preferred TTS volume, from 0 to 100<br/>
+    <b>Sonos Hailing:</b> before the first TTS message of the message queues, Sonos will play an "hailing" sound. Leave blank for disabling the hailing. Put again hailing.mp3 to restore the hailing<br/>
+    <b>Node-Red IP:</b> set IP of your node-red<br/>
+    <b>Node-Red Port:</b> normally 1880. If you've changed the default port, adjust this field consequently<br/>
     </p>
 
     <p>
-    USE: Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
+    <b>USE:</b> Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
     doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
-    router/firewall's DHCP Server).
+    router/firewall's DHCP Server).<br/>
+    From Version <b>0.0.18</b> onward, you can send a message with full http path of an mp3, to play it directly, ex: <code>http://www.mysite.com/myfile.mp3</code><br/>
     </p>
     <p>
     Send to the node, a payload with the text you want to speed out. For example <code>{payload:"Hello there!"}</code>.<br/>
