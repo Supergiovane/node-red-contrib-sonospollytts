@@ -1,6 +1,6 @@
 # Node-Red
 <p>
-<b>Version 0.0.18</b><br/>
+<b>Version 0.0.19</b><br/>
 - Added direct play of files from url (http)
 <br/>
 </p>
