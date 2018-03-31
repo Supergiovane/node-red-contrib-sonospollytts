@@ -1,5 +1,10 @@
 # Node-Red
 <p>
+<b>Version 0.0.16</b><br/>
+- Optimizations
+<br/>
+</p>
+<p>
 <b>Version 0.0.15</b><br/>
 - Polly download timeout bug fixes
 <br/>
