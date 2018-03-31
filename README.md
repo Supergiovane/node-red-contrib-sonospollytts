@@ -5,6 +5,8 @@ Quality Node-Red nodes
     </p>
     <p>
         <b>This is a very early alpha, so use at your own risk!</b><br/>
+               Please support the developer, thank you!! <a href="https://www.paypal.me/techtoday/5">Donate</a><br/>
+        
         Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a>
     </p>
     <p>
