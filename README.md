@@ -1,5 +1,4 @@
 # Node-Red
-Quality Node-Red nodes
 <p>
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
     </p>
