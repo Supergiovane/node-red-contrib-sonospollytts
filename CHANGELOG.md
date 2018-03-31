@@ -1,7 +1,7 @@
 # Node-Red
 <p>
 <b>Version 0.0.18</b><br/>
-- Added direct play of files that begins with http://
+- Added direct play of files from url (http)
 <br/>
 </p>
 <p>
