@@ -1,5 +1,10 @@
 # Node-Red
 <p>
+<b>Version 0.0.20</b><br/>
+- Fixed handling long queues being stopped intermittently
+<br/>
+</p>
+<p>
 <b>Version 0.0.19</b><br/>
 - Added direct play of files from url (http)
 <br/>

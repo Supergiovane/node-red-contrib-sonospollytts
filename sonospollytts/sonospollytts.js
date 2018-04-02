@@ -11,7 +11,7 @@ module.exports = function(RED) {
     var pathExists = require('path-exists');
     var _ = require('lodash');
     var os = require('os'); // Retrieve the local IP
-    var sonos = require('sonos');
+    const sonos = require('sonos');
 	var aMessageQueue=[]; // Array of incoming TTS messages
     var SonosClient;
     var iVoice;
@@ -23,7 +23,7 @@ module.exports = function(RED) {
     var sPollyState="done"; // Polly State
     var iTimeoutPollyState=0;
     var sHailingFile=""; // Hailing file
-
+   
 
     AWS.config.update({
         region: 'us-east-1'
@@ -470,13 +470,16 @@ module.exports = function(RED) {
         // Hook the Playstate event
         SonosClient.on('PlayState', state => {
             sSonosPlayState=state;
-            //RED.log.info('SonosClient.on Paystate: ' + sSonosPlayState);
+            /* if(sSonosPlayState=="playing"){
+ 
+            } */
+            RED.log.info('SonosClient.on Paystate: ' + sSonosPlayState);
         });
 
         // Hook the current track
         SonosClient.on('CurrentTrack', track => {
-            sSonosTrackTitle=track.title;
-            //RED.log.info('SonosClient.on Paystate: ' + JSON.stringify(track));
+            sSonosTrackTitle=track.uri;//track.title;
+            //RED.log.info('SonosClient.on CurrentTrack: ' + JSON.stringify(track));
             //RED.log.info('SonosClient.on CurrentTrack: ' + sSonosTrackTitle);
           });
 
@@ -543,8 +546,7 @@ module.exports = function(RED) {
     // Handle the queue
     function HandleQueue(node){
 
-        var state=sSonosPlayState;
-        //RED.log.info('HandleQueue - State: ' + state);
+        //RED.log.info('HandleQueue - State: ' + sSonosPlayState);
 
         // Check if Polly is downloading the file (in case the phrase is very long)
         if(sPollyState=="transitional")
@@ -571,7 +573,7 @@ module.exports = function(RED) {
         
 
         // Log state for debug.
-        //RED.log.info('HandleQueue - State: ' + state + " Track:" + sSonosTrackTitle);
+        //RED.log.info('HandleQueue - State: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
 
             
         
@@ -581,8 +583,9 @@ module.exports = function(RED) {
                 // It's playing something. Check what's playing.
                 // If Music, then stop the music and play the TTS message
                 // If playing TTS message, waits until it's finished.
-                if (state=="stopped" || state=="paused" || (state=="playing" && sSonosTrackTitle.indexOf(".mp3")==-1))
+                if (sSonosPlayState=="stopped" || sSonosPlayState=="paused" || (sSonosPlayState=="playing" && sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3")==-1))
                 {
+                    RED.log.info('HandleQueue - CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
 
                     var sMsg=aMessageQueue[0];
                     
@@ -591,13 +594,18 @@ module.exports = function(RED) {
                     
                     // Create the TTS mp3 with Polly
                     sPollyState="transitional";
-                    Leggi(sMsg,node);
+                    SonosClient.flush().then(success=>{
+                        Leggi(sMsg,node);
+                    });
+                    
                     
                     // Set higher timeout, because i must wait until polly loaded the file and the playstate changed
                     oTimer=setTimeout(function(){HandleQueue(node);},1000);
                 
                 }else
                 {
+                    RED.log.info('HandleQueue - ELSE CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
+
                     // Start the TTS queue timer
                     oTimer=setTimeout(function(){HandleQueue(node);},1000);
                     //RED.log.info('HandleQueue - iscribonisso: 1');
@@ -620,12 +628,14 @@ module.exports = function(RED) {
     {
         // Play directly files starting with http://
         if (msg.toLowerCase().startsWith("http://")) {
+            RED.log.info('Leggi HTTP filename: ' + msg);
             PlaySonos(msg); 
             return;
         }
 
         // If the msg contains a string .mp3, skip polly and go to Playsonos
         if(msg.indexOf(".mp3")!==-1){
+            RED.log.info('Leggi .MP3 diretto e skip polly, filename: ' + msg);
             PlaySonos(path.join(node.dir, sHailingFile)); 
             return;
         }
@@ -647,7 +657,7 @@ module.exports = function(RED) {
         // Store it
         filename = path.join(node.dir, filename);
 
-            // Log
+        // Log
         RED.log.info('Leggi filename: ' + filename);
 
         // Check if cached
@@ -774,6 +784,8 @@ function PlaySonos(_songuri){
         sUrl= sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
     }
     
+    //SonosClient.flush();
+
     SonosClient.play(sUrl).then(success => {
       
         // Polly has ended downloading file
@@ -796,7 +808,7 @@ function PlaySonos(_songuri){
             var query = url_parts.query;
             //res.download(query.f);
             
-            RED.log.info("Playsonos RED.httpAdmin search " + query.f);
+            //RED.log.info("Playsonos RED.httpAdmin search " + query.f);
             
             res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
             if (fs.existsSync(query.f)) {
