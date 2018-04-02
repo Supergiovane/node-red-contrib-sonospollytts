@@ -549,7 +549,7 @@ module.exports = function(RED) {
         //RED.log.info('HandleQueue - State: ' + sSonosPlayState);
 
         // Check if Polly is downloading the file (in case the phrase is very long)
-        if(sPollyState=="transitional")
+        if(sPollyState=="transitioning")
         {
             iTimeoutPollyState+=1; // Increase Timeout
             if (iTimeoutPollyState>15) {
@@ -570,7 +570,8 @@ module.exports = function(RED) {
             iTimeoutPollyState=0; // Reset Timer
         }
 
-        
+        // Reset status
+        node.status({});
 
         // Log state for debug.
         //RED.log.info('HandleQueue - State: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
@@ -583,7 +584,7 @@ module.exports = function(RED) {
                 // It's playing something. Check what's playing.
                 // If Music, then stop the music and play the TTS message
                 // If playing TTS message, waits until it's finished.
-                if (sSonosPlayState=="stopped" || sSonosPlayState=="paused" || (sSonosPlayState=="playing" && sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3")==-1))
+                if (sSonosPlayState=="stopped" || sSonosPlayState=="paused")
                 {
                     RED.log.info('HandleQueue - CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
 
@@ -592,22 +593,46 @@ module.exports = function(RED) {
                     // Remove the TTS message from the queue
                     aMessageQueue.splice(0,1);
                     
+                    sPollyState="transitioning"; 
+                    sSonosPlayState="transitioning";
                     // Create the TTS mp3 with Polly
-                    sPollyState="transitional";
                     SonosClient.flush().then(success=>{
                         Leggi(sMsg,node);
+                        // Set higher timeout, because i must wait until polly loaded the file and the playstate changed
+                        oTimer=setTimeout(function(){HandleQueue(node);},500);
                     });
-                    
-                    
-                    // Set higher timeout, because i must wait until polly loaded the file and the playstate changed
-                    oTimer=setTimeout(function(){HandleQueue(node);},1000);
+
+                  
                 
+                }else if(sSonosPlayState=="playing" && sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3")==-1){
+                    RED.log.info('HandleQueue - stopping: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
+
+                    // It's playing something. Stop
+                    SonosClient.pause().then(success=>{
+                        RED.log.info('HandleQueue - stopped: ' + success + " " + sSonosPlayState + " Track:" + sSonosTrackTitle);
+
+                        var sMsg=aMessageQueue[0];
+                    
+                        // Remove the TTS message from the queue
+                        aMessageQueue.splice(0,1);
+                        
+                        sPollyState="transitioning"; 
+                        sSonosPlayState="transitioning";
+                        // Create the TTS mp3 with Polly
+                        SonosClient.flush().then(success=>{
+                            Leggi(sMsg,node);
+                             // Set higher timeout, because i must wait until polly loaded the file and the playstate changed
+                            oTimer=setTimeout(function(){HandleQueue(node);},500);
+                        });
+                    
+                    });;
+
                 }else
                 {
                     RED.log.info('HandleQueue - ELSE CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
 
                     // Start the TTS queue timer
-                    oTimer=setTimeout(function(){HandleQueue(node);},1000);
+                    oTimer=setTimeout(function(){HandleQueue(node);},500);
                     //RED.log.info('HandleQueue - iscribonisso: 1');
                 }
                 
