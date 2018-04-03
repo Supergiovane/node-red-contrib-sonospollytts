@@ -2,6 +2,7 @@
 <p>
 <b>Version 0.0.22</b><br/>
 - Speed improvement
+- Fixed bug where you manually change the volume via sonos App, the Node won't revert to the setted volume
 <br/>
 </p>
 <p>

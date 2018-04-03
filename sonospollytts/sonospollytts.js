@@ -597,7 +597,14 @@ module.exports = function(RED) {
                     sSonosPlayState="transitioning";
                     // Create the TTS mp3 with Polly
                     SonosClient.flush().then(success=>{
-                        Leggi(sMsg,node);
+                        SonosClient.setVolume(sSonosVolume).then(volume => {
+                            RED.log.info('HandleQueue - changed volume to: ' + volume + " " + sSonosPlayState + " Track:" + sSonosTrackTitle);
+                            Leggi(sMsg,node);
+                        }).catch(err => { 
+                            node.error(JSON.stringify(err));
+                            node.status({fill:"red", shape:"dot", text:"failed to set volume"});
+                            Leggi(sMsg,node);
+                           });
                         // Set higher timeout, because i must wait until polly loaded the file and the playstate changed
                         oTimer=setTimeout(function(){HandleQueue(node);},1000);
                     });
@@ -620,7 +627,15 @@ module.exports = function(RED) {
                         sSonosPlayState="transitioning";
                         // Create the TTS mp3 with Polly
                         SonosClient.flush().then(success=>{
-                            Leggi(sMsg,node);
+                            SonosClient.setVolume(sSonosVolume).then(volume => {
+                                RED.log.info('HandleQueue - changed volume to: ' + volume + " " + sSonosPlayState + " Track:" + sSonosTrackTitle);
+                                Leggi(sMsg,node);
+                            }).catch(err => { 
+                                node.error(JSON.stringify(err));
+                                node.status({fill:"red", shape:"dot", text:"failed to set volume"});
+                                Leggi(sMsg,node);
+                               });
+                           
                             // Start the TTS queue timer
                             oTimer=setTimeout(function(){HandleQueue(node);},500);
                         });
