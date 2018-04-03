@@ -1,5 +1,10 @@
 # Node-Red
 <p>
+<b>Version 0.0.22</b><br/>
+- Speed improvement
+<br/>
+</p>
+<p>
 <b>Version 0.0.21</b><br/>
 - Fix for too short text
 <br/>

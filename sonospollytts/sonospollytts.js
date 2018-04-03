@@ -599,7 +599,7 @@ module.exports = function(RED) {
                     SonosClient.flush().then(success=>{
                         Leggi(sMsg,node);
                         // Set higher timeout, because i must wait until polly loaded the file and the playstate changed
-                        oTimer=setTimeout(function(){HandleQueue(node);},500);
+                        oTimer=setTimeout(function(){HandleQueue(node);},1000);
                     });
 
                   
@@ -621,7 +621,7 @@ module.exports = function(RED) {
                         // Create the TTS mp3 with Polly
                         SonosClient.flush().then(success=>{
                             Leggi(sMsg,node);
-                             // Set higher timeout, because i must wait until polly loaded the file and the playstate changed
+                            // Start the TTS queue timer
                             oTimer=setTimeout(function(){HandleQueue(node);},500);
                         });
                     
@@ -638,7 +638,7 @@ module.exports = function(RED) {
                 
         }else{
             // Start the TTS queue timer
-            oTimer=setTimeout(function(){HandleQueue(node);},1000);
+            oTimer=setTimeout(function(){HandleQueue(node);},500);
         }
         
 		

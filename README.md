@@ -3,7 +3,7 @@
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
     </p>
     <p>
-        <b>This is a very early alpha, so use at your own risk!</b><br/><br/>
+        <b>This node entered in a beta release. Use at your own risk and please tell me if you have issues.</b><br/><br/>
         Do you want to support us?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/><br/>
         Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a>
     </p>
@@ -13,8 +13,8 @@
     router/firewall's DHCP Server).
     </p>
     <p>
-    Send to the node, a payload with the text you want to speed out. For example <code>{payload:"Hello there!"}</code>.<br/>
-    You can send multiple messages at once. The node will handle the queue.
+    Send to the node, a payload with the text you want to speech out. For example <code>{payload:"Hello there!"}</code>.<br/>
+    You can send multiple messages at once. The node will handle the queue.<br/>
     </p>
     <p>
     <b>CONFIG:</b><br/>
@@ -67,38 +67,40 @@
         "type": "function",
         "z": "2a7223f6.d28e0c",
         "name": "",
-        "func": "node.send({payload:\"Ciao, volevo dire una cosa molto importante. Sa, la dico lostesso, vado? Si, vado. Io sono una riga molto lunga e posso avere lo stato playing\"});\nnode.send({payload:\"Riga12\"});\nnode.send({payload:\"Altra riga molto lunga, con stato playing sicuramente trappato. Altrimenti va da via i ciap.\"});",
+        "func": "node.send({payload:\"Hello\"});\nnode.send({payload:\"http://media.ilmeteo.it/audio/2018-03-31.mp3\"});\nnode.send({payload:\"This is a test message\"});\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 210,
+        "x": 230,
         "y": 120,
         "wires": [
             [
-                "4e75a6d3.bc73c8"
+                "b2f92147.9a31e"
             ]
         ]
     },
     {
-        "id": "4e75a6d3.bc73c8",
+        "id": "b2f92147.9a31e",
         "type": "sonospollytts",
         "z": "2a7223f6.d28e0c",
         "name": "",
-        "voice": "0",
+        "voice": "17",
         "ssml": false,
         "dir": "/tmp",
         "sonosipaddress": "192.168.1.109",
-        "noderedipaddress": "192.168.1.131",
+        "sonosvolume": "30",
+        "sonoshailing": "hailing.mp3",
+        "noderedipaddress": "192.168.1.114",
         "noderedport": "1880",
-        "config": "ea5ffe92.83e9",
-        "x": 420,
-        "y": 140,
+        "config": "e9b4b321.0bcb5",
+        "x": 390,
+        "y": 120,
         "wires": []
     },
     {
-        "id": "ea5ffe92.83e9",
+        "id": "e9b4b321.0bcb5",
         "type": "sonospollytts-config",
         "z": "",
-        "name": "bbb"
+        "name": "bb"
     }
 ]
 </code>
