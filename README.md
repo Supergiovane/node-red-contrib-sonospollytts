@@ -3,9 +3,8 @@
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
     </p>
     <p>
-        <b>This node entered in a beta release. Use at your own risk and please tell me if you have issues.</b><br/><br/>
-        Do you want to support us?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/><br/>
-        Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a>
+        <b>April 2018: This node entered stable candidate release. Use at your own risk and please tell me if you have issues.</b> Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
+        Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/>
     </p>
     <p>
     USE: Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
