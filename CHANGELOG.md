@@ -2,12 +2,11 @@
 <p>
 <b>Version 0.0.24</b><br/>
 - Bugfix<br/>
-<br/>
 </p>
 <p>
 <b>Version 0.0.23</b><br/>
-- Bugfix: if the Sonos device is restarted, the node wont play TTS<br/>
-- Bugfix: if the Sonos device was on LineIn, TVIn or so, the node wont play TTS<br/>
+- Bugfix: if the Sonos device is restarted, the node won't play TTS<br/>
+- Bugfix: if the Sonos device was on LineIn, TVIn or so, the node won't play TTS<br/>
 - Updated sonos API April 2018<br/>
 - First stable beta release
 <br/>
@@ -15,7 +14,7 @@
 <p>
 <b>Version 0.0.22</b><br/>
 - Speed improvement<br/>
-- FBugfix: if you manually change the volume via sonos App, the Node won't revert to the setted volume
+- Bugfix: if you manually change the volume via sonos App, the Node won't revert to the setted volume
 <br/>
 </p>
 <p>
