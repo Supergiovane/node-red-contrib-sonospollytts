@@ -1,9 +1,9 @@
 # Node-Red
 <p>
-        This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api.
+        This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and <u>requires NODE 8.9.x or higher</u>.
     </p>
     <p>
-        <b>April 2018: This node entered stable candidate release. Use at your own risk and please tell me if you have issues.</b> Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
+        <b>April 2018: This node entered stable beta release. Use at your own risk and please tell me if you have issues.</b> Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
         Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/>
     </p>
     <p>
@@ -12,8 +12,10 @@
     router/firewall's DHCP Server).
     </p>
     <p>
-    Send to the node, a payload with the text you want to speech out. For example <code>{payload:"Hello there!"}</code>.<br/>
-    You can send multiple messages at once. The node will handle the queue.<br/>
+    Features:<br/> 
+    - TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.<br/>
+    - TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the queue instead of asking to the Amazon Polly service.<br/>
+    - Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
     </p>
     <p>
     <b>CONFIG:</b><br/>
@@ -26,10 +28,7 @@
     Node-Red IP: set IP of your node-red<br/>
     Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
     </p>
-    <p>
-    Known issues:<br/>
-    - If the Sonos device is set to LineIn, TVin or other physical input, the node doesn't work. You need to play something via Sonos App, then stop the play. Then the node will work again
-    </p>
+    
 <br/>
 <p> SAMPLE FLOW:<br/>
 <code>

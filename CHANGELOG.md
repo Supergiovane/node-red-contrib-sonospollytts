@@ -1,8 +1,10 @@
 # Node-Red
 <p>
 <b>Version 0.0.23</b><br/>
-- Bugfix: if the Sonos device is restarted, the node loose the connection
-- First stable candidate release
+- Bugfix: if the Sonos device is restarted, the node wont play TTS
+- Bugfix: if the Sonos device was on LineIn, TVIn or so, the node wont play TTS
+- Updated sonos API April 2018
+- First stable beta release
 <br/>
 </p>
 <p>

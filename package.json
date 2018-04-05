@@ -38,7 +38,7 @@
     "path": "^0.12.7",
     "path-exists": "^3.0.0",
     "slug": "^0.9.1",
-    "sonos": "^1.1.1"
+    "sonos": "1.1.2"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
