@@ -1,15 +1,13 @@
 # Node-Red
-<p>
+    <p>
+        This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
+    </p>
+    <p>
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and <u>requires NODE 8.9.x or higher</u>.
     </p>
     <p>
         <b>April 2018: This node entered stable beta release. Use at your own risk and please tell me if you have issues.</b> Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
         Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/>
-    </p>
-    <p>
-    USE: Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
-    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
-    router/firewall's DHCP Server).
     </p>
     <p>
     <b>Features:</b><<br/> 
@@ -22,7 +20,9 @@
     Polly Config: create a config with your AWS credentials<br/>
     Polly Voice: select your preferred voice<br/>
     Polly Cache: leave it as is<br/>
-    Sonos IP: insert your sonos's IP<br/>
+    Sonos IP: insert your sonos's IP (Sonos
+    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
+    router/firewall's DHCP Server)<br/>
     Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
     Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. Leave blank for disabling the hailing. Put again hailing.mp3 to restore the hailing<br/>
     Node-Red IP: set IP of your node-red<br/>
