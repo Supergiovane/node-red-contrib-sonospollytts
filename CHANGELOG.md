@@ -1,7 +1,7 @@
 # Node-Red
 <p>
 <b>Version 0.0.24</b><br/>
-- Bugfix<br/>
+- Bugfix: after 24 hours, the sonos event listener won't fires any event more.<br/>
 </p>
 <p>
 <b>Version 0.0.23</b><br/>

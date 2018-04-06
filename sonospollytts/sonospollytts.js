@@ -469,21 +469,18 @@ module.exports = function(RED) {
             });
 
         // Hook the Playstate event
-        SonosClient.on('PlayState', state => {
+        /* SonosClient.on('PlayState', state => {
             sSonosPlayState=state;
-            /* if(sSonosPlayState=="playing"){
- 
-            } */
             RED.log.info('SonosClient.on Paystate: ' + sSonosPlayState);
-        });
+        }); */
 
         // Hook the current track
-        SonosClient.on('CurrentTrack', track => {
+        /* SonosClient.on('CurrentTrack', track => {
             sSonosTrackTitle=track.uri;//track.title;
             //RED.log.info('SonosClient.on CurrentTrack: ' + JSON.stringify(track));
             //RED.log.info('SonosClient.on CurrentTrack: ' + sSonosTrackTitle);
           });
-
+ */
           // Downloads hailing.mp3
           // Check if the file already exist
           sHailingFile=config.sonoshailing;
@@ -576,21 +573,66 @@ module.exports = function(RED) {
 
         // Log state for debug.
         //RED.log.info('HandleQueue - State: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
-
+        
+        SonosClient.getCurrentState().then(state=>{
+            sSonosPlayState=state;
+            SonosClient.currentTrack().then(track=>{
+                sSonosTrackTitle=track.uri;
+                HandleQueue2(node);
+            }).catch(err=>{
+                node.status({fill:"red", shape:"dot", text:"err currtrack"});
+                sSonosTrackTitle="stopped"; // force stopped
+                HandleQueue2(node);
+            }); // SonosClient.currentTrack().then(track=>{
+                
             
+        }).catch(err=>{
+            node.status({fill:"red", shape:"dot", text:"err currstate"});
+            sSonosTrackTitle="stopped"; // force stopped
+            HandleQueue2(node);
+        }); // SonosClient.getCurrentState().then(state=>{
         
-            // Play next msg
-            if (aMessageQueue.length>0) {
-        
-                // It's playing something. Check what's playing.
-                // If Music, then stop the music and play the TTS message
-                // If playing TTS message, waits until it's finished.
-                if (sSonosPlayState=="stopped" || sSonosPlayState=="paused")
-                {
-                    RED.log.info('HandleQueue - CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
+    }
+
+    // Handle queue 2 
+    function HandleQueue2(node,){
+        // Play next msg
+        if (aMessageQueue.length>0) {
+                
+            // It's playing something. Check what's playing.
+            // If Music, then stop the music and play the TTS message
+            // If playing TTS message, waits until it's finished.
+            if (sSonosPlayState=="stopped" || sSonosPlayState=="paused")
+            {
+                RED.log.info('HandleQueue - CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
+
+                var sMsg=aMessageQueue[0];
+                
+                // Remove the TTS message from the queue
+                aMessageQueue.splice(0,1);
+                
+                sPollyState="transitioning"; 
+                sSonosPlayState="transitioning";
+                node.status({
+                fill: 'yellow',
+                shape: 'dot',
+                text: 'preparing...'});
+                // Create the TTS mp3 with Polly
+                Leggi(sMsg,node);
+                // Set  timeout
+                oTimer=setTimeout(function(){HandleQueue(node);},500);
+            
+            
+            
+            }else if(sSonosPlayState=="playing" && sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3")==-1) {
+                RED.log.info('HandleQueue - stopping: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
+                
+                // It's playing something. Stop
+                SonosClient.pause().then(success=>{
+                    RED.log.info('HandleQueue - stopped: ' + success + " " + sSonosPlayState + " Track:" + sSonosTrackTitle);
 
                     var sMsg=aMessageQueue[0];
-                    
+                
                     // Remove the TTS message from the queue
                     aMessageQueue.splice(0,1);
                     
@@ -598,61 +640,32 @@ module.exports = function(RED) {
                     sSonosPlayState="transitioning";
                     // Create the TTS mp3 with Polly
                     Leggi(sMsg,node);
-                    // Set  timeout
-                    oTimer=setTimeout(function(){HandleQueue(node);},500);
-                
-                  
-                
-                }else if(sSonosPlayState=="playing" && sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3")==-1){
-                    RED.log.info('HandleQueue - stopping: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
-                    
-                    // It's playing something. Stop
-                    SonosClient.pause().then(success=>{
-                        RED.log.info('HandleQueue - stopped: ' + success + " " + sSonosPlayState + " Track:" + sSonosTrackTitle);
-
-                        var sMsg=aMessageQueue[0];
-                    
-                        // Remove the TTS message from the queue
-                        aMessageQueue.splice(0,1);
-                        
-                        sPollyState="transitioning"; 
-                        sSonosPlayState="transitioning";
-                        // Create the TTS mp3 with Polly
-                        Leggi(sMsg,node);
-                        //SonosClient.flush().then(success=>{
-                        // Start the TTS queue timer
-                        oTimer=setTimeout(function(){HandleQueue(node);},500);
-                        //});
-                    
-                    }).catch(err => { 
-                        var oErr = JSON.stringify(err);
-                        if (oErr.indexOf("ETIMEDOUT")!==-1)
-                        {   
-                            RED.log.info('HandleQueue - pause error' + oErr);
-                        }
-                        node.status({fill:"red", shape:"dot", text:"error pausing"});
-                         // Set  timeout
-                         oTimer=setTimeout(function(){HandleQueue(node);},500);
-                       });
-
-                }else
-                {
-                    //RED.log.info('HandleQueue - ELSE CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
-                    
+                    //SonosClient.flush().then(success=>{
                     // Start the TTS queue timer
                     oTimer=setTimeout(function(){HandleQueue(node);},500);
-                  
-                }
+                    //});
                 
+                }).catch(err => { 
+                    node.status({fill:"red", shape:"dot", text:"error pausing"});
+                    // Set  timeout
+                    oTimer=setTimeout(function(){HandleQueue(node);},500);
+                });
+
+            }else
+            {
+                // Reset status
+                node.status({fill:"green", shape:"dot", text:"" + sSonosPlayState});
+                // Start the TTS queue timer
+                oTimer=setTimeout(function(){HandleQueue(node);},500);
+            
+            }
+            
         }else{
             // Start the TTS queue timer
-            oTimer=setTimeout(function(){HandleQueue(node);},1000);
+            oTimer=setTimeout(function(){HandleQueue(node);},500);
+            node.status({fill:"green", shape:"dot", text:"ready"});
         }
-        
-		
-        
     }
-
 
 
 
