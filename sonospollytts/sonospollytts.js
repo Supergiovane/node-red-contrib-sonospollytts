@@ -434,8 +434,16 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         var node = this;
         
+        // Fixed temp dir
+        config.dir="/tmp";
+        if (!setupDirectory(config.dir)) {
+            RED.log.info('Unable to set up cache directory: ' + config.dir + ". Revert to default " + __dirname);
+            // Error, revert to the node path
+            config.dir = __dirname;         
+        }else{
+            RED.log.info('Temp dir set to' + config.dir);
+        }
         this.dir = config.dir;
-
         
         // Set ssml
         this.ssml = config.ssml;
@@ -503,19 +511,22 @@ module.exports = function(RED) {
         
         if(sHailingFile!=""){
                 RED.log.info("Moving hailing file " + sHailingFile + " to temp dir");
-                // This line opens the file as a readable stream
-                var readStream = fs.createReadStream(__dirname +"/"+sHailingFile);
+                // Is the temp dir the same as node dir?
+                if (__dirname!=config.dir) {
+                    // This line opens the file as a readable stream
+                    var readStream = fs.createReadStream(__dirname +"/"+sHailingFile);
 
-                // This will wait until we know the readable stream is actually valid before piping
-                readStream.on('open', function () {
-                    // This just pipes the read stream to the response object (which goes to the client)
-                    readStream.pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
-                });
+                    // This will wait until we know the readable stream is actually valid before piping
+                    readStream.on('open', function () {
+                        // This just pipes the read stream to the response object (which goes to the client)
+                        readStream.pipe(fs.createWriteStream(path.join(config.dir, sHailingFile)));
+                    });
 
-                // This catches any errors that happen while creating the readable stream (usually invalid names)
-                readStream.on('error', function(err) {
-                    RED.log.info('Error moving hailing.mp3 to temp dir: ' + err);
-                });
+                    // This catches any errors that happen while creating the readable stream (usually invalid names)
+                    readStream.on('error', function(err) {
+                        RED.log.info('Error moving hailing.mp3 to temp dir: ' + err);
+                    });
+                }
           }
           
           
@@ -701,11 +712,6 @@ module.exports = function(RED) {
         var filename = getFilename(msg, iVoice, node.ssml, outputFormat);
 
         var cacheDir = node.dir;
-
-        if (!setupDirectory(cacheDir)) {
-            notifyError(node, msg, 'Unable to set up cache directory: ' + cacheDir);
-            return;
-        }
 
         // Store it
         filename = path.join(node.dir, filename);

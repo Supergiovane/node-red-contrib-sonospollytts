@@ -2,6 +2,7 @@
 <p>
 <b>Version 0.0.25</b><br/>
 - Added more hailing sounds<br/>
+- If cannot create the temp dir (maybe for ACL), revert to the node dir.<br/>
 - Aesthetics adjustments<br/>
 </p>
 <p>
