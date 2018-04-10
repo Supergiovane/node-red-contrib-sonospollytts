@@ -441,7 +441,7 @@ module.exports = function(RED) {
             // Error, revert to the node path
             config.dir = __dirname;         
         }else{
-            RED.log.info('Temp dir set to' + config.dir);
+            RED.log.info('Temp dir set to ' + config.dir);
         }
         this.dir = config.dir;
         
@@ -510,7 +510,7 @@ module.exports = function(RED) {
         }
         
         if(sHailingFile!=""){
-                RED.log.info("Moving hailing file " + sHailingFile + " to temp dir");
+                RED.log.info("Moving hailing file " + sHailingFile + " to temp dir " + this.dir);
                 // Is the temp dir the same as node dir?
                 if (__dirname!=config.dir) {
                     // This line opens the file as a readable stream
