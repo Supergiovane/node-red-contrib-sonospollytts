@@ -10,28 +10,27 @@
     Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/>
 </p>
 <p>
-<b>Features:</b><br/> 
-- TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.<br/>
-- TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.<br/>
-- Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code><br/>.
+    <b>Features:</b><br/> 
+    - TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.<br/>
+    - TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.<br/>
+    - Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code><br/>.
 </p>
 <p>
 <b>Configuration:</b><br/>
-Polly Config: create a config with your AWS credentials<br/>
-Polly Voice: select your preferred voice<br/>
-Polly Cache: leave it as is<br/>
-Sonos IP: insert your sonos's IP <i>(Sonos
-doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
-router/firewall's DHCP Server)</i><br/>
-Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
-Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. Leave blank for disabling the hailing. Put again hailing.mp3 to restore the hailing<br/>
-Node-Red IP: set IP of your node-red<br/>
-Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
+    Polly Config: create a config with your AWS credentials<br/>
+    Polly Voice: select your preferred voice<br/>
+    Sonos IP: insert your sonos's IP <i>(Sonos
+    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
+    router/firewall's DHCP Server)</i><br/>
+    Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
+    Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
+    Node-Red IP: set IP of your node-red<br/>
+    Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
 </p>
 <p>
-<b>Known Issues:</b><<br/> 
-- When the node-red's host is restarted, the cache folder is emptied<br/>
-- When an mp3 from NAS is played by sonos, TTS waits for it to finish before speech<br/>
+    <b>Known Issues:</b><<br/> 
+    - When the node-red's host is restarted, the cache folder is emptied<br/>
+    - When an mp3 from NAS is played by sonos, TTS waits for it to finish before speech<br/>
 </p>
 
 <br/>

@@ -483,9 +483,26 @@ module.exports = function(RED) {
  */
           // Downloads hailing.mp3
           // Check if the file already exist
-          sHailingFile=config.sonoshailing;
-          if(sHailingFile=="hailing.mp3"){
-                RED.log.info('Moving hailing.mp3 to temp dir');
+        sHailingFile=config.sonoshailing;
+        if (sHailingFile=="0") {
+            // Remove the hailing.mp3 default file
+           RED.log.info('Hailing disabled');
+             /* pathExists(path.join(config.dir, "hailing.mp3")).then(res => {
+                if (res) {fs.unlinkSync(path.join(config.dir, "hailing.mp3"));}
+                }); */
+            sHailingFile="";
+        }else if (sHailingFile=="1") {
+            sHailingFile="hailing.mp3";
+        }else if (sHailingFile=="2") {
+            sHailingFile="2.mp3";
+        }else if (sHailingFile=="3") {
+            sHailingFile="3.mp3";
+        }else{
+            sHailingFile="hailing.mp3";
+        }
+        
+        if(sHailingFile!=""){
+                RED.log.info("Moving hailing file " + sHailingFile + " to temp dir");
                 // This line opens the file as a readable stream
                 var readStream = fs.createReadStream(__dirname +"/"+sHailingFile);
 
@@ -499,19 +516,6 @@ module.exports = function(RED) {
                 readStream.on('error', function(err) {
                     RED.log.info('Error moving hailing.mp3 to temp dir: ' + err);
                 });
-                
-
-          }else if(sHailingFile==""){
-                // Remove the hailing.mp3 default file
-                
-                RED.log.info('Deleting hailing.mp3 from temp dir');
-                pathExists(path.join(config.dir, "hailing.mp3")).then(res => {
-                    if (res) {
-                        fs.unlinkSync(path.join(config.dir, "hailing.mp3"));
-                        }
-                    });
-            
-                
           }
           
           
@@ -525,7 +529,10 @@ module.exports = function(RED) {
            // If the queue is empty, add the hailing file first
             if (aMessageQueue.length==0) {
                 // If the field sonoshailing is not empty, add the hailing to the queue
-                aMessageQueue.push(sHailingFile);
+                if (sHailingFile!="") {
+                    aMessageQueue.push(sHailingFile);
+                }
+                
             }
              // Add the message to the array
             aMessageQueue.push(msg.payload);

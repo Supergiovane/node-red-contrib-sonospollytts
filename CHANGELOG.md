@@ -1,7 +1,8 @@
 # Node-Red
 <p>
 <b>Version 0.0.25</b><br/>
-- Bugfix<br/>
+- Added more hailing sounds<br/>
+- Aesthetics adjustments<br/>
 </p>
 <p>
 <b>Version 0.0.24</b><br/>
