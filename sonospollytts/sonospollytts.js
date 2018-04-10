@@ -557,12 +557,10 @@ module.exports = function(RED) {
     }
 
 
-
+    
 
     // Handle the queue
     function HandleQueue(node){
-
-        //RED.log.info('HandleQueue - State: ' + sSonosPlayState);
 
         // Check if Polly is downloading the file (in case the phrase is very long)
         if(sPollyState=="transitioning")
@@ -586,12 +584,6 @@ module.exports = function(RED) {
             iTimeoutPollyState=0; // Reset Timer
         }
 
-        // Reset status
-        //node.status({});
-
-        // Log state for debug.
-        //RED.log.info('HandleQueue - State: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
-        
         SonosClient.getCurrentState().then(state=>{
             sSonosPlayState=state;
             SonosClient.currentTrack().then(track=>{
@@ -607,13 +599,22 @@ module.exports = function(RED) {
         }).catch(err=>{
             node.status({fill:"red", shape:"dot", text:"err currstate"});
             sSonosTrackTitle="stopped"; // force stopped
-            HandleQueue2(node);
+            //HandleQueue2(node);
+            
+            // 10/04/2018 Remove the TTS message from the queue
+            if(aMessageQueue.length>0){
+                aMessageQueue=[];
+                RED.log.info('HandleQueue2 - error, flushed queue');
+                // Set  timeout
+                oTimer=setTimeout(function(){HandleQueue(node);},500);
+            }
+        
         }); // SonosClient.getCurrentState().then(state=>{
         
     }
 
     // Handle queue 2 
-    function HandleQueue2(node,){
+    function HandleQueue2(node){
         // Play next msg
         if (aMessageQueue.length>0) {
                 
@@ -622,7 +623,7 @@ module.exports = function(RED) {
             // If playing TTS message, waits until it's finished.
             if (sSonosPlayState=="stopped" || sSonosPlayState=="paused")
             {
-                RED.log.info('HandleQueue - CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
+                RED.log.info('HandleQueue2 - CheckState: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
 
                 var sMsg=aMessageQueue[0];
                 
@@ -643,11 +644,11 @@ module.exports = function(RED) {
             
             
             }else if(sSonosPlayState=="playing" && sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3")==-1) {
-                RED.log.info('HandleQueue - stopping: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
+                RED.log.info('HandleQueue2 - stopping: ' + sSonosPlayState + " Track:" + sSonosTrackTitle);
                 
                 // It's playing something. Stop
                 SonosClient.pause().then(success=>{
-                    RED.log.info('HandleQueue - stopped: ' + success + " " + sSonosPlayState + " Track:" + sSonosTrackTitle);
+                    RED.log.info('HandleQueue2 - stopped: ' + success + " " + sSonosPlayState + " Track:" + sSonosTrackTitle);
 
                     var sMsg=aMessageQueue[0];
                 
@@ -675,7 +676,7 @@ module.exports = function(RED) {
                 node.status({fill:"green", shape:"dot", text:"" + sSonosPlayState});
                 // Start the TTS queue timer
                 oTimer=setTimeout(function(){HandleQueue(node);},500);
-            
+                
             }
             
         }else{
@@ -711,7 +712,7 @@ module.exports = function(RED) {
 
         var filename = getFilename(msg, iVoice, node.ssml, outputFormat);
 
-        var cacheDir = node.dir;
+        //var cacheDir = node.dir;
 
         // Store it
         filename = path.join(node.dir, filename);
@@ -823,8 +824,6 @@ module.exports = function(RED) {
         // Set error in message
         msg.error = errorMessage;
 
-        // Send message
-        //node.send([null, msg]);
     }
 
 

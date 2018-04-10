@@ -6,7 +6,7 @@
     This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and <u>requires NODE 8.9.x or higher</u>.
 </p>
 <p>
-    <b>April 2018: This node entered stable beta release. Use at your own risk and please tell me if you have issues.</b> Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
+    Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
     Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/>
 </p>
 <p>
