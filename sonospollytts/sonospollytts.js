@@ -600,14 +600,14 @@ module.exports = function(RED) {
             node.status({fill:"red", shape:"dot", text:"err currstate"});
             sSonosTrackTitle="stopped"; // force stopped
             //HandleQueue2(node);
-            
+
             // 10/04/2018 Remove the TTS message from the queue
             if(aMessageQueue.length>0){
                 aMessageQueue=[];
                 RED.log.info('HandleQueue2 - error, flushed queue');
-                // Set  timeout
-                oTimer=setTimeout(function(){HandleQueue(node);},500);
             }
+            // Set  timeout
+            oTimer=setTimeout(function(){HandleQueue(node);},500);
         
         }); // SonosClient.getCurrentState().then(state=>{
         
