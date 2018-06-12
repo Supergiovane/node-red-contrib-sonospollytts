@@ -22,15 +22,15 @@
     Sonos IP: insert your sonos's IP <i>(Sonos
     doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
     router/firewall's DHCP Server)</i><br/>
-    Sonos Volume: set the preferred TTS volume, from 0 to 100<br/>
+    Sonos Volume: set the preferred TTS volume, from 0 to 100 (can be overridden by passing msg.volume to the node)<br/>
     Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
     Node-Red IP: set IP of your node-red<br/>
     Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
 </p>
 <p>
     <b>Known Issues:</b><<br/> 
-    - When the node-red's host is restarted, the cache folder is emptied<br/>
-    - When an mp3 from NAS is played by sonos, TTS waits for it to finish before speech<br/>
+    - When the node-red's host is restarted, the cache TTS Polly folder is emptied<br/>
+    - When an mp3 from shared folder is played by sonos, TTS waits for it to finish before speech<br/>
 </p>
 
 <br/>

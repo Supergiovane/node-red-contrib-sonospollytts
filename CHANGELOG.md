@@ -1,15 +1,17 @@
 # Node-Red
 <p>
+<b>Version 1.0.2</b><br/>
+- Added capability to set volume by passing a message msg.volume to the node<br/>
+</p>
+<p>
 <b>Version 1.0.1</b><br/>
 - Fixed very stupid mistake<br/>
 </p>
-<p>
 <p>
 <b>Version 1.0.0</b><br/>
 - First public stable release<br/>
 - Behavior changed: when Sonos is powered off or unreachable, the TTS texts will, now, not be queued anymore, otherwise when Sonos is powered on again, it plays all TTS texts at once.
 </p>
-<p>
 <p>
 <b>Version 0.0.25</b><br/>
 - Added more hailing sounds<br/>

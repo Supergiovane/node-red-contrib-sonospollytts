@@ -532,6 +532,11 @@ module.exports = function(RED) {
           
 
         this.on('input', function(msg) {
+            // 12/06/2018 Controllo se il payload è un'impostazione del volume
+            if (_.isString(msg.volume)) {
+                sSonosVolume=msg.volume;
+            }  
+
             if(!_.isString(msg.payload)){
                 notifyError(node, msg, 'msg.payload must be of type String');
                 return;
