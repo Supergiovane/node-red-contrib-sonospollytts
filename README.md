@@ -28,7 +28,7 @@
     Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
 </p>
 <p>
-    <b>Known Issues:</b><<br/> 
+    <b>Known Issues:</b><br/> 
     - When the node-red's host is restarted, the cache TTS Polly folder is emptied<br/>
     - When an mp3 from shared folder is played by sonos, TTS waits for it to finish before speech<br/>
 </p>
