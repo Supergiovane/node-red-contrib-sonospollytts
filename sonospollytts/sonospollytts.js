@@ -473,7 +473,7 @@ module.exports = function(RED) {
         sSonosVolume=config.sonosvolume;
         SonosClient.setVolume(sSonosVolume).then(volume => {}).catch(err => { 
              node.error(JSON.stringify(err));
-             node.status({fill:"red", shape:"dot", text:"failed to set volume"});
+             node.status({fill:"red", shape:"dot", text:"Error: failed to set volume"});
             });
 
         // Hook the Playstate event
@@ -524,7 +524,7 @@ module.exports = function(RED) {
 
                     // This catches any errors that happen while creating the readable stream (usually invalid names)
                     readStream.on('error', function(err) {
-                        RED.log.info('Error moving hailing.mp3 to temp dir: ' + err);
+                        RED.log.info('Error moving hailing.mp3 to temp dir : ' + err);
                     });
                 }
           }

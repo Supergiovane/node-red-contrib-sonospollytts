@@ -1,5 +1,13 @@
 # Node-Red
 <p>
+<b>Version 1.0.4</b><br/>
+- Little minor update<br/>
+</p>
+<p>
+<b>Version 1.0.3</b><br/>
+- Bugfix (Fixed bug where sometime setting the hailing to none, causes a problem)<br/>
+</p>
+<p>
 <b>Version 1.0.2</b><br/>
 - Added capability to set volume by passing a message msg.volume to the node<br/>
 </p>
