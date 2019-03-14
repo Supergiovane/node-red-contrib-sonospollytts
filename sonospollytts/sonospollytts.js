@@ -461,7 +461,7 @@ module.exports = function(RED) {
         iVoice = voices[config.voice].Id;
 
         // Store Noder-Red complete URL
-        sNoderedURL="http://"+ config.noderedipaddress + ":" + config.noderedport;
+        sNoderedURL="http://"+ config.noderedipaddress + ":" + config.noderedport + RED.settings.httpRoot;
 
         // Create sonos client
         SonosClient = new sonos.Sonos(sSonosIPAddress);
