@@ -356,41 +356,48 @@ module.exports = function(RED) {
             Name: 'Marlene'
         },
         '42': {
+            Gender: 'Female',
+            Id: 'Vicki',
+            LanguageCode: 'de-DE',
+            LanguageName: 'German',
+            Name: 'Vicki'
+        },
+        '43': {
             Gender: 'Male',
             Id: 'Hans',
             LanguageCode: 'de-DE',
             LanguageName: 'German',
             Name: 'Hans'
         },
-        '43': {
+        '44': {
             Gender: 'Female',
             Id: 'Naja',
             LanguageCode: 'da-DK',
             LanguageName: 'Danish',
             Name: 'Naja'
         },
-        '44': {
+        '45': {
             Gender: 'Male',
             Id: 'Mads',
             LanguageCode: 'da-DK',
             LanguageName: 'Danish',
             Name: 'Mads'
         },
-        '45': {
+        '46': {
             Gender: 'Female',
             Id: 'Gwyneth',
             LanguageCode: 'cy-GB',
             LanguageName: 'Welsh',
             Name: 'Gwyneth'
         },
-        '46': {
+        '47': {
             Gender: 'Male',
             Id: 'Jacek',
             LanguageCode: 'pl-PL',
             LanguageName: 'Polish',
             Name: 'Jacek'
         },
-        '47': {
+        '48': {
             Gender: 'Male',
             Id: 'Matthew',
             LanguageCode: 'en-US',
