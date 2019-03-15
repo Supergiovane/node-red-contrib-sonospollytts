@@ -1,5 +1,9 @@
 # Node-Red
 <p>
+<b>Version 1.0.5</b><br/>
+- respect Node-RED httpRoot setting (this is necessary e.g. in environments where Node-RED runs behind a reverse proxy on a non-root path). Thanks @hobbyquaker.<br/>
+</p>
+<p>
 <b>Version 1.0.4</b><br/>
 - Little minor update<br/>
 </p>

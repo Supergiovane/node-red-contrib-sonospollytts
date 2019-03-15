@@ -462,7 +462,8 @@ module.exports = function(RED) {
 
         // Store Noder-Red complete URL
         sNoderedURL="http://"+ config.noderedipaddress + ":" + config.noderedport + RED.settings.httpRoot;
-
+        RED.log.info('Node-Red URL: ' + sNoderedURL);
+       
         // Create sonos client
         SonosClient = new sonos.Sonos(sSonosIPAddress);
 
