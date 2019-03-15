@@ -1,5 +1,9 @@
 # Node-Red
 <p>
+<b>Version 1.0.7</b><br/>
+- Added voice Vicky (German). Thanks @PBue for the suggestion.<br/>
+</p>
+<p>
 <b>Version 1.0.6</b><br/>
 - Bugfix due to the httpRoot.<br/>
 </p>
