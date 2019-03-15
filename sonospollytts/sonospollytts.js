@@ -461,7 +461,15 @@ module.exports = function(RED) {
         iVoice = voices[config.voice].Id;
 
         // Store Noder-Red complete URL
-        sNoderedURL="http://"+ config.noderedipaddress + ":" + config.noderedport + RED.settings.httpRoot;
+        if (RED.settings.httpRoot=="/") {
+            // Standard root path, do not add the / otherwise we'll have an error because of double "//"" in the sonos url
+            sNoderedURL="http://"+ config.noderedipaddress + ":" + config.noderedport;
+        }else
+        {
+            // Add the httpRoot
+            sNoderedURL="http://"+ config.noderedipaddress + ":" + config.noderedport + RED.settings.httpRoot;
+        }
+        
         RED.log.info('Node-Red URL: ' + sNoderedURL);
        
         // Create sonos client
