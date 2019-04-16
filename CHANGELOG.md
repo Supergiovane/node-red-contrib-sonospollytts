@@ -1,5 +1,12 @@
 # Node-Red
 <p>
+<b>Version 1.0.8</b><br/>
+- Updated sonos node dependency to 1.9.0<br/>
+- Changed some icons in the config page<br/>
+- Trimmed white spaces in the setting's textboxes to avoid issue when someone put a space in the textboxes. Thanks @1to4<br/>
+- Fixed an issue, where if you have more nodes with different settings, e.g. different Sonos IP address or Polly Voice, all nodes take the settings of the last node added.<br/>
+</p>
+<p>
 <b>Version 1.0.7</b><br/>
 - Added voice Vicky (German). Thanks @PBue for the suggestion.<br/>
 </p>

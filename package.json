@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-sonospollytts",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Node-Red TTS with Sonos and Amazon Polly",
   "main": "index.js",
   "scripts": {
@@ -40,7 +40,7 @@
     "path": "^0.12.7",
     "path-exists": "^3.0.0",
     "slug": "^0.9.1",
-    "sonos": "1.1.2"
+    "sonos": "<=1.9.0"
   },
   "devDependencies": {
     "eslint": "^3.19.0",

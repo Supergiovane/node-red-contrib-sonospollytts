@@ -17,7 +17,7 @@
 </p>
 <p>
 <b>Configuration:</b><br/>
-    Polly Config: create a config with your AWS credentials<br/>
+    Polly Config: create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: <b>"The security token included in the request is invalid."</b><br/>
     Polly Voice: select your preferred voice<br/>
     Sonos IP: insert your sonos's IP <i>(Sonos
     doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
