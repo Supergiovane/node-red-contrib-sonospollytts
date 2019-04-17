@@ -1,40 +1,27 @@
 # Node-Red SonosPollyTTS
-<p>
-    This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
-</p>
-<p>
-    This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and <u>requires NODE 8.9.x or higher</u>.
-</p>
-<p>
-    Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
-    Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a><br/>
-</p>
-<p>
-    <b>Features:</b><br/> 
-    - TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.<br/>
-    - TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.<br/>
-    - Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code><br/>.
-</p>
-<p>
-<b>Configuration:</b><br/>
-    Polly Config: create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: <b>"The security token included in the request is invalid."</b><br/>
-    Polly Voice: select your preferred voice<br/>
-    Sonos IP: insert your sonos's IP <i>(Sonos
-    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
-    router/firewall's DHCP Server)</i><br/>
-    Sonos Volume: set the preferred TTS volume, from 0 to 100 (can be overridden by passing msg.volume to the node)<br/>
-    Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
-    Node-Red IP: set IP of your node-red<br/>
-    Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
-</p>
-<p>
-    <b>Known Issues:</b><br/> 
-    - When the node-red's host is restarted, the cache TTS Polly folder is emptied<br/>
-    - When an mp3 from shared folder is played by sonos, TTS waits for it to finish before speech<br/>
-</p>
 
-<br/>
-<p> SAMPLE FLOW:<br/>
+## DESCRIPTION
+    This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
+    This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and requires NODE 8.9.x or higher.
+    Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
+    Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a>
+    
+## FEATURES
+    * TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.
+    * TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
+    * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
+
+## CONFIGURATION
+    Polly Config: create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: <b>"The security token included in the request is invalid."</b>
+    Polly Voice: select your preferred voice
+    Sonos IP: insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)
+    Sonos Volume: set the preferred TTS volume, from 0 to 100 (can be overridden by passing <code>msg.volume="40";</code> to the node)
+    Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
+    Node-Red IP: set IP of your node-red
+    Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently
+
+
+COPY/PASTE IN YOUR NODE-RED FLOW
 ```js
 [
     {
