@@ -1,10 +1,10 @@
 # Node-Red SonosPollyTTS
 
 ## DESCRIPTION
-    This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
-    This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and requires NODE 8.9.x or higher.
-    Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/><br/>
-    Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a>
+This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
+This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and requires NODE 8.9.x or higher.
+Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a>
+Do you want to support this project?<br/><a href="https://www.paypal.me/techtoday/5"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"></a>
     
 ## FEATURES
     * TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.
