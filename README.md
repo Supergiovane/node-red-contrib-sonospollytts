@@ -1,5 +1,7 @@
 # Node-Red SonosPollyTTS
 
+<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/README.png' width="100%">
+
 ## DESCRIPTION
 This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
 This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and requires NODE 8.9.x or higher.
@@ -19,7 +21,6 @@ Do you want to support this project?<br/><a href="https://www.paypal.me/techtoda
 * Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
 * Node-Red IP: set IP of your node-red
 * Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently
-
 
 ## COPY/PASTE IN YOUR NODE-RED FLOW
 ```js
