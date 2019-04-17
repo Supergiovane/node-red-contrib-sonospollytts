@@ -24,7 +24,7 @@ Do you want to support this project?<br/><a href="https://www.paypal.me/techtoda
 
 ## COMMANDS
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
-* <code>msg.nohailing</code> doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)
+* <code>msg.nohailing</code> temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)
 * <code>msg.payload</code> the text to be spoken
 
 
