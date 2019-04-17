@@ -1,4 +1,4 @@
-# Node-Red
+# Node-Red SonosPollyTTS
 <p>
     This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
 </p>
@@ -35,15 +35,8 @@
 
 <br/>
 <p> SAMPLE FLOW:<br/>
-<code>
+```js
 [
-    {
-        "id": "2a7223f6.d28e0c",
-        "type": "tab",
-        "label": "Flow 1",
-        "disabled": false,
-        "info": ""
-    },
     {
         "id": "7948293a.159a68",
         "type": "inject",
@@ -56,8 +49,8 @@
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
-        "x": 70,
-        "y": 120,
+        "x": 110,
+        "y": 140,
         "wires": [
             [
                 "140491c3.4c7e0e"
@@ -68,12 +61,12 @@
         "id": "140491c3.4c7e0e",
         "type": "function",
         "z": "2a7223f6.d28e0c",
-        "name": "",
-        "func": "node.send({payload:\"Hello\"});\nnode.send({payload:\"http://media.ilmeteo.it/audio/2018-03-31.mp3\"});\nnode.send({payload:\"This is a test message\"});\n",
+        "name": "Sample function 1",
+        "func": "// The simplest way\nmsg.payload=\"Benvenuti,Wilkommen,Wellcome!\";\nreturn msg;\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 230,
-        "y": 120,
+        "x": 270,
+        "y": 140,
         "wires": [
             [
                 "b2f92147.9a31e"
@@ -85,17 +78,120 @@
         "type": "sonospollytts",
         "z": "2a7223f6.d28e0c",
         "name": "",
-        "voice": "17",
+        "voice": "18",
         "ssml": false,
         "dir": "/tmp",
-        "sonosipaddress": "192.168.1.109",
-        "sonosvolume": "30",
-        "sonoshailing": "hailing.mp3",
-        "noderedipaddress": "192.168.1.114",
+        "sonosipaddress": "192.168.1.109 ",
+        "sonosvolume": "25",
+        "sonoshailing": "1",
+        "noderedipaddress": "192.168.1.209",
         "noderedport": "1880",
         "config": "e9b4b321.0bcb5",
-        "x": 390,
-        "y": 120,
+        "x": 490,
+        "y": 100,
+        "wires": [],
+        "icon": "node-red/leveldb.png"
+    },
+    {
+        "id": "21671071.2c082",
+        "type": "inject",
+        "z": "2a7223f6.d28e0c",
+        "name": "",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 110,
+        "y": 180,
+        "wires": [
+            [
+                "f1cff68e.5c6a8"
+            ]
+        ]
+    },
+    {
+        "id": "f1cff68e.5c6a8",
+        "type": "function",
+        "z": "2a7223f6.d28e0c",
+        "name": "Sample function 2",
+        "func": "// Set the Volume\nmsg.volume=\"60\"; // If not set, will take the volume from setting page\nmsg.payload=\"Benvenuti,Wilkommen,Wellcome!\";\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 270,
+        "y": 180,
+        "wires": [
+            [
+                "b2f92147.9a31e"
+            ]
+        ]
+    },
+    {
+        "id": "f42f5c8e.26a728",
+        "type": "inject",
+        "z": "2a7223f6.d28e0c",
+        "name": "",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 110,
+        "y": 220,
+        "wires": [
+            [
+                "d6cbb03.bf40c5"
+            ]
+        ]
+    },
+    {
+        "id": "d6cbb03.bf40c5",
+        "type": "function",
+        "z": "2a7223f6.d28e0c",
+        "name": "Sample function 3",
+        "func": "// Create an array of messages\nvar aMessages=[];\n// Add random messages\naMessages.push({volume:\"50\",payload:\"Benvenuti.\"});\n// Wheater in Italy\naMessages.push({volume:\"40\",payload:\"http://media.ilmeteo.it/audio/2018-03-31.mp3\"});\n// Add random messages\naMessages.push({volume:\"30\",payload:\"Cambia la tua voce nei settaggi.\"});\nreturn [aMessages];\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 270,
+        "y": 220,
+        "wires": [
+            [
+                "b2f92147.9a31e"
+            ]
+        ]
+    },
+    {
+        "id": "587710a4.938458",
+        "type": "inject",
+        "z": "2a7223f6.d28e0c",
+        "name": "Hello World",
+        "topic": "",
+        "payload": "Ciao Mondo! Come stai?",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "b2f92147.9a31e"
+            ]
+        ]
+    },
+    {
+        "id": "f0e4fb09.e0fd1",
+        "type": "comment",
+        "z": "2a7223f6.d28e0c",
+        "name": "PUSH THE BUTTONS!",
+        "info": "",
+        "x": 120,
+        "y": 60,
         "wires": []
     },
     {
@@ -105,6 +201,6 @@
         "name": "bb"
     }
 ]
-</code>
+```
 </p>
     
