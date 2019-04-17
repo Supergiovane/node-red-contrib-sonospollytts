@@ -13,20 +13,7 @@ module.exports = function(RED) {
     var os = require('os'); // Retrieve the local IP
     const sonos = require('sonos');
 
-    // var node.aMessageQueue=[]; // Array of incoming TTS messages
-    // var node.SonosClient;
-    // var node.iVoice;
-    // var node.sNoderedURL; // Stores the node.red URL and port
-    // var oTimer;
-    // var node.sSonosVolume; // Sonos Volume
-    // var node.sSonosPlayState="stopped"; // Play state
-    // var node.sSonosTrackTitle=""; // Track title
-    // var node.sSonosIPAddress="";
-    // var node.sHailingFile=""; // Hailing file
-    // var sPollyState="done"; // Polly State
-    // var iTimeoutPollyState=0;
-    
-
+   
     AWS.config.update({
         region: 'us-east-1'
     });
@@ -460,6 +447,7 @@ module.exports = function(RED) {
         node.sSonosTrackTitle=""; // Track title
         node.sSonosIPAddress="";
         node.sHailingFile=""; // Hailing file
+        node.bNoHailing=false; // Dont't play Hailing music temporarely (from msg node ommand "nohailing="true")
 
         // Fixed temp dir
         config.dir="/tmp";
@@ -572,19 +560,33 @@ module.exports = function(RED) {
             if (_.isString(msg.volume)) {
                 node.sSonosVolume=msg.volume;
             }  
-
+            
+            // 17/04/2019 Verifico se possso mandare in play l'hailing
+            if (_.isString(msg.nohailing)) {
+                if (msg.nohailing=="1" || msg.nohailing.toLowerCase()=="true")
+                {
+                    node.bNoHailing=true;
+                }else
+                {
+                    node.bNoHailing=false;
+                }                
+            } else
+            {
+                node.bNoHailing=false;
+            } 
+            
             if(!_.isString(msg.payload)){
                 notifyError(node, msg, 'msg.payload must be of type String');
                 return;
             }
 
-           // If the queue is empty, add the hailing file first
-            if (node.aMessageQueue.length==0) {
+
+           // If the queue is empty and if i can play the Haniling, add the hailing file first
+            if (node.aMessageQueue.length==0 && node.bNoHailing==false) {
                 // If the field sonoshailing is not empty, add the hailing to the queue
                 if (node.sHailingFile!="") {
                     node.aMessageQueue.push(node.sHailingFile);
                 }
-                
             }
              // Add the message to the array
             node.aMessageQueue.push(msg.payload);

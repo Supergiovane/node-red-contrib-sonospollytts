@@ -1,5 +1,8 @@
 # Node-Red
 <p>
+<b>Version 1.0.9</b><br/>
+- You can now temporarely stop playing the Hailing sound via node message <code>msg.nohailing="true";</code> or <code>msg.nohailing="1";</code><br/>
+</p>
 <b>Version 1.0.8</b><br/>
 - Updated sonos node dependency to 1.9.0<br/>
 - Changed some icons in the config page<br/>
