@@ -1,6 +1,6 @@
 # Node-Red
 <p>
-<b>Version 1.0.11</b><br/>
+<b>Version 1.0.12</b><br/>
 - You can now temporarely stop playing the Hailing sound via node message <code>msg.nohailing="true";</code> or <code>msg.nohailing="1";</code><br/>
 </p>
 <b>Version 1.0.8</b><br/>

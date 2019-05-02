@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-sonospollytts",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Node-Red TTS with Sonos and Amazon Polly",
   "main": "index.js",
   "scripts": {
