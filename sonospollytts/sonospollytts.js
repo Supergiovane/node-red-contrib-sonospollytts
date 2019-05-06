@@ -610,6 +610,7 @@ module.exports = function(RED) {
 
         // 06/05/2019 check if the SonosClient is already instantiate (an error can occur if a very slow PC is used)
         if (node.SonosClient==null) {
+            RED.log.info('InfoHandleQueue0 SonosClient not instantiate. Retry later...');
             node.oTimer=setTimeout(function(){HandleQueue(node);},5000);
             return;
         } 
