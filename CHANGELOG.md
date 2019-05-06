@@ -1,5 +1,10 @@
 # Node-Red
 <p>
+<b>Version 1.0.13</b><br/>
+- Fixed a possible problem causing an exception in the node-red process, in a very slow PC
+- Update sonos dependency to >=1.10.0
+</p>
+<p>
 <b>Version 1.0.12</b><br/>
 - You can now temporarely stop playing the Hailing sound via node message <code>msg.nohailing="true";</code> or <code>msg.nohailing="1";</code><br/>
 </p>

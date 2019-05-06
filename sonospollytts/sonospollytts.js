@@ -491,7 +491,7 @@ module.exports = function(RED) {
         node.SonosClient = new sonos.Sonos(node.sSonosIPAddress);
 
         // Start the TTS queue timer
-        node.oTimer=setTimeout(function(){HandleQueue(node);},1000);
+        node.oTimer=setTimeout(function(){HandleQueue(node);},5000);
 
         // Get default sonos volume
         node.sSonosVolume=config.sonosvolume;
@@ -607,6 +607,13 @@ module.exports = function(RED) {
         // RED.log.info('node.sPollyState : ' + node.sPollyState);
         // RED.log.info('node.iTimeoutPollyState : ' + node.iTimeoutPollyState);
         // Check if Polly is downloading the file (in case the phrase is very long)
+
+        // 06/05/2019 check if the SonosClient is already instantiate (an error can occur if a very slow PC is used)
+        if (node.SonosClient==null) {
+            node.oTimer=setTimeout(function(){HandleQueue(node);},5000);
+            return;
+        } 
+
         if(node.sPollyState=="transitioning")
         {
             node.iTimeoutPollyState+=1; // Increase Timeout
@@ -628,35 +635,47 @@ module.exports = function(RED) {
             node.iTimeoutPollyState=0; // Reset Timer
         }
 
-        node.SonosClient.getCurrentState().then(state=>{
-            node.sSonosPlayState=state;
+        // 06/05/2019 moved the code into the "try" 
+        try {
 
-            //RED.log.info('DEBUG HandleQueue - node.sSonosPlayState=' + node.sSonosPlayState);
-
-            node.SonosClient.currentTrack().then(track=>{
-                node.sSonosTrackTitle=track.uri;
-                HandleQueue2(node);
-            }).catch(err=>{
-                node.status({fill:"red", shape:"dot", text:"err currtrack"});
-                node.sSonosTrackTitle="stopped"; // force stopped
-                HandleQueue2(node);
-            }); // node.SonosClient.currentTrack().then(track=>{
+            node.SonosClient.getCurrentState().then(state=>{
+                node.sSonosPlayState=state;
+    
+                //RED.log.info('DEBUG HandleQueue - node.sSonosPlayState=' + node.sSonosPlayState);
+    
+                node.SonosClient.currentTrack().then(track=>{
+                    node.sSonosTrackTitle=track.uri;
+                    HandleQueue2(node);
+                }).catch(err=>{
+                    node.status({fill:"red", shape:"dot", text:"err currtrack"});
+                    node.sSonosTrackTitle="stopped"; // force stopped
+                    HandleQueue2(node);
+                }); // node.SonosClient.currentTrack().then(track=>{
+                    
                 
+            }).catch(err=>{
+                node.status({fill:"red", shape:"dot", text:"err currstate"});
+                node.sSonosTrackTitle="stopped"; // force stopped
+                //HandleQueue2(node);
+    
+                // 10/04/2018 Remove the TTS message from the queue
+                if(node.aMessageQueue.length>0){
+                    node.aMessageQueue=[];
+                    RED.log.info('HandleQueue2 - error, flushed queue');
+                }
+                // Set  timeout
+                node.oTimer=setTimeout(function(){HandleQueue(node);},500);
             
-        }).catch(err=>{
-            node.status({fill:"red", shape:"dot", text:"err currstate"});
-            node.sSonosTrackTitle="stopped"; // force stopped
-            //HandleQueue2(node);
+            }); // node.SonosClient.getCurrentState().then(state=>{
+        } catch (error) {
 
-            // 10/04/2018 Remove the TTS message from the queue
-            if(node.aMessageQueue.length>0){
-                node.aMessageQueue=[];
-                RED.log.info('HandleQueue2 - error, flushed queue');
-            }
+            // 06/05/2019 restart timer. To be removed if the try catch is removed as well.
             // Set  timeout
             node.oTimer=setTimeout(function(){HandleQueue(node);},500);
+            RED.log.info('errHandleQueue1 ' + error.toString());
+       
+        }
         
-        }); // node.SonosClient.getCurrentState().then(state=>{
         
     }
 
