@@ -490,9 +490,7 @@ module.exports = function(RED) {
         // Create sonos client
         node.SonosClient = new sonos.Sonos(node.sSonosIPAddress);
 
-        // Start the TTS queue timer
-        node.oTimer=setTimeout(function(){HandleQueue(node);},5000);
-
+        
         // Get default sonos volume
         node.sSonosVolume=config.sonosvolume;
         node.SonosClient.setVolume(node.sSonosVolume).then(volume => {}).catch(err => { 
@@ -500,6 +498,10 @@ module.exports = function(RED) {
              node.status({fill:"red", shape:"dot", text:"Error: failed to set volume"});
             });
 
+        // Start the TTS queue timer
+        node.oTimer=setTimeout(function(){HandleQueue(node);},5000);
+
+        
         // Hook the Playstate event
         /* node.SonosClient.on('PlayState', state => {
             node.sSonosPlayState=state;
