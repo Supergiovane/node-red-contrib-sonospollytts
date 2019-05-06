@@ -1,7 +1,7 @@
 # Node-Red
 <p>
 <b>Version 1.0.13</b><br/>
-- Fixed a possible problem causing an exception in the node-red process, in a very slow PC
+- Fixed a possible problem causing an exception in a very slow PC<br/>
 - Update sonos dependency to >=1.10.0
 </p>
 <p>
