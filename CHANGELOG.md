@@ -1,7 +1,9 @@
 # Node-Red
 <p>
-<b>Version 1.0.13</b><br/>
+<b>Version 1.0.14</b><br/>
 - Fixed a possible problem causing an exception in a very slow PC<br/>
+- Added the output link and therefore changed the default node group from "output" to "advanced"<br/>
+- The node send a msg.completed message during playback. true = ended playing, false = is playing<br/>
 - Update sonos dependency to >=1.10.0
 </p>
 <p>

@@ -448,6 +448,7 @@ module.exports = function(RED) {
         node.sSonosIPAddress="";
         node.sHailingFile=""; // Hailing file
         node.bNoHailing=false; // Dont't play Hailing music temporarely (from msg node ommand "nohailing="true")
+        node.msg={}; // 08/05/2019 Node message
 
         // Fixed temp dir
         config.dir="/tmp";
@@ -582,6 +583,13 @@ module.exports = function(RED) {
                 return;
             }
 
+            // 07/05/2019 Set "completed" to false and send it
+            if (node.aMessageQueue.length==0)
+            {
+                node.msg.completed=false;
+                node.send(node.msg);
+            }
+            
 
            // If the queue is empty and if i can play the Haniling, add the hailing file first
             if (node.aMessageQueue.length==0 && node.bNoHailing==false) {
@@ -590,6 +598,7 @@ module.exports = function(RED) {
                     node.aMessageQueue.push(node.sHailingFile);
                 }
             }
+
              // Add the message to the array
             node.aMessageQueue.push(msg.payload);
  
@@ -759,6 +768,14 @@ module.exports = function(RED) {
             // Start the TTS queue timer
             node.oTimer=setTimeout(function(){HandleQueue(node);},500);
             node.status({fill:"green", shape:"dot", text:"ready"});
+    
+            // 07/05/2019 Check if i have ended playing the queue as well
+            if (node.msg.completed==false && node.sSonosPlayState=="stopped")
+            {
+                node.msg.completed=true;
+                node.send(node.msg);
+            }
+
         }
     }
 
@@ -939,6 +956,7 @@ function PlaySonos(_songuri,node){
                 });
         });
     });
+
     
 
 }

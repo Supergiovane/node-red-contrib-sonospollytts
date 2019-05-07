@@ -22,11 +22,13 @@ Do you want to support this project?<br/><a href="https://www.paypal.me/techtoda
 * Node-Red IP: set IP of your node-red
 * Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently
 
-## COMMANDS
+## INPUT
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
 * <code>msg.nohailing</code> temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)
 * <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";)
 
+## OUTPUT
+* <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing
 
 ## COPY/PASTE IN YOUR NODE-RED FLOW
 ```js
