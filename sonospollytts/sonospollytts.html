@@ -118,11 +118,10 @@
         <label></label>
         <input type="checkbox" id="node-input-ssml" style="margin-left: 0px; vertical-align: top; width: auto !important;"> <label style="width:auto !important;"> Enable SSML</label>
     </div>
-
-    <!-- <div class="form-row">
-        <label for="node-input-dir"><i class="icon-tag"></i> Polly Cache</label>
+    <div class="form-row">
+        <label for="node-input-dir"><i class="fa fa-folder-o"></i> Temp folder</label>
         <input type="text" id="node-input-dir">
-    </div> -->
+    </div>
     <div class="form-row">
         <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Sonos IP</label>
         <input type="text" id="node-input-sonosipaddress">
@@ -176,13 +175,14 @@
     </p>
     <p>
         <b>CONFIG:</b><br/>
-        Polly Config: create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: "The security token included in the request is invalid."<br/>
-        Polly Voice: select your preferred voice<br/>
-        Sonos IP: insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
-        Sonos Volume: set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
-        Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
-        Node-Red IP: set IP of your node-red<br/>
-        Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently<br/>
+        <code>Polly Config</code> create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: "The security token included in the request is invalid."<br/>
+        <code>Polly Voice</code> select your preferred voice<br/>
+        <code>Sonos IP</code> insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
+        <code>Sonos Volume</code> set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
+        <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
+        <code>Node-Red IP</code> set IP of your node-red<br/>
+        <code>Node-Red Port</code> normally 1880. If you've changed the default port, adjust this field consequently<br/>
+        <code>Temp folder</code> you can change the temp folder for storing cached TTS files. Default is "/tmp". Note that if you change that, you need to run node-red with user able to access the filesystem.
     </p>
 
     <p>

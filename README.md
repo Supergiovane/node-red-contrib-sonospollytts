@@ -23,6 +23,7 @@ Do you want to support this project?<br/><a href="https://www.paypal.me/techtoda
 * Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
 * Node-Red IP: set IP of your node-red
 * Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently
+* Temp folder: you can change the temp folder for storing cached TTS files. Default is "tmp"
 
 ## INPUT
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)

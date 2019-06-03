@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-sonospollytts",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Node-Red TTS with Sonos and Amazon Polly",
   "main": "index.js",
   "scripts": {
@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/Supergiovane/Node-Red#readme",
   "dependencies": {
-    "aws-sdk": "^2.218.1",
+    "aws-sdk": "^2.454.0",
     "crypto-js": "^3.1.9-1",
     "fs": "0.0.1-security",
     "lodash": "^4.17.4",

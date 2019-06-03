@@ -1,5 +1,9 @@
 # Node-Red
 <p>
+<b>Version 1.0.15</b><br/>
+- Added the ability to select the temp folder, suitable for node-red installed behind hass.io or other similar apps, in case the sonos device can't reach node-red behind those apps. Check that the user can write to the filesystem<br/>
+</p>
+<p>
 <b>Version 1.0.14</b><br/>
 - Fixed a possible problem causing an exception in a very slow PC<br/>
 - Added the output link and therefore changed the default node group from "output" to "advanced"<br/>
