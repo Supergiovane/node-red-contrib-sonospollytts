@@ -501,10 +501,12 @@ module.exports = function(RED) {
         
         // Get default sonos volume
         node.sSonosVolume=config.sonosvolume;
-        node.SonosClient.setVolume(node.sSonosVolume).then(volume => {}).catch(err => { 
+        
+         // 24/06/2019 removed because everityme you update the flow, Sonos Volume is resetting, annoying the user.
+        /* node.SonosClient.setVolume(node.sSonosVolume).then(volume => {}).catch(err => { 
              node.error(JSON.stringify(err));
              node.status({fill:"red", shape:"dot", text:"Error: failed to set volume"});
-            });
+            }); */
 
         // Start the TTS queue timer
         node.oTimer=setTimeout(function(){HandleQueue(node);},5000);
@@ -936,7 +938,8 @@ module.exports = function(RED) {
             text: 'Error: ' + errorMessage
         });
         node.sPollyState=="criticalwriting";
-        RED.log.error('SonosPollyTTS: notifyError - unable to write TTS file. Check user permissions');
+        // RED.log.error('SonosPollyTTS: notifyError - unable to write TTS file. Check user permissions');
+        RED.log.error('SonosPollyTTS: notifyError - msg: ' + msg + ' error: '+errorMessage);
         // Set error in message
         msg.error = errorMessage;
        

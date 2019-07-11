@@ -1,5 +1,10 @@
 # Node-Red
 <p>
+<b>Version 1.0.16</b><br/>
+- Changed a little behaviour related to the initial volume setting, when node-red starts or a flow is deployed.<br/>
+- Applied lodash package security patch.<br/>
+</p>
+<p>
 <b>Version 1.0.15</b><br/>
 - Added the ability to select the temp folder, suitable for node-red installed behind hass.io or other similar apps, in case the sonos device can't reach node-red behind those apps. Check that the user can write to the filesystem<br/>
 </p>
