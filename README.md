@@ -1,4 +1,5 @@
 # Node-Red SonosPollyTTS
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="100%">
 
