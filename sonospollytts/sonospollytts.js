@@ -2,14 +2,11 @@ module.exports = function(RED) {
     'use strict';
 
     var AWS = require('aws-sdk');
-    var slug = require('slug');
     var fs = require('fs');
     var mkdirp = require('mkdirp');
     var MD5 = require('crypto-js').MD5;
     var util = require('util');
     var path = require('path');
-    var pathExists = require('path-exists');
-    var _ = require('lodash');
     var os = require('os'); // Retrieve the local IP
     const sonos = require('sonos');
 
@@ -18,14 +15,27 @@ module.exports = function(RED) {
         region: 'us-east-1'
     });
 
-    slug.charmap['.'] = '_stop_';
-    slug.charmap['?'] = '_qm_';
-    slug.charmap['!'] = '_em_';
-    slug.charmap[','] = '_pause_';
-    slug.charmap[':'] = '_colon_';
-    slug.charmap[';'] = '_semicolon_';
-    slug.charmap['<'] = '_less_';
-    slug.charmap['>'] = '_greater_';
+    function slug(_text) {
+        var sRet = _text;
+        sRet = sRet.toString().replace(/\./g, "_stop_");
+        sRet = sRet.toString().replace(/\?/g, "_qm_");
+        sRet = sRet.toString().replace(/\!/g, "_em_");
+        sRet = sRet.toString().replace(/\,/g, "_pause_");
+        sRet = sRet.toString().replace(/\:/g, "_colon_");
+        sRet = sRet.toString().replace(/\;/g, "_semicolon_");
+        sRet = sRet.toString().replace(/\</g, "_less_");
+        sRet = sRet.toString().replace(/\>/g, "_greater_");
+        // slug.charmap['.'] = '_stop_';
+        // slug.charmap['?'] = '_qm_';
+        // slug.charmap['!'] = '_em_';
+        // slug.charmap[','] = '_pause_';
+        // slug.charmap[':'] = '_colon_';
+        // slug.charmap[';'] = '_semicolon_';
+        // slug.charmap['<'] = '_less_';
+        // slug.charmap['>'] = '_greater_';
+        return sRet;
+    }
+   
 
     function setupDirectory(aPath) {
         try {
@@ -584,12 +594,12 @@ module.exports = function(RED) {
 
         this.on('input', function(msg) {
             // 12/06/2018 Controllo se il payload è un'impostazione del volume
-            if (_.isString(msg.volume)) {
+            if (msg.hasOwnProperty("volume")) {
                 node.sSonosVolume=msg.volume;
             }  
             
             // 17/04/2019 Verifico se possso mandare in play l'hailing
-            if (_.isString(msg.nohailing)) {
+            if (msg.hasOwnProperty("nohailing")) {
                 if (msg.nohailing=="1" || msg.nohailing.toLowerCase()=="true")
                 {
                     node.bNoHailing=true;
@@ -602,7 +612,7 @@ module.exports = function(RED) {
                 node.bNoHailing=false;
             } 
             
-            if(!_.isString(msg.payload)){
+            if(!msg.hasOwnProperty("payload")){
                 notifyError(node, msg, 'msg.payload must be of type String');
                 return;
             }
@@ -838,46 +848,45 @@ module.exports = function(RED) {
         //RED.log.info('SonosPollyTTS: DEBUG - Leggi Punto 3 - filename : ' + filename);
 
         // Check if cached
-            pathExists(filename).then(res => {
-            if (res) {
-                // Cached
-                // Play
-                PlaySonos(filename,node);
-                return;
-                //return node.send([msg, null]);
-            };
+        if (fs.existsSync(filename)){
+            node.status({fill: 'green',shape: 'ring',text: 'from cache'});
+            RED.log.info('SonosPollyTTS: DEBUG - fromcache : ' + filename);    
+            PlaySonos(filename, node);
+            return;
+        }
+        // pathExists(filename).then(res => {
+            // if (res) {
+            //     // Cached
+            //     // Play
+            //     PlaySonos(filename, node);
+            //     return;
+            //     //return node.send([msg, null]);
+            // };
 
             // Not cached
-            node.status({
-            fill: 'yellow',
-            shape: 'dot',
-            text: 'requesting'});
+            node.status({fill: 'yellow',shape: 'dot',text: 'asking online'});
 
         
-        var params = {
-            OutputFormat: outputFormat,
-            SampleRate: '22050',
-            Text: msg,
-            TextType: node.ssml ? 'ssml' : 'text',
-            VoiceId: node.iVoice
-        };
+            var params = {
+                OutputFormat: outputFormat,
+                SampleRate: '22050',
+                Text: msg,
+                TextType: node.ssml ? 'ssml' : 'text',
+                VoiceId: node.iVoice
+            };
 
-        synthesizeSpeech([polly, params])
-            .then(data => {
-            return [filename, data.AudioStream];
-        }).then(cacheSpeech).then(function() {
+            synthesizeSpeech([polly, params]).then(data => { return [filename, data.AudioStream]; }).then(cacheSpeech).then(function () {
                 // Success
                 node.status({});
                 //node.send([msg, null]);
 
                 // Play
-                PlaySonos(filename,node);
+                PlaySonos(filename, node);
 
 
-            }).catch(error => {
-            notifyError(node, filename, error);
-                });
-         });
+            }).catch(error => { notifyError(node, filename, error); });
+         //});
+        
     }
 
     function synthesizeSpeech([polly, params]){
@@ -886,10 +895,9 @@ module.exports = function(RED) {
             if (err !== null) {
                 return reject(err);
             }
-
             resolve(data);
-        });
-    });
+            });
+         });
     }
 
     function cacheSpeech([path, data]){
@@ -928,7 +936,7 @@ module.exports = function(RED) {
    
 
     function notifyError(node, msg, err) {
-        var errorMessage = _.isString(err) ? err : err.message;
+        var errorMessage = err.message;
         // Output error to console
         //RED.log.error('SonosPollyTTS synthesizeSpeech: ' + errorMessage);
         // Mark node as errounous

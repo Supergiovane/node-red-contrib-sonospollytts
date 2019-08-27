@@ -1,4 +1,10 @@
 # Node-Red SonosPollyTTS
+
+[![NPM version][npm-version-image]][npm-url]
+[![NPM downloads per month][npm-downloads-month-image]][npm-url]
+[![NPM downloads total][npm-downloads-total-image]][npm-url]
+[![MIT License][license-image]][license-url]
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="100%">
@@ -35,6 +41,7 @@ Do you want to support this project?<br/><a href="https://www.paypal.me/techtoda
 * <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing
 
 ## COPY/PASTE IN YOUR NODE-RED FLOW
+
 ```js
 [
     {
@@ -204,3 +211,9 @@ Do you want to support this project?<br/><a href="https://www.paypal.me/techtoda
 ```
 
     
+[license-image]: https://img.shields.io/badge/license-MIT-blue.svg
+[license-url]: https://github.com/Supergiovane/node-red-contrib-sonospollytts/master/LICENSE
+[npm-url]: https://npmjs.org/package/node-red-contrib-sonospollytts
+[npm-version-image]: https://img.shields.io/npm/v/node-red-contrib-sonospollytts.svg
+[npm-downloads-month-image]: https://img.shields.io/npm/dm/node-red-contrib-sonospollytts.svg
+[npm-downloads-total-image]: https://img.shields.io/npm/dt/node-red-contrib-sonospollytts.svg

@@ -1,4 +1,11 @@
 # Node-Red
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
+
+<p>
+<b>Version 1.0.18</b><br/>
+- Removed some dependencies to speed up all the things.<br/>
+</p>
 <p>
 <b>Version 1.0.16</b><br/>
 - Changed a little behaviour related to the initial volume setting, when node-red starts or a flow is deployed.<br/>
