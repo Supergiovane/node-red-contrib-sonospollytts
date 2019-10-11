@@ -7,7 +7,6 @@ module.exports = function(RED) {
     var MD5 = require('crypto-js').MD5;
     var util = require('util');
     var path = require('path');
-    var os = require('os'); // Retrieve the local IP
     const sonos = require('sonos');
 
    
