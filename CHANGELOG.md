@@ -4,6 +4,7 @@
 
 <p>
 <b>Version 1.0.18</b><br/>
+- Added 9 Voices, thanks to user kitazaki.<br/>
 - Removed some dependencies to speed up all the things.<br/>
 </p>
 <p>
