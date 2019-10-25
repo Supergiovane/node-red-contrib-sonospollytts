@@ -3,6 +3,10 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 1.0.20</b><br/>
+- Fixed an issue, where if you changed the node-red httpAdminRoot, the node won't play anything. Thanks @JorinL.<br/>
+</p>
+<p>
 <b>Version 1.0.19</b><br/>
 - Added 9 Voices, thanks to user kitazaki.<br/>
 </p>

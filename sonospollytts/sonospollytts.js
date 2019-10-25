@@ -507,8 +507,6 @@ module.exports = function(RED) {
 
 
 
-
-
     // Node Register
     function PollyNode(config) {
         RED.nodes.createNode(this, config);
@@ -552,6 +550,7 @@ module.exports = function(RED) {
             return;
         }
 
+             
         // Set the voice
         node.iVoice = voices[config.voice].Id;
 
@@ -882,7 +881,7 @@ module.exports = function(RED) {
     // Reas the text via Polly
     function Leggi(msg,node)
     {
-        
+      
         // Play directly files starting with http://
         if (msg.toLowerCase().startsWith("http://")) {
             RED.log.info('SonosPollyTTS: Leggi HTTP filename: ' + msg);
@@ -908,7 +907,8 @@ module.exports = function(RED) {
         // Store it
         filename = path.join(node.dir, filename);
         //RED.log.info('SonosPollyTTS: DEBUG - Leggi Punto 3 - filename : ' + filename);
-
+        
+       
         // Check if cached
         if (fs.existsSync(filename)){
             node.status({fill: 'green',shape: 'ring',text: 'from cache'});
@@ -937,7 +937,10 @@ module.exports = function(RED) {
                 VoiceId: node.iVoice
             };
 
-            synthesizeSpeech([polly, params]).then(data => { return [filename, data.AudioStream]; }).then(cacheSpeech).then(function () {
+           
+        synthesizeSpeech([polly, params]).then(data => { return [filename, data.AudioStream]; }).then(cacheSpeech).then(function () {
+                
+           
                 // Success
                 node.status({});
                 //node.send([msg, null]);
@@ -1028,10 +1031,13 @@ function PlaySonos(_songuri,node){
     if (_songuri.toLowerCase().startsWith("http://")) {
         sUrl=_songuri;
     }else{
-        sUrl= node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
+        sUrl = node.sNoderedURL + RED.settings.httpAdminRoot + "tts/tts.mp3?f=" + encodeURIComponent(_songuri);
     }
 
+    
     node.SonosClient.setVolume(node.sSonosVolume).then(success => {
+
+       
         node.SonosClient.setAVTransportURI(sUrl).then(playing => {
       
             // Polly has ended downloading file
@@ -1068,10 +1074,11 @@ function PlaySonos(_songuri,node){
             var query = url_parts.query;
             //res.download(query.f);
             
-            //RED.log.info("Playsonos RED.httpAdmin search " + query.f);
-            
+              
             res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
             if (fs.existsSync(query.f)) {
+                
+               
                 var readStream = fs.createReadStream(query.f);
                 readStream.on("error", function(err) {
                   fine(err);  
@@ -1080,16 +1087,16 @@ function PlaySonos(_songuri,node){
                 res.end;
             }else
             {
-                RED.log.info("Playsonos RED.httpAdmin file not found: " + query.f);
+                RED.log.error("Playsonos RED.httpAdmin file not found: " + query.f);
                 res.write("File not found");
                 res.end();
             }
             
         } catch (error) {
-            RED.log.info("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
+            RED.log.error("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
         }
         function fine(err){
-            RED.log.info("Playsonos error opening stream : " + query.f + ' : ' + error);
+            RED.log.error("Playsonos error opening stream : " + query.f + ' : ' + error);
             res.end;
         }
     });
