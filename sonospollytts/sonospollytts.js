@@ -555,16 +555,16 @@ module.exports = function(RED) {
         node.iVoice = voices[config.voice].Id;
 
         // Store Noder-Red complete URL
-        if (RED.settings.httpRoot=="/") {
-            // Standard root path, do not add the / otherwise we'll have an error because of double "//"" in the sonos url
-            node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim(); // RED.settings.uiPort
+        // 27/10/2019 Changes made according to new httpRoot habdling, beginning from nodered 0.6.0 https://nodered.org/blog/2014/02/21/version-0-6-0-released
+        if (RED.settings.httpAdminRoot !== "/") {
+            // Set the httpAdminRoot as the tts endpoint root
+            node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim()+ RED.settings.httpAdminRoot; // RED.settings.uiPort
         }else
         {
-            // Add the httpRoot
+            // Add the httpRoot (ignore httpNodeRoot. See above link
             node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim() + RED.settings.httpRoot;
         }
-        
-        RED.log.info('SonosPollyTTS: Node-Red URL: ' + node.sNoderedURL);
+        RED.log.info('SonosPollyTTS: Node-Red Endpoint will be created here: ' + node.sNoderedURL + "tts");
        
         // Create sonos client
         node.SonosClient = new sonos.Sonos(node.sSonosIPAddress);
@@ -1031,9 +1031,9 @@ function PlaySonos(_songuri,node){
     if (_songuri.toLowerCase().startsWith("http://")) {
         sUrl=_songuri;
     }else{
-        sUrl = node.sNoderedURL + RED.settings.httpAdminRoot + "tts/tts.mp3?f=" + encodeURIComponent(_songuri);
+        sUrl = node.sNoderedURL  + "tts/tts.mp3?f=" + encodeURIComponent(_songuri);
     }
-
+    RED.log.info('SonosPollyTTS: PlaySonos - _songuri: ' + _songuri + ' sUrl: '+sUrl);
     
     node.SonosClient.setVolume(node.sSonosVolume).then(success => {
 
@@ -1069,6 +1069,7 @@ function PlaySonos(_songuri,node){
     // query.f contains the filename to be played.
     RED.httpAdmin.get("/tts/tts.mp3", function(req, res) {
         try {
+            
             var url = require('url');
             var url_parts = url.parse(req.url, true);
             var query = url_parts.query;
