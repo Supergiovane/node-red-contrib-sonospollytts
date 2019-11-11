@@ -477,8 +477,6 @@ module.exports = function(RED) {
     function PollyConfigNode(config) {
         RED.nodes.createNode(this, config);
 
-        RED.log.info('SonosPollyTTS: ConfigNode:' + config);
-
         if (this.credentials) {
             this.accessKey = this.credentials.accessKey;
             this.secretKey = this.credentials.secretKey;
@@ -556,15 +554,22 @@ module.exports = function(RED) {
 
         // Store Noder-Red complete URL
         // 27/10/2019 Changes made according to new httpRoot habdling, beginning from nodered 0.6.0 https://nodered.org/blog/2014/02/21/version-0-6-0-released
-        if (RED.settings.httpAdminRoot !== "/") {
-            // Set the httpAdminRoot as the tts endpoint root
-            node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim()+ RED.settings.httpAdminRoot; // RED.settings.uiPort
-        }else
-        {
-            // Add the httpRoot (ignore httpNodeRoot. See above link
-            node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim() + RED.settings.httpRoot;
+        // if (RED.settings.httpAdminRoot !== "/") {
+        //     // Set the httpAdminRoot as the tts endpoint root
+        //     node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim()+ RED.settings.httpAdminRoot; // RED.settings.uiPort
+        // }else
+        // {
+        //     // Add the httpRoot (ignore httpNodeRoot. See above link
+        //     node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim() + RED.settings.httpRoot;
+        // }
+
+        // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
+        if (config.noderedport.trim() == "1880") {
+            RED.log.warn("SonosPollyTTS: The webserver port ist 1880. Please change it to another port, not to conflict with default node-red 1880 port. I've changed this temporarly for you to 1980");
+            config.noderedport = "1980";
         }
-        RED.log.info('SonosPollyTTS: Node-Red Endpoint will be created here: ' + node.sNoderedURL + "tts");
+        node.sNoderedURL = "http://" + config.noderedipaddress.trim() + ":" + config.noderedport.trim(); // 11/11/2019 New Endpoint to overcome https problem.
+        RED.log.info('SonosPollyTTS: Node-Red node.js Endpoint will be created here: ' + node.sNoderedURL + "/tts");
        
         // Create sonos client
         node.SonosClient = new sonos.Sonos(node.sSonosIPAddress);
@@ -703,6 +708,49 @@ module.exports = function(RED) {
         this.on('close', function () {
             clearTimeout(node.oTimer);
         });
+
+
+
+        // 11/11/2019 CREATE THE ENDPOINT
+        const http = require('http')
+        const port = config.noderedport.trim();
+        const requestHandler = (req, res) => {
+            try {
+                    
+                var url = require('url');
+                var url_parts = url.parse(req.url, true);
+                var query = url_parts.query;
+                
+                res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
+                if (fs.existsSync(query.f)) {
+                    var readStream = fs.createReadStream(query.f);
+                    readStream.on("error", function(err) {
+                    fine(err);  
+                    });
+                    readStream.pipe(res);
+                    res.end;
+                }else
+                {
+                    RED.log.error("Playsonos RED.httpAdmin file not found: " + query.f);
+                    res.write("File not found");
+                    res.end();
+                }
+                
+            } catch (error) {
+                RED.log.error("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
+            }
+            function fine(err){
+                RED.log.error("Playsonos error opening stream : " + query.f + ' : ' + error);
+                res.end;
+            }
+        }
+        const server = http.createServer(requestHandler);
+        server.listen(port, (err) => {
+            if (err) {
+                RED.log.error("SonosPollyTTS: error starting webserver on port " + port, err);
+            }
+        })
+        
     }
     RED.nodes.registerType('sonospollytts', PollyNode);
 
@@ -1028,7 +1076,7 @@ function PlaySonos(_songuri,node){
     var sUrl="";
 
     // Play directly files starting with http://
-    if (_songuri.toLowerCase().startsWith("http://")) {
+    if (_songuri.toLowerCase().startsWith("http://") ) {
         sUrl=_songuri;
     }else{
         sUrl = node.sNoderedURL  + "tts/tts.mp3?f=" + encodeURIComponent(_songuri);
@@ -1065,41 +1113,45 @@ function PlaySonos(_songuri,node){
 
 }
 
+
+
+
+    
     // 25/03/2019 Create the endpoint to listen to the tts. tts.mp3 is a dummy endpoint. Please see query.f
     // query.f contains the filename to be played.
-    RED.httpAdmin.get("/tts/tts.mp3", function(req, res) {
-        try {
+    // RED.httpAdmin.get("/tts/tts.mp3", function(req, res) {
+    //     try {
             
-            var url = require('url');
-            var url_parts = url.parse(req.url, true);
-            var query = url_parts.query;
-            //res.download(query.f);
+    //         var url = require('url');
+    //         var url_parts = url.parse(req.url, true);
+    //         var query = url_parts.query;
+    //         //res.download(query.f);
             
               
-            res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
-            if (fs.existsSync(query.f)) {
+    //         res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
+    //         if (fs.existsSync(query.f)) {
                 
                
-                var readStream = fs.createReadStream(query.f);
-                readStream.on("error", function(err) {
-                  fine(err);  
-                });
-                readStream.pipe(res);
-                res.end;
-            }else
-            {
-                RED.log.error("Playsonos RED.httpAdmin file not found: " + query.f);
-                res.write("File not found");
-                res.end();
-            }
+    //             var readStream = fs.createReadStream(query.f);
+    //             readStream.on("error", function(err) {
+    //               fine(err);  
+    //             });
+    //             readStream.pipe(res);
+    //             res.end;
+    //         }else
+    //         {
+    //             RED.log.error("Playsonos RED.httpAdmin file not found: " + query.f);
+    //             res.write("File not found");
+    //             res.end();
+    //         }
             
-        } catch (error) {
-            RED.log.error("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
-        }
-        function fine(err){
-            RED.log.error("Playsonos error opening stream : " + query.f + ' : ' + error);
-            res.end;
-        }
-    });
+    //     } catch (error) {
+    //         RED.log.error("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
+    //     }
+    //     function fine(err){
+    //         RED.log.error("Playsonos error opening stream : " + query.f + ' : ' + error);
+    //         res.end;
+    //     }
+    // });
 
 }

@@ -7,16 +7,22 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
-<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="100%">
+<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="50%">
 
 ## DESCRIPTION
 This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
 This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api.
 
+<a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
+
+## ---> IMPORTANT - READ THIS <---
+MAJOR CHANGE STARTING FROM ***V1.1.0***, IN HANDLING COMMUNICATIONS BETWEEN NODE-RED AND SONOS. Due to added support for HTTPS installation, the node behaviour has been changed. The node will now create his own webserver, instead of using node-red webserver. This permits to overcome SSL certificate problems with Sonos. If your node-red run behind a firewall, REMEMBER TO FORMWARD the node webserver port (default port is 1980). **If your node-red is running behind a firewall and you ran an older version, remember to add a rule in your firewall, to forward the new port. The old configured port 1880 is not valid anymore and the node will default to 1980 instead.**
+
 ## CHANGELOG
 * See <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">here the changelog</a>
 
 ## FEATURES
+* Works with node-red in HTTP and in HTTPS mode.
 * TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.
 * TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.

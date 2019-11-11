@@ -55,6 +55,11 @@
 
 
 <script type="text/x-red" data-template-name="sonospollytts">
+     
+    <div class="form-row">
+        <div><b>MAJOR CHANGE STARTING FROM ***V1.1.0***</b>, IN HANDLING COMMUNICATIONS BETWEEN NODE-RED AND SONOS. Due to added support for HTTPS installation, the node behaviour has been changed. The node will now create his own webserver, instead of using node-red webserver. This permits to overcome SSL certificate problems with Sonos. If your node-red run behind a firewall, REMEMBER TO FORMWARD the node webserver port (default port is 1980). **If your node-red is running behind a firewall and you ran an older version, remember to add a rule in your firewall, to forward the new port. The old configured port 1880 is not valid anymore and the node will default to 1980 instead.**</div>
+    </div>
+
     <div class="form-row">
         <label for="node-input-config"><i class="icon-tag"></i> Polly Config</label>
         <input type="text" id="node-input-config">
@@ -153,13 +158,18 @@
         <input type="text" id="node-input-noderedipaddress">
     </div>
     <div class="form-row">
-        <label for="node-input-noderedport"><i class="fa fa-globe"></i> Node-Red Port, normally 1880</label>
+        <label for="node-input-noderedport"><i class="fa fa-globe"></i> Webserver port, default 1980</label>
         <input type="text" id="node-input-noderedport">
+        <div> <i>The node will create a webserver, listening on this port, to serve files to Sonos.<br/>Sonos will connect to this port ans starts playing.<br/>Please do not use 1880, that's the default node-red port.</i></div>
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="sonospollytts">
-
+    <p>
+        <a href="https://www.paypal.me/techtoday" target="_blank"><img src='https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square' width='30%'></a>
+        and
+        <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel</a> for news about my nodes.
+    </p>
     <p>
         This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and requires <b>NODE 8.9.x</b> or higher.
     </p>
@@ -190,7 +200,7 @@
         <code>Sonos Volume</code> set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
         <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
         <code>Node-Red IP</code> set IP of your node-red<br/>
-        <code>Node-Red Port</code> normally 1880. If you've changed the default port, adjust this field consequently<br/>
+        <code>Webserver port</code> default 1980. If you are behind firewall, remember to forward this port.<br/>
         <code>Temp folder</code> you can change the temp folder for storing cached TTS files. Default is "/tmp". Note that if you change that, you need to run node-red with user able to access the filesystem.
     </p>
 
@@ -255,7 +265,7 @@
             },
             noderedport:
             {
-                value: "1880",
+                value: "1980",
                 required:true,
                 type:"text"
             },
