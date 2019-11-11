@@ -522,7 +522,8 @@ module.exports = function(RED) {
         node.sSonosIPAddress="";
         node.sHailingFile=""; // Hailing file
         node.bNoHailing=false; // Dont't play Hailing music temporarely (from msg node ommand "nohailing="true")
-        node.msg={}; // 08/05/2019 Node message
+        node.msg = {}; // 08/05/2019 Node message
+        node.oWebserver; // 11/11/2019 Stores the Webserver
 
         // 03/06/2019 you can select the temp dir
         if (!setupDirectory(config.dir)) {
@@ -587,20 +588,7 @@ module.exports = function(RED) {
         // Start the TTS queue timer
         node.oTimer=setTimeout(function(){HandleQueue(node);},5000);
 
-        
-        // Hook the Playstate event
-        /* node.SonosClient.on('PlayState', state => {
-            node.sSonosPlayState=state;
-            RED.log.info('SonosPollyTTS: node.SonosClient.on Paystate: ' + node.sSonosPlayState);
-        }); */
-
-        // Hook the current track
-        /* node.SonosClient.on('CurrentTrack', track => {
-            node.sSonosTrackTitle=track.uri;//track.title;
-            //RED.log.info('SonosPollyTTS: node.SonosClient.on CurrentTrack: ' + JSON.stringify(track));
-            //RED.log.info('SonosPollyTTS: node.SonosClient.on CurrentTrack: ' + node.sSonosTrackTitle);
-          });
- */
+      
           // Downloads hailing.mp3
           // Check if the file already exist
         node.sHailingFile=config.sonoshailing;
@@ -638,32 +626,29 @@ module.exports = function(RED) {
                         }
                       });
 
-
-/*                     // This line opens the file as a readable stream
-                    var readStream = fs.createReadStream(__dirname +"/"+node.sHailingFile);
-
-                    // This will wait until we know the readable stream is actually valid before piping
-                    readStream.on('open', function () {
-                        // This just pipes the read stream to the response object (which goes to the client)
-                        readStream.pipe(fs.createWriteStream(path.join(config.dir, node.sHailingFile)));    
-                        
-                    });
-
-                    // This catches any errors that happen while creating the readable stream (usually invalid names)
-                    readStream.on('error', function(err) {
-                        RED.log.info('SonosPollyTTS: Error moving hailing.mp3 to temp dir : ' + err);
-                    }); */               
- }
+            };
           }
           
-          
+          node.status({
+            fill: 'green',
+            shape: 'ring',
+            text: 'Ready'});
 
         this.on('input', function(msg) {
             // 12/06/2018 Controllo se il payload è un'impostazione del volume
             if (msg.hasOwnProperty("volume")) {
                 node.sSonosVolume=msg.volume;
             }  
+           
+            try {
+                node.status({
+                    fill: 'yellow',
+                    shape: 'dot',
+                    text: 'Processing ' + msg.payload });
+            } catch (error) {                
+            }
             
+
             // 17/04/2019 Verifico se possso mandare in play l'hailing
             if (msg.hasOwnProperty("nohailing")) {
                 if (msg.nohailing=="1" || msg.nohailing.toLowerCase()=="true")
@@ -707,13 +692,20 @@ module.exports = function(RED) {
 
         this.on('close', function () {
             clearTimeout(node.oTimer);
+            // 11/11/2019 Close the Webserver
+            try {
+                node.oWebserver.close(function () { RED.log.info("SonosPollyTTS: Webserver UP. Closing down."); });
+            } catch (error) {
+                
+            }
+            
         });
 
 
 
         // 11/11/2019 CREATE THE ENDPOINT
         const http = require('http')
-        const port = config.noderedport.trim();
+        const sWebport = config.noderedport.trim();
         const requestHandler = (req, res) => {
             try {
                     
@@ -744,12 +736,26 @@ module.exports = function(RED) {
                 res.end;
             }
         }
-        const server = http.createServer(requestHandler);
-        server.listen(port, (err) => {
-            if (err) {
-                RED.log.error("SonosPollyTTS: error starting webserver on port " + port, err);
-            }
-        })
+        
+       
+        try {
+            node.oWebserver = http.createServer(requestHandler);
+        } catch (error) {
+            // Already open. Close it and redo.
+            RED.log.error("SonosPollyTTS: Webserver creation error: " + error);
+        }
+
+        try {
+            node.oWebserver.listen(sWebport, (err) => {
+                if (err) {
+                    RED.log.error("SonosPollyTTS: error starting webserver on port " + sWebport, err);
+                }
+            })
+        } catch (error) {
+            // In case oWebserver is null
+            RED.log.error("SonosPollyTTS: error starting webserver on port " + sWebport, error);
+        }
+       
         
     }
     RED.nodes.registerType('sonospollytts', PollyNode);
@@ -804,14 +810,14 @@ module.exports = function(RED) {
                     node.sSonosTrackTitle=track.uri;
                     HandleQueue2(node);
                 }).catch(err=>{
-                    node.status({fill:"red", shape:"dot", text:"err currtrack"});
+                    node.status({fill:"red", shape:"dot", text:"err currtrack: " + err});
                     node.sSonosTrackTitle="stopped"; // force stopped
                     HandleQueue2(node);
                 }); // node.SonosClient.currentTrack().then(track=>{
                     
                 
             }).catch(err=>{
-                node.status({fill:"red", shape:"dot", text:"err currstate"});
+                node.status({fill:"red", shape:"dot", text:"err currstate: " + err});
                 node.sSonosTrackTitle="stopped"; // force stopped
                 //HandleQueue2(node);
     

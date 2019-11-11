@@ -55,11 +55,9 @@
 
 
 <script type="text/x-red" data-template-name="sonospollytts">
-     
-    <div class="form-row">
-        <div><b>MAJOR CHANGE STARTING FROM ***V1.1.0***</b>, IN HANDLING COMMUNICATIONS BETWEEN NODE-RED AND SONOS. Due to added support for HTTPS installation, the node behaviour has been changed. The node will now create his own webserver, instead of using node-red webserver. This permits to overcome SSL certificate problems with Sonos. If your node-red run behind a firewall, REMEMBER TO FORMWARD the node webserver port (default port is 1980). **If your node-red is running behind a firewall and you ran an older version, remember to add a rule in your firewall, to forward the new port. The old configured port 1880 is not valid anymore and the node will default to 1980 instead.**</div>
-    </div>
-
+    
+    <div><b>MAJOR CHANGE STARTING FROM ***V1.1.0***</b>, IN HANDLING COMMUNICATIONS BETWEEN NODE-RED AND SONOS. Due to added support for HTTPS installation, the node behaviour has been changed. The node will now create his own webserver, instead of using node-red webserver. This permits to overcome SSL certificate problems with Sonos. If your node-red run behind a firewall, REMEMBER TO FORMWARD the node webserver port (default port is 1980). **If your node-red is running behind a firewall and you ran an older version, remember to add a rule in your firewall, to forward the new port. The old configured port 1880 is not valid anymore and the node will default to 1980 instead.**</div>
+    <br/>
     <div class="form-row">
         <label for="node-input-config"><i class="icon-tag"></i> Polly Config</label>
         <input type="text" id="node-input-config">
@@ -280,7 +278,7 @@
         icon: "sonospollytts.png",
         label: function()
         {
-            return this.name || "sonospollytts";
+            return this.name || "SonosPollyTTS";
         }
     });
 </script>
