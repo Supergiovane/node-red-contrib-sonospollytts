@@ -33,9 +33,11 @@ MAJOR CHANGE STARTING FROM ***V1.1.0***, IN HANDLING COMMUNICATIONS BETWEEN NODE
 * Sonos IP: insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)
 * Sonos Volume: set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
 * Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
+* Customizing Hailing sounds: Replace the hailing.mp3 in the \node_modules\node-red-contrib-sonospollytts\sonospollytts folder with your own MP3 (needs to have the same name). Replacing the hailing.mp3 in the \tmp folder will only work until the next restart of Node-Red.
 * Node-Red IP: set IP of your node-red
 * Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently
 * Temp folder: you can change the temp folder for storing cached TTS files. Default is "tmp"
+* MP3 Files: Serve them with msg:payload and then a valid HTTP URL to the MP3 e.g. http://mywebsite.com/terst.mp3
 
 ## INPUT
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
