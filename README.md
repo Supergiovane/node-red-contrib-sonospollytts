@@ -15,9 +15,6 @@ This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos a
 
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
-## ---> IMPORTANT - READ THIS <---
-MAJOR CHANGE STARTING FROM ***V1.1.0***, IN HANDLING COMMUNICATIONS BETWEEN NODE-RED AND SONOS. Due to added support for HTTPS installation, the node behaviour has been changed. The node will now create his own webserver, instead of using node-red webserver. This permits to overcome SSL certificate problems with Sonos. If your node-red run behind a firewall, REMEMBER TO FORMWARD the node webserver port (default port is 1980). **If your node-red is running behind a firewall and you ran an older version, remember to add a rule in your firewall, to forward the new port. The old configured port 1880 is not valid anymore and the node will default to 1980 instead.**
-
 ## CHANGELOG
 * See <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">here the changelog</a>
 
@@ -33,14 +30,14 @@ MAJOR CHANGE STARTING FROM ***V1.1.0***, IN HANDLING COMMUNICATIONS BETWEEN NODE
 * Sonos IP: insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)
 * Sonos Volume: set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
 * Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
-* Node-Red IP: set IP of your node-red
-* Node-Red Port: normally 1880. If you've changed the default port, adjust this field consequently
+* Node-Red IP: set IP of your node-red machine
+* Host Port: normally 1980. This is the IP of your machine, running node-red
 * Temp folder: you can change the temp folder for storing cached TTS files. Default is "tmp"
 
 ## INPUT
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
 * <code>msg.nohailing</code> temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)
-* <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";)
+* <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";). You can pass to the payload, an URL as well, for example "http://mysite.com/mymp3.mp3.
 
 ## OUTPUT
 * <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing
