@@ -7,6 +7,7 @@ module.exports = function(RED) {
     var MD5 = require('crypto-js').MD5;
     var util = require('util');
     var path = require('path');
+    var multer = require('multer'); // 15/11/2019 Upload files helper
     const sonos = require('sonos');
 
    
@@ -525,6 +526,13 @@ module.exports = function(RED) {
         node.msg = {}; // 08/05/2019 Node message
         node.oWebserver; // 11/11/2019 Stores the Webserver
 
+
+        // 20/11/2019 Used to call the status update
+        node.setNodeStatus = ({ fill, shape, text }) => {
+            var dDate = new Date();
+            node.status({ fill: fill, shape: shape, text: text + " (" + dDate.getDate() + ", " + dDate.toLocaleTimeString() + ")" });
+        }
+
         // 03/06/2019 you can select the temp dir
         if (!setupDirectory(config.dir)) {
             RED.log.info('SonosPollyTTS: Unable to set up cache directory: ' + config.dir);
@@ -582,7 +590,7 @@ module.exports = function(RED) {
          // 24/06/2019 removed because everityme you update the flow, Sonos Volume is resetting, annoying the user.
         /* node.SonosClient.setVolume(node.sSonosVolume).then(volume => {}).catch(err => { 
              node.error(JSON.stringify(err));
-             node.status({fill:"red", shape:"dot", text:"Error: failed to set volume"});
+             node.setNodeStatus({fill:"red", shape:"dot", text:"Error: failed to set volume"});
             }); */
 
         // Start the TTS queue timer
@@ -629,7 +637,7 @@ module.exports = function(RED) {
             };
           }
           
-          node.status({
+          node.setNodeStatus({
             fill: 'green',
             shape: 'ring',
             text: 'Ready'});
@@ -641,7 +649,7 @@ module.exports = function(RED) {
             }  
            
             try {
-                node.status({
+                node.setNodeStatus({
                     fill: 'yellow',
                     shape: 'dot',
                     text: 'Processing ' + msg.payload });
@@ -704,15 +712,28 @@ module.exports = function(RED) {
 
 
         // 11/11/2019 CREATE THE ENDPOINT
+        // #################################
         const http = require('http')
         const sWebport = config.noderedport.trim();
         const requestHandler = (req, res) => {
             try {
-                    
+                
                 var url = require('url');
                 var url_parts = url.parse(req.url, true);
                 var query = url_parts.query;
-                
+
+                // 15/11/2019 Upload files section
+                var storage = multer.diskStorage({
+                    destination: function(req, file, cb) {
+                        cb(null, './upload');
+                    },
+                    filename: function (req, file, cb) {
+                        cb(null , file.originalname);
+                    }
+                });
+                var upload = multer({ storage: storage })
+               
+
                 res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
                 if (fs.existsSync(query.f)) {
                     var readStream = fs.createReadStream(query.f);
@@ -740,6 +761,13 @@ module.exports = function(RED) {
        
         try {
             node.oWebserver = http.createServer(requestHandler);
+            node.oWebserver.on('error', function (e) {
+                RED.log.error("SonosPollyTTS: " + node.ID + " error starting webserver on port " + sWebport + " " + e);
+                node.setNodeStatus({
+                    fill: 'red',
+                    shape: 'dot',
+                    text: 'Error. Port ' + sWebport + " already in use."});
+              });
         } catch (error) {
             // Already open. Close it and redo.
             RED.log.error("SonosPollyTTS: Webserver creation error: " + error);
@@ -748,15 +776,19 @@ module.exports = function(RED) {
         try {
             node.oWebserver.listen(sWebport, (err) => {
                 if (err) {
-                    RED.log.error("SonosPollyTTS: error starting webserver on port " + sWebport, err);
+                    RED.log.error("SonosPollyTTS: error listening webserver on port " + sWebport + " " + err);
                 }
-            })
+            });
+            
         } catch (error) {
             // In case oWebserver is null
-            RED.log.error("SonosPollyTTS: error starting webserver on port " + sWebport, error);
+            RED.log.error("SonosPollyTTS: error listening webserver on port " + sWebport + " " + error);
         }
-       
+       // #################################
         
+        
+        
+
     }
     RED.nodes.registerType('sonospollytts', PollyNode);
 
@@ -785,7 +817,7 @@ module.exports = function(RED) {
             } 
 
             // Not cached
-            node.status({
+            node.setNodeStatus({
                 fill: 'yellow',
                 shape: 'dot',
                 text: 'downloading'});
@@ -810,14 +842,14 @@ module.exports = function(RED) {
                     node.sSonosTrackTitle=track.uri;
                     HandleQueue2(node);
                 }).catch(err=>{
-                    node.status({fill:"red", shape:"dot", text:"err currtrack: " + err});
+                    node.setNodeStatus({fill:"red", shape:"dot", text:"err currtrack: " + err});
                     node.sSonosTrackTitle="stopped"; // force stopped
                     HandleQueue2(node);
                 }); // node.SonosClient.currentTrack().then(track=>{
                     
                 
             }).catch(err=>{
-                node.status({fill:"red", shape:"dot", text:"err currstate: " + err});
+                node.setNodeStatus({fill:"red", shape:"dot", text:"err currstate: " + err});
                 node.sSonosTrackTitle="stopped"; // force stopped
                 //HandleQueue2(node);
     
@@ -844,9 +876,7 @@ module.exports = function(RED) {
 
     // Handle queue 2 
     function HandleQueue2(node){
-
-        //RED.log.info('SonosPollyTTS: DEBUG HandleQueue2 - CheckState: ' + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
-
+         //RED.log.error('SonosPollyTTS: HandleQueue2 - DEBUG ' +node.sSonosIPAddress + " " + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
 
         // Play next msg
         if (node.aMessageQueue.length>0) {
@@ -856,19 +886,14 @@ module.exports = function(RED) {
             // If playing TTS message, waits until it's finished.
             if (node.sSonosPlayState=="stopped" || node.sSonosPlayState=="paused")
             {
-                //RED.log.info('SonosPollyTTS: DEBUG HandleQueue2 - Punto 1 - CheckState: ' + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
-
                 var sMsg=node.aMessageQueue[0];
-                //RED.log.info('SonosPollyTTS: DEBUG HandleQueue2 - Punto 2 - sMsg: ' + sMsg + " node.aMessageQueue.lenght:" + node.aMessageQueue.length);
-
+               
                 // Remove the TTS message from the queue
                 node.aMessageQueue.splice(0,1);
-                
-                //RED.log.info('SonosPollyTTS: DEBUG HandleQueue2 - Punto 3 - sMsg: ' + sMsg + " node.aMessageQueue.lenght:" + node.aMessageQueue.length);
-
+               
                 node.sPollyState="transitioning"; 
                 node.sSonosPlayState="transitioning";
-                node.status({
+                node.setNodeStatus({
                 fill: 'yellow',
                 shape: 'dot',
                 text: 'preparing...'});
@@ -877,31 +902,32 @@ module.exports = function(RED) {
                 // Set  timeout
                 node.oTimer=setTimeout(function(){HandleQueue(node);},500);
             
+            } else if (node.sSonosPlayState == "playing" && node.sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3") == -1) {
             
-            
-            }else if(node.sSonosPlayState=="playing" && node.sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3")==-1) {
                 RED.log.info('SonosPollyTTS: HandleQueue2 - stopping: ' + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
                 
                 // It's playing something. Stop
                 node.SonosClient.pause().then(success=>{
                     RED.log.info('SonosPollyTTS: HandleQueue2 - stopped: ' + success + " " + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
-
                     var sMsg=node.aMessageQueue[0];
-                
-                    // Remove the TTS message from the queue
-                    node.aMessageQueue.splice(0,1);
-                    
+                    node.aMessageQueue.splice(0,1); // Remove the TTS message from the queue
                     node.sPollyState="transitioning"; 
                     node.sSonosPlayState="transitioning";
                     // Create the TTS mp3 with Polly
                     Leggi(sMsg,node);
-                    //node.SonosClient.flush().then(success=>{
                     // Start the TTS queue timer
                     node.oTimer=setTimeout(function(){HandleQueue(node);},500);
-                    //});
                 
                 }).catch(err => { 
-                    node.status({fill:"red", shape:"dot", text:"error pausing"});
+                    node.setNodeStatus({fill:"red", shape:"dot", text:node.sSonosIPAddress + " Error pausing: " + err});
+                    // 15/11/2019 Workaround for grouping
+                    var sMsg = node.aMessageQueue[0];
+                    node.aMessageQueue.splice(0,1); // Remove the TTS message from the queue
+                    node.sPollyState="transitioning"; 
+                    node.sSonosPlayState="transitioning";
+                    // Create the TTS mp3 with Polly
+                    Leggi(sMsg,node);
+
                     // Set  timeout
                     node.oTimer=setTimeout(function(){HandleQueue(node);},500);
                 });
@@ -909,7 +935,7 @@ module.exports = function(RED) {
             }else
             {
                 // Reset status
-                node.status({fill:"green", shape:"dot", text:"" + node.sSonosPlayState});
+                node.setNodeStatus({fill:"green", shape:"dot", text:"" + node.sSonosPlayState});
                 // Start the TTS queue timer
                 node.oTimer=setTimeout(function(){HandleQueue(node);},500);
                 
@@ -918,13 +944,13 @@ module.exports = function(RED) {
         }else{
             // Start the TTS queue timer
             node.oTimer=setTimeout(function(){HandleQueue(node);},500);
-            node.status({fill:"green", shape:"dot", text:"ready"});
-    
+               
             // 07/05/2019 Check if i have ended playing the queue as well
             if (node.msg.completed==false && node.sSonosPlayState=="stopped")
             {
                 node.msg.completed=true;
                 node.send(node.msg);
+                node.setNodeStatus({fill:"green", shape:"ring", text:"" + node.sSonosPlayState});
             }
 
         }
@@ -965,7 +991,7 @@ module.exports = function(RED) {
        
         // Check if cached
         if (fs.existsSync(filename)){
-            node.status({fill: 'green',shape: 'ring',text: 'from cache'});
+            node.setNodeStatus({fill: 'green',shape: 'ring',text: 'from cache'});
             RED.log.info('SonosPollyTTS: DEBUG - fromcache : ' + filename);    
             PlaySonos(filename, node);
             return;
@@ -980,7 +1006,7 @@ module.exports = function(RED) {
             // };
 
             // Not cached
-            node.status({fill: 'yellow',shape: 'dot',text: 'asking online'});
+            node.setNodeStatus({fill: 'yellow',shape: 'dot',text: 'asking online'});
 
         
             var params = {
@@ -994,14 +1020,8 @@ module.exports = function(RED) {
            
         synthesizeSpeech([polly, params]).then(data => { return [filename, data.AudioStream]; }).then(cacheSpeech).then(function () {
                 
-           
-                // Success
-                node.status({});
-                //node.send([msg, null]);
-
                 // Play
                 PlaySonos(filename, node);
-
 
             }).catch(error => { notifyError(node, filename, error); });
          //});
@@ -1059,7 +1079,7 @@ module.exports = function(RED) {
         // Output error to console
         //RED.log.error('SonosPollyTTS synthesizeSpeech: ' + errorMessage);
         // Mark node as errounous
-        node.status({
+        node.setNodeStatus({
             fill: 'red',
             shape: 'dot',
             text: 'Error: ' + errorMessage
@@ -1085,7 +1105,7 @@ function PlaySonos(_songuri,node){
     if (_songuri.toLowerCase().startsWith("http://") ) {
         sUrl=_songuri;
     }else{
-        sUrl = node.sNoderedURL  + "tts/tts.mp3?f=" + encodeURIComponent(_songuri);
+        sUrl = node.sNoderedURL  + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
     }
     RED.log.info('SonosPollyTTS: PlaySonos - _songuri: ' + _songuri + ' sUrl: '+sUrl);
     
@@ -1097,7 +1117,7 @@ function PlaySonos(_songuri,node){
             // Polly has ended downloading file
             node.sPollyState="done";
              // Signalling
-             node.status({
+             node.setNodeStatus({
                 fill: 'green',
                 shape: 'dot',
                 text: 'Playing'
@@ -1107,7 +1127,7 @@ function PlaySonos(_songuri,node){
                 // Polly has ended downloading file
                 node.sPollyState="done";  
                  // Signalling
-                node.status({
+                node.setNodeStatus({
                     fill: 'red',
                     shape: 'dot',
                     text: 'Error Transport'
@@ -1123,16 +1143,16 @@ function PlaySonos(_songuri,node){
 
 
     
-    // 25/03/2019 Create the endpoint to listen to the tts. tts.mp3 is a dummy endpoint. Please see query.f
-    // query.f contains the filename to be played.
-    // RED.httpAdmin.get("/tts/tts.mp3", function(req, res) {
+    // // 25/03/2019 Create the endpoint to listen to the tts. tts.mp3 is a dummy endpoint. Please see query.f
+    // RED.httpAdmin.post("/upload", function(req, res) {
     //     try {
             
     //         var url = require('url');
     //         var url_parts = url.parse(req.url, true);
     //         var query = url_parts.query;
     //         //res.download(query.f);
-            
+    //         RED.log.error("multer url_parts: " + url_parts + " file: " + req.file);
+                
               
     //         res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
     //         if (fs.existsSync(query.f)) {

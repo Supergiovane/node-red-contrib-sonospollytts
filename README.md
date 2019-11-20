@@ -1,5 +1,8 @@
 # Node-Red SonosPollyTTS
 
+
+![Sample Node](img/logo.png) 
+
 [![NPM version][npm-version-image]][npm-url]
 [![NPM downloads per month][npm-downloads-month-image]][npm-url]
 [![NPM downloads total][npm-downloads-total-image]][npm-url]
@@ -7,13 +10,13 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
-<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="50%">
+<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="40%">
 
 ## DESCRIPTION
 This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
 This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api.
 
-<a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday)  and <a href="http://eepurl.com/gJm095" target="_blank">subscribe to my channel</a> for the latest news, if you enjoy my node.
 
 ## CHANGELOG
 * See <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">here the changelog</a>
@@ -25,19 +28,43 @@ This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos a
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
 
 ## CONFIGURATION
-* Polly Config: create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: <b>"The security token included in the request is invalid."</b>
-* Polly Voice: select your preferred voice
-* Sonos IP: insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)
-* Sonos Volume: set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
-* Sonos Hailing: before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
-* Node-Red IP: set IP of your node-red machine
-* Host Port: normally 1980. This is the IP of your machine, running node-red
-* Temp folder: you can change the temp folder for storing cached TTS files. Default is "tmp"
+
+**Polly Config**
+Create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: *"The security token included in the request is invalid."*
+
+**Polly Voice**
+Select your preferred voice
+
+**Sonos IP** 
+Insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)
+
+**Sonos Volume** 
+set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
+
+**Sonos Hailing**
+before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
+
+**Node-Red IP**
+set IP of your node-red machine
+
+**Host Port**
+normally 1980. This is the IP of your machine, running node-red
+
+**Temp folder**
+you can change the temp folder for storing cached TTS files. Default is "tmp"
 
 ## INPUT
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
 * <code>msg.nohailing</code> temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)
-* <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";). You can pass to the payload, an URL as well, for example "http://mysite.com/mymp3.mp3.
+* <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";). You can pass to the payload, an URL as well, for example "http://mysite.com/mymp3.mp3". 
+You can also play an mp3 stored on an http server, by passing the URL to the payload ( <code>msg.payload = "http://www.myserver.com/alarm.mp3"</code>)
+
+*Example of using http mp3 in a function node*
+
+```js
+node.send({payload:"http://192.125.22.44/intruderalarm.mp3"};
+node.send({payload:"Warning. Intruder in the dinning room."};
+```
 
 ## OUTPUT
 * <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing

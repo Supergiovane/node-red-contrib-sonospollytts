@@ -52,8 +52,6 @@
 </script>
 
 
-
-
 <script type="text/x-red" data-template-name="sonospollytts">
     
     <div class="form-row">
@@ -133,10 +131,6 @@
         <input type="text" id="node-input-dir">
     </div>
     <div class="form-row">
-        <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Sonos IP</label>
-        <input type="text" id="node-input-sonosipaddress">
-    </div>
-    <div class="form-row">
         <label for="node-input-sonosipaddress"><i class="fa fa-volume-up"></i> Sonos Volume</label>
         <input type="text" id="node-input-sonosvolume">
     </div>
@@ -150,6 +144,10 @@
         </select>
     </div>
     <div class="form-row">
+        <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Sonos IP</label>
+        <input type="text" id="node-input-sonosipaddress">
+    </div>
+    <div class="form-row">
         <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
         <input type="text" id="node-input-noderedipaddress">
     </div>
@@ -159,6 +157,8 @@
         <div> <i>The node will create a webserver, listening on this port, to serve files to Sonos.<br/>Sonos will connect to this port ans starts playing.<br/>Please do not use 1880, that's the default node-red port.</i></div>
     </div>
 </script>
+
+
 
 <script type="text/x-red" data-help-name="sonospollytts">
     <p>
