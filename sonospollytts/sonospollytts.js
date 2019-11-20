@@ -7,7 +7,6 @@ module.exports = function(RED) {
     var MD5 = require('crypto-js').MD5;
     var util = require('util');
     var path = require('path');
-    var multer = require('multer'); // 15/11/2019 Upload files helper
     const sonos = require('sonos');
 
    
@@ -722,17 +721,7 @@ module.exports = function(RED) {
                 var url_parts = url.parse(req.url, true);
                 var query = url_parts.query;
 
-                // 15/11/2019 Upload files section
-                var storage = multer.diskStorage({
-                    destination: function(req, file, cb) {
-                        cb(null, './upload');
-                    },
-                    filename: function (req, file, cb) {
-                        cb(null , file.originalname);
-                    }
-                });
-                var upload = multer({ storage: storage })
-               
+              
 
                 res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
                 if (fs.existsSync(query.f)) {

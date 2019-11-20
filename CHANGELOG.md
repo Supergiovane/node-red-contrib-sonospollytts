@@ -6,6 +6,10 @@
 
 
 <p>
+<b>Version 1.1.2</b><br/>
+- Bugfix preventing start.<br/>
+</p>
+<p>
 <b>Version 1.1.1</b><br/>
 - Now should work with grouped sonos devices as well.<br/>
 - Upgraded the status below the node, to show the day and time of the last status update.<br/>
