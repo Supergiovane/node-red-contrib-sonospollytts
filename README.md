@@ -67,6 +67,7 @@ node.send({payload:"Warning. Intruder in the dinning room."};
 
 ## OUTPUT
 * <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing
+* <code>msg.connectionerror</code> <b>true</b> when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>
 
 ## COPY/PASTE IN YOUR NODE-RED FLOW
 
