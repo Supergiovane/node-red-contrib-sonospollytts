@@ -19,7 +19,7 @@
 </p>
 <p>
 <b>Version 1.1.0</b><br/>
-- Now support HTTPS installations.<br/>
+- Now support HTTPS installations-<br/>
 - MAJOR CHANGE IN HANDLING COMMUNICATIONS BETWEEN NODE-RED AND SONOS. Due to added support for HTTPS installation, the node behaviour has been changed. The node will now create his own webserver, instead of using node-red webserver. This permits to overcome SSL certificate problems with Sonos. If your node-red run behind a firewall, REMEMBER TO FORMWARD the node webserver port (default port is 1980)<br/>
 </p>
 <p>
