@@ -1136,7 +1136,7 @@ module.exports = function(RED) {
                 {
                     node.setNodeStatus({fill:"green", shape:"ring", text:"Sonos is connected." });
                     node.msg.connectionerror=false;
-                    node.send({ "connectionerror": node.msg.connectionerror });
+                    node.send({"connectionerror": node.msg.connectionerror });
                 }
                 node.oTimerSonosConnectionCheck = setTimeout(function () { CheckSonosConnection(node); }, 2000);
                 
@@ -1147,7 +1147,7 @@ module.exports = function(RED) {
                 {
                     node.setNodeStatus({fill:"red", shape:"dot", text:"Sonos connection is DOWN: " + err });
                     node.msg.connectionerror = true;
-                    node.send({ "connectionerror": node.msg.connectionerror });
+                    node.send({"connectionerror": node.msg.connectionerror });
                 }
                 node.oTimerSonosConnectionCheck = setTimeout(function () { CheckSonosConnection(node); }, 2000);
                 
