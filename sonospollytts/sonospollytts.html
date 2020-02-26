@@ -24,10 +24,8 @@
         category: 'config',
         defaults:
         {
-            name:
-            {
-                value: ""
-            }
+            name: { value: "" }
+            
         },
         credentials:
         {
@@ -127,9 +125,18 @@
         <input type="checkbox" id="node-input-ssml" style="margin-left: 0px; vertical-align: top; width: auto !important;"> <label style="width:auto !important;"> Enable SSML</label>
     </div>
     <div class="form-row">
-        <label for="node-input-dir"><i class="fa fa-folder-o"></i> Temp folder</label>
+        <label for="node-input-dir"><i class="fa fa-folder-o"></i> TTS path</label>
         <input type="text" id="node-input-dir">
     </div>
+    
+    <div class="form-row">
+        <label for="node-input-purgediratrestart"><i class="fa fa-folder-o"></i> TTS Cache</label>
+        <select id="node-input-purgediratrestart">
+            <option value="purge">Purge and delete the TTS cache folder at deploy or restart(default)</option>
+            <option value="leave">Leave the TTS cache folder untouched (not suggested if you have less disk space)</option>
+        </select>
+    </div>
+
     <div class="form-row">
         <label for="node-input-sonosipaddress"><i class="fa fa-volume-up"></i> Sonos Volume</label>
         <input type="text" id="node-input-sonosvolume">
@@ -198,7 +205,8 @@
         <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
         <code>Node-Red IP</code> set IP of your node-red<br/>
         <code>Webserver port</code> default 1980. If you are behind firewall, remember to forward this port.<br/>
-        <code>Temp folder</code> you can change the temp folder for storing cached TTS files. Default is "/tmp". Note that if you change that, you need to run node-red with user able to access the filesystem.
+        <code>TTS path</code> you can change the temp folder for storing cached TTS files. Default is "/tmp". Note that if you change that, you need to run node-red with user able to access the filesystem.
+        <code>TTS Cache</code> Whether to delete (default) or leave it in places the TTS files in the cache folder on each Deploy or Reboot of node-red. Leaving TTS files in che cache, may put you in a disk space trouble.
     </p>
 
     <p>
@@ -218,10 +226,8 @@
         color: '#ffe6ff', // #ffe6ff
         defaults:
         {
-            name:
-            {
-                value: ""
-            },
+            name:{value: ""},
+            purgediratrestart: { value: "purge",required: true },
             voice:
             {
                 value: "0",

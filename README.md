@@ -50,8 +50,13 @@ set IP of your node-red machine
 **Host Port**
 normally 1980. This is the IP of your machine, running node-red
 
-**Temp folder**
-you can change the temp folder for storing cached TTS files. Default is "tmp"
+**TTS path**
+you can change the temp folder for storing cached TTS files. Default is "tmp". This is valid only if you select to purge the cache folder at each deploy or restart of node-red (see the next option below)
+
+**TTS Cache**
+
+<code>Purge and delete the TTS cache folder at deploy or restart(default)</code>: on each deploy or node-red restart, delete all tts files in the cache. This is useful not to run out of disk space, in case you've a lot of TTS speech files.<br/>
+<code>Leave the TTS cache folder untouched (not suggested if you have less disk space)</code>: don't delete any tts file. Useful if you wish to keep the tts files, even in case of internet outages.
 
 ## INPUT
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
