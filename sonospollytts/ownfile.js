@@ -21,6 +21,16 @@ module.exports = function (RED) {
         res.json(jListOwnFiles)
     });
 
+      // 27/02/2020 Delete OwnFile_
+      RED.httpAdmin.get("/deleteOwnFile", RED.auth.needsPermission('ownfile.read'), function (req, res) {
+          try {
+            var newPath = __dirname + "/ttspermanentfiles/" + req.query.FileName;
+            fs.unlinkSync(newPath)
+          } catch(err) {
+          }
+          res.json({ status: 220 });
+    });
+
     function ownfile(config) {
         RED.nodes.createNode(this, config);
         var node = this;
