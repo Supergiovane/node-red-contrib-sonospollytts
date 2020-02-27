@@ -19,6 +19,22 @@
         },
         oneditprepare: function () {
 
+            $("#node-input-selectedFile").click(function () {
+                // Refresh the combo
+                $('#node-input-selectedFile')
+                    .find('option')
+                    .remove()
+                    .end();
+                $.getJSON("getOwnFilesList", new Date().getTime(), (data) => {
+                    data.sort().forEach(oFile => {
+                        $("#node-input-selectedFile").append($("<option></option>")
+                            .attr("value", oFile.filename)
+                            .text(oFile.name)
+                        )
+                    });
+                });
+            });
+
             // 27/02/2020 Upload  file or files
             $("#ownFileUpload").change(function (e) {
                 var oFiles;
@@ -34,7 +50,20 @@
                         processData: false, //tell jquery not to process data
                         contentType: false,
                         success: function (response, status, jqxhr) {
-                            refreshOwnFileCombo();
+                            // Refresh the combo
+                            $('#node-input-selectedFile')
+                                .find('option')
+                                .remove()
+                                .end();
+                            $.getJSON("getOwnFilesList", new Date().getTime(), (data) => {
+                                data.sort().forEach(oFile => {
+                                    $("#node-input-selectedFile").append($("<option></option>")
+                                        .attr("value", oFile.filename)
+                                        .text(oFile.name)
+                                    )
+                                });
+                                $("#node-input-selectedFile").val(typeof this.selectedFile === "undefined" ? "" : this.selectedFile)
+                            });
                         },
                         error: function (jqxhr, status, errorMessage) {
                             //handle error
@@ -56,29 +85,29 @@
             });
 
 
+
             // Delete selected file
             $("#deleteSelectedFile").click(function () {
-                $.getJSON('deleteOwnFile?FileName=' + $("#node-input-selectedFile").val() , (data) => {
-                    refreshOwnFileCombo();
+                $.getJSON('deleteOwnFile?FileName=' + $("#node-input-selectedFile").val(), (data) => {
+                    // Refresh the combo
+                    $('#node-input-selectedFile')
+                        .find('option')
+                        .remove()
+                        .end();
+                    $.getJSON("getOwnFilesList", new Date().getTime(), (data) => {
+                        data.sort().forEach(oFile => {
+                            $("#node-input-selectedFile").append($("<option></option>")
+                                .attr("value", oFile.filename)
+                                .text(oFile.name)
+                            )
+                        });
+                        $("#node-input-selectedFile").val(typeof this.selectedFile === "undefined" ? "" : this.selectedFile)
+                    });
                 });
             });
 
 
-            function refreshOwnFileCombo() {
-                // Refresh the combo
-                $('#node-input-selectedFile')
-                    .find('option')
-                    .remove()
-                    .end();
-                $.getJSON('getOwnFilesList', (data) => {
-                    data.sort().forEach(oFile => {
-                        $("#node-input-selectedFile").append($("<option></option>")
-                            .attr("value", oFile.filename)
-                            .text(oFile.name)
-                        )
-                    });
-                });
-            }
+
 
         }
     });

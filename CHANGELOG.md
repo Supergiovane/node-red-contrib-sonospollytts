@@ -5,6 +5,10 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
 <p>
+<b>Version 1.1.10</b><br/>
+- Optimized UI for new OwnFile nodes<br/>
+</p>
+<p>
 <b>Version 1.1.9</b><br/>
 - NEW: You can now UPLOAD your own mp3 files and play it via the newly added OwnFile node.<br/>
 - NEW: You can now DELETE your own mp3 files from the OwnFile node config page.<br/>
