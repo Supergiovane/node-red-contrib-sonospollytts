@@ -27,38 +27,40 @@ This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos a
 * TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
 
-## CONFIGURATION
+<br/><br/><br/><br/>
 
-**Polly Config**
+# SONOSPOLLYTTS CONFIGURATION
+
+**Polly Config**<br/>
 Create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: *"The security token included in the request is invalid."*
 
-**Polly Voice**
+**Polly Voice**<br/>
 Select your preferred voice
 
-**Sonos IP** 
+**Sonos IP** <br/>
 Insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)
 
-**Sonos Volume** 
+**Sonos Volume** <br/>
 set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
 
-**Sonos Hailing**
+**Sonos Hailing**<br/>
 before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
 
-**Node-Red IP**
+**Node-Red IP**<br/>
 set IP of your node-red machine
 
-**Host Port**
+**Host Port**<br/>
 normally 1980. This is the IP of your machine, running node-red
 
-**TTS path**
+**TTS path**<br/>
 you can change the temp folder for storing cached TTS files. Default is "tmp". This is valid only if you select to purge the cache folder at each deploy or restart of node-red (see the next option below)
 
 **TTS Cache**
+<br/>
+Purge and delete the TTS cache folder at deploy or restart(default): on each deploy or node-red restart, delete all tts files in the cache. This is useful not to run out of disk space, in case you've a lot of TTS speech files.<br/>
+Leave the TTS cache folder untouched (not suggested if you have less disk space): don't delete any tts file. Useful if you wish to keep the tts files, even in case of internet outages.
 
-<code>Purge and delete the TTS cache folder at deploy or restart(default)</code>: on each deploy or node-red restart, delete all tts files in the cache. This is useful not to run out of disk space, in case you've a lot of TTS speech files.<br/>
-<code>Leave the TTS cache folder untouched (not suggested if you have less disk space)</code>: don't delete any tts file. Useful if you wish to keep the tts files, even in case of internet outages.
-
-## INPUT
+### INPUT MESSAGES TO THE NODE
 * <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
 * <code>msg.nohailing</code> temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)
 * <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";). You can also play an mp3 stored on an http server, by passing the URL to the payload ( <code>msg.payload = "http://www.myserver.com/alarm.mp3"</code>)
@@ -70,11 +72,13 @@ node.send({payload:"http://192.125.22.44/intruderalarm.mp3"};
 node.send({payload:"Warning. Intruder in the dinning room."};
 ```
 
-## OUTPUT
+### OUTPUT MESSAGES FROM THE NODE
 * <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing
 * <code>msg.connectionerror</code> <b>true</b> when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>
 
-## COPY/PASTE IN YOUR NODE-RED FLOW
+<details><summary>View code</summary>
+
+> Adjust the nodes according to your setup
 
 ```js
 [
@@ -243,18 +247,20 @@ node.send({payload:"Warning. Intruder in the dinning room."};
     }
 ]
 ```
+</details>
 
+<br/><br/><br/>
 
-## OWN FILE NODE
+# OWNFILE NODE CONFIGURATION
 
-<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/img/sampleOwnFile.png' width="40%">
+<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/img/sampleOwnFile.png' width="80%">
 
 This node allow you to upload your custom message and play it via SonosPollyTTS without the need of an internet connection. You can use it, for example, with your alarm panel, to annuce a zone breach, a doorbell or so.
 
-**Name**
+**Name**<br/>
 Node name
 
-**File to be player**
+**File to be player**<br/>
 Select a file to be played. You can upload one or multiple files at the same time via the "upload" button.
 
 

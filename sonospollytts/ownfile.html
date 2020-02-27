@@ -34,7 +34,21 @@
                         processData: false, //tell jquery not to process data
                         contentType: false,
                         success: function (response, status, jqxhr) {
-                            //handle success
+                            
+                            // Refresh the combo
+                            $('#node-input-selectedFile')
+                                .find('option')
+                                .remove()
+                                .end();
+                            $.getJSON('getOwnFilesList', (data) => {
+                                data.sort().forEach(oFile => {
+                                    $("#node-input-selectedFile").append($("<option></option>")
+                                        .attr("value", oFile.filename)
+                                        .text(oFile.name)
+                                    )
+                                });
+                            });
+
                         },
                         error: function (jqxhr, status, errorMessage) {
                             //handle error
@@ -68,16 +82,17 @@
         <input type="text" id="node-input-name" placeholder="Own File">
     </div>
     <div class="form-row">
-        <label for="node-input-selectedFile"><i class="fa fa-file"></i> File to be played</label>
+        <label for="node-input-selectedFile"><i class="fa fa-file-audio-o"></i> File to be played</label>
         <select id="node-input-selectedFile"></select> Or upload more files.
     </div>
     <div class="form-row">
-        <label><i class="fa fa-tag"></i> Upload files</label>
+        <label><i class="fa fa-upload"></i> Upload files</label>
         <input id="ownFileUpload" type="file" multiple="multiple">
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="ownfile">
-    <p>Multiple upload of your custom mp3 files.</p>
-    <p>Press the button to upload files.</p>
+    <p>This node allow you to play your own .mp3 file.<br/>
+        You can upload multiple files at once, but only mp3 files are allowed.</p>
+ 
 </script>
