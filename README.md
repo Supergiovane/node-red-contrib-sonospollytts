@@ -10,7 +10,7 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
-<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="40%">
+<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="80%">
 
 ## DESCRIPTION
 This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
