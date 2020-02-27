@@ -263,7 +263,7 @@ Node name
 **File to be player**<br/>
 Select a file to be played. You can upload one or multiple files at the same time via the "upload" button.
 
-### INPUT MESSAGE<br/>
+### INPUT MESSAGE <br/>
 **msg.payload = true**<br/>
 Begin play of the message<br/>
 **msg.selectedFile = "Garage door open"**<br/>
