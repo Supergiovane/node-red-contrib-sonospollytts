@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-sonospollytts",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "Node-Red TTS with Sonos and Amazon Polly or with your own local mp3 announcement files. This node is specific for security alarm announcement, zone announcement, doorbell, weather annoucement etc.",
   "main": "index.js",
   "scripts": {
