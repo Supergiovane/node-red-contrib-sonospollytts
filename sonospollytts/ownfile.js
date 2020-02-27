@@ -56,7 +56,7 @@ module.exports = function (RED) {
                 msg.payload = node.selectedFile;
                 node.send(msg);
             } else {
-                if (msg.hasOwnProperty("selectedFile")) msg.payload = msg.selectedFile;
+                if (msg.hasOwnProperty("selectedFile")) msg.payload = "OwnFile_" + msg.selectedFile.replace(".mp3","") + ".mp3";
                 node.send(msg);
             };
         });

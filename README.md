@@ -263,6 +263,11 @@ Node name
 **File to be player**<br/>
 Select a file to be played. You can upload one or multiple files at the same time via the "upload" button.
 
+### INPUT MESSAGE<br/>
+**msg.payload = true**<br/>
+Begin play of the message<br/>
+**msg.selectedFile = "Garage door open"**<br/>
+Overrides the selected message and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your own files, in the node config window) and do not include the <b>.mp3</b> extenson.<br/>
 
     
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg
