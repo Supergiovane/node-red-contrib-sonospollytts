@@ -1,0 +1,83 @@
+<script type="text/javascript">
+
+    RED.nodes.registerType("ownfile", {
+        category: 'SonosPollyTTS',
+        defaults: {
+            name: { value: "" },
+            selectedFile: { value: "", required: true }
+        },
+        color: '#ffe6ff',
+        inputs: 1,
+        outputs: 1,
+        icon: 'sonospollytts.png',
+        paletteLabel: 'Own File',
+        label: function () {
+            return this.name || this.selectedFile.replace("OwnFile_", '').replace(".mp3", '');
+        },
+        labelStyle: function () {
+            return this.name ? 'node_label_italic' : '';
+        },
+        oneditprepare: function () {
+
+            // 27/02/2020 Upload  file or files
+            $("#ownFileUpload").change(function (e) {
+                var oFiles;
+                oFiles = this.files;
+                $.each(oFiles, function (i, file) {
+                    var fdata = new FormData();
+                    fdata.append("customTTS", file);
+
+                    $.ajax({
+                        url: "node-red-contrib-sonospollytts",
+                        type: "POST",
+                        data: fdata, //add the FormData object to the data parameter
+                        processData: false, //tell jquery not to process data
+                        contentType: false,
+                        success: function (response, status, jqxhr) {
+                            //handle success
+                        },
+                        error: function (jqxhr, status, errorMessage) {
+                            //handle error
+                            alert("Error " + errorMessage + " " + status)
+                        }
+                    });
+                });
+            });
+
+            // Get Ownfile list
+            $.getJSON('getOwnFilesList', (data) => {
+                data.sort().forEach(oFile => {
+                    $("#node-input-selectedFile").append($("<option></option>")
+                        .attr("value", oFile.filename)
+                        .text(oFile.name)
+                    )
+                });
+                $("#node-input-selectedFile").val(typeof this.selectedFile === "undefined" ? "" : this.selectedFile)
+            });
+
+
+
+        }
+    });
+</script>
+
+
+<script type="text/x-red" data-template-name="ownfile">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Own File">
+    </div>
+    <div class="form-row">
+        <label for="node-input-selectedFile"><i class="fa fa-file"></i> File to be played</label>
+        <select id="node-input-selectedFile"></select> Or upload more files.
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-tag"></i> Upload files</label>
+        <input id="ownFileUpload" type="file" multiple="multiple">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="ownfile">
+    <p>Multiple upload of your custom mp3 files.</p>
+    <p>Press the button to upload files.</p>
+</script>

@@ -1,5 +1,3 @@
-<!-- CONFIG -->
-
 <script type="text/x-red" data-template-name="sonospollytts-config">
 
     <div class="form-row">
@@ -16,42 +14,43 @@
         <input type="password" id="node-config-input-secretKey">
     </div>
 
+
+ 
+
 </script>
 
 <script type="text/javascript">
     RED.nodes.registerType('sonospollytts-config',
-    {
-        category: 'config',
-        defaults:
         {
-            name: { value: "" }
-            
-        },
-        credentials:
-        {
-            accessKey:
+            category: 'config',
+            defaults:
             {
-                type: 'text'
+                name: { value: "" }
+
             },
-            secretKey:
+            credentials:
             {
-                type: 'password'
-            }
-        },
-        label: function()
-        {
-            return this.name || "";
-        },
-        oneditprepare: function()
-          {
+                accessKey:
+                {
+                    type: 'text'
+                },
+                secretKey:
+                {
+                    type: 'password'
+                }
+            },
+            label: function () {
+                return this.name || "";
+            },
+            oneditprepare: function () {
            
-          }
-    });
+            }
+        });
 </script>
 
 
 <script type="text/x-red" data-template-name="sonospollytts">
-    
+
     <div class="form-row">
         <label for="node-input-config"><i class="icon-tag"></i> Polly Config</label>
         <input type="text" id="node-input-config">
@@ -199,7 +198,7 @@
     <p>
         <b>CONFIG:</b><br/>
         <code>Polly Config</code> create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: "The security token included in the request is invalid."<br/>
-        <code>Polly Voice</code> select your preferred voice<br/>
+        <code>Polly Voice</code> select your preferred voice.<br/>
         <code>Sonos IP</code> insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
         <code>Sonos Volume</code> set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
         <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
@@ -221,69 +220,68 @@
 
 <script type="text/javascript">
     RED.nodes.registerType('sonospollytts',
-    {
-        category: 'advanced',
-        color: '#ffe6ff', // #ffe6ff
-        defaults:
         {
-            name:{value: ""},
-            purgediratrestart: { value: "purge",required: true },
-            voice:
+            category: 'SonosPollyTTS',
+            color: '#ffe6ff', // #ffe6ff
+            defaults:
             {
-                value: "0",
-                required: true
+                name: { value: "" },
+                purgediratrestart: { value: "purge", required: true },
+                voice:
+                {
+                    value: "0",
+                    required: true
+                },
+                ssml:
+                {
+                    value: false,
+                    required: true
+                },
+                dir:
+                {
+                    value: "/tmp",
+                    required: true
+                },
+                sonosipaddress:
+                {
+                    value: "",
+                    required: true,
+                    type: "text"
+                },
+                sonosvolume:
+                {
+                    value: "20",
+                    required: true,
+                    type: "text"
+                },
+                sonoshailing:
+                {
+                    value: "1",
+                    required: false,
+                },
+                noderedipaddress:
+                {
+                    value: "",
+                    required: true,
+                    type: "text"
+                },
+                noderedport:
+                {
+                    value: "1980",
+                    required: true,
+                    type: "text"
+                },
+                config:
+                {
+                    type: "sonospollytts-config",
+                    required: true
+                }
             },
-            ssml:
-            {
-                value: false,
-                required: true
-            },
-            dir:
-            {
-                value: "/tmp",
-                required: true
-            },
-            sonosipaddress:
-            {
-                value: "",
-                required:true,
-                type:"text"
-            },
-            sonosvolume:
-            {
-                value: "20",
-                required:true,
-                type:"text"
-            },
-            sonoshailing:
-            {
-                value: "1",
-                required:false,
-            },
-            noderedipaddress:
-            {
-                value: "",
-                required:true,
-                type:"text"
-            },
-            noderedport:
-            {
-                value: "1980",
-                required:true,
-                type:"text"
-            },
-            config:
-            {
-                type: "sonospollytts-config",
-                required: true
+            inputs: 1,
+            outputs: 1,
+            icon: "sonospollytts.png",
+            label: function () {
+                return this.name || "SonosPollyTTS";
             }
-        },
-        inputs: 1,
-        outputs:1,        
-        icon: "sonospollytts.png",
-        label: function()
-        {
-            return this.name || "SonosPollyTTS";
-        }
-    });
+        });
 </script>

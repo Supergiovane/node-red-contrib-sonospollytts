@@ -5,6 +5,10 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
 <p>
+<b>Version 1.1.6</b><br/>
+- NEW: You can now UPLOAD your own mp3 files and play it via the newly added OwnFile node.<br/>
+</p>
+<p>
 <b>Version 1.1.5</b><br/>
 - NEW: you can now select whether to purge the TTS cache file at start or to leave all TTS files untouched.<br/>
 </p>

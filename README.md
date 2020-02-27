@@ -244,6 +244,20 @@ node.send({payload:"Warning. Intruder in the dinning room."};
 ]
 ```
 
+
+## OWN FILE NODE
+
+<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/img/sampleOwnFile.png' width="40%">
+
+This node allow you to upload your custom message and play it via SonosPollyTTS without the need of an internet connection. You can use it, for example, with your alarm panel, to annuce a zone breach, a doorbell or so.
+
+**Name**
+Node name
+
+**File to be player**
+Select a file to be played. You can upload one or multiple files at the same time via the "upload" button.
+
+
     
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg
 [license-url]: https://github.com/Supergiovane/node-red-contrib-sonospollytts/master/LICENSE

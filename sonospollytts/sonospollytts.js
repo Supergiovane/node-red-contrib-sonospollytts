@@ -538,8 +538,8 @@ module.exports = function (RED) {
         // 26/02/2020
         if (node.purgediratrestart == "leave") {
             // Change the temp dir acccordingly, to a folder inside the current path of sonospollytts
-            config.dir=__dirname + "/ttspermanentfiles"
-         };
+            config.dir = __dirname + "/ttspermanentfiles"
+        };
 
         // 03/06/2019 you can select the temp dir
         if (!setupDirectory(config.dir)) {
@@ -621,7 +621,7 @@ module.exports = function (RED) {
         }
 
 
-       
+
         // 03/06/2019 Move the hailing file from the original location (shipped with SonosPollyTTS) to the temp folder.
         if (node.sHailingFile != "") {
             RED.log.info("Moving hailing file " + node.sHailingFile + " to temp dir " + this.dir);
@@ -641,7 +641,7 @@ module.exports = function (RED) {
             };
         }
 
-        
+
 
         node.setNodeStatus({
             fill: 'green',
@@ -710,7 +710,6 @@ module.exports = function (RED) {
             } catch (error) {
 
             }
-
         });
 
 
@@ -725,8 +724,6 @@ module.exports = function (RED) {
                 var url = require('url');
                 var url_parts = url.parse(req.url, true);
                 var query = url_parts.query;
-
-
 
                 res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
                 if (fs.existsSync(query.f)) {
@@ -957,6 +954,16 @@ module.exports = function (RED) {
             PlaySonos(msg, node);
             return;
         }
+
+        // 27/02/2020 Handling OwnFile
+        if (msg.indexOf("OwnFile_") !== -1) {
+            RED.log.info('SonosPollyTTS: OwnFile .MP3, skip polly, filename: ' + msg);
+            var newPath = __dirname + "/ttspermanentfiles/" + msg;
+            PlaySonos(newPath, node);
+            return;
+        }
+        
+
 
         // If the msg contains a string .mp3, skip polly and go to Playsonos
         if (msg.indexOf(".mp3") !== -1) {
