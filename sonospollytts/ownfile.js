@@ -21,14 +21,36 @@ module.exports = function (RED) {
         res.json(jListOwnFiles)
     });
 
-      // 27/02/2020 Delete OwnFile_
-      RED.httpAdmin.get("/deleteOwnFile", RED.auth.needsPermission('ownfile.read'), function (req, res) {
-          try {
-            var newPath = __dirname + "/ttspermanentfiles/" + req.query.FileName;
-            fs.unlinkSync(newPath)
-          } catch(err) {
-          }
-          res.json({ status: 220 });
+    // 27/02/2020 Delete OwnFile_
+    RED.httpAdmin.get("/deleteOwnFile", RED.auth.needsPermission('ownfile.read'), function (req, res) {
+        try {
+            if (req.query.FileName == "DELETEallFiles") {
+                // Delete all OwnFiles_
+                try {
+                    fs.readdir(__dirname + "/ttspermanentfiles/", (err, files) => {
+                        files.forEach(function (file) {
+                            if (file.indexOf("OwnFile_") !== -1) {
+                                RED.log.warn("SonospollyTTS: Deleted file " + __dirname + "/ttspermanentfiles/" + file);
+                                fs.unlink(__dirname + "/ttspermanentfiles/" + file), err => {};
+                            }
+                        });
+                    });
+                        
+                } catch (error) {
+                    
+                }
+            } else {
+                // Delete only one file
+                try {
+                    var newPath = __dirname + "/ttspermanentfiles/" + req.query.FileName;
+                    fs.unlinkSync(newPath)
+                } catch (error) {
+                    
+                }
+            }
+        } catch (err) {
+        }
+        res.json({ status: 220 });
     });
 
     function ownfile(config) {
@@ -56,7 +78,7 @@ module.exports = function (RED) {
                 msg.payload = node.selectedFile;
                 node.send(msg);
             } else {
-                if (msg.hasOwnProperty("selectedFile")) msg.payload = "OwnFile_" + msg.selectedFile.replace(".mp3","") + ".mp3";
+                if (msg.hasOwnProperty("selectedFile")) msg.payload = "OwnFile_" + msg.selectedFile.replace(".mp3", "") + ".mp3";
                 node.send(msg);
             };
         });
