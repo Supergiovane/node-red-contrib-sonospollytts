@@ -5,8 +5,9 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
 <p>
-<b>Version 1.1.12</b><br/>
+<b>Version 1.1.13</b><br/>
 - Better handling of incoming msg.selectedFile property.<br/>
+- Added Samples in the Readme<br/>
 </p>
 <p>
 <b>Version 1.1.11</b><br/>

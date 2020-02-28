@@ -12,7 +12,7 @@
 
 <img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="80%">
 
-<details><summary> --->> VIEW SAMPLE CODE  <<--- </summary>
+<details><summary> VIEW SAMPLE CODE </summary>
 
 > Adjust the nodes according to your setup
 
@@ -262,7 +262,7 @@ node.send({payload:"Warning. Intruder in the dinning room."};
 
 
 
-<details><summary> --->> VIEW SAMPLE CODE  <<--- </summary>
+<details><summary> VIEW SAMPLE CODE</summary>
 
 > Adjust the nodes according to your setup
 
@@ -294,8 +294,8 @@ node.send({payload:"Warning. Intruder in the dinning room."};
         "type": "ownfile",
         "z": "2e6a2c30.383f64",
         "name": "",
-        "selectedFile": "OwnFile_Living room window open.mp3",
-        "x": 350,
+        "selectedFile": "OwnFile_Tur geoeffnet.mp3",
+        "x": 310,
         "y": 340,
         "wires": [
             [
@@ -339,7 +339,7 @@ node.send({payload:"Warning. Intruder in the dinning room."};
         "z": "2e6a2c30.383f64",
         "name": "",
         "selectedFile": "OwnFile_Tur geoeffnet.mp3",
-        "x": 310,
+        "x": 410,
         "y": 400,
         "wires": [
             [
@@ -360,6 +360,22 @@ node.send({payload:"Warning. Intruder in the dinning room."};
         "once": false,
         "onceDelay": 0.1,
         "x": 150,
+        "y": 400,
+        "wires": [
+            [
+                "fc569484.6604a8"
+            ]
+        ]
+    },
+    {
+        "id": "fc569484.6604a8",
+        "type": "function",
+        "z": "2e6a2c30.383f64",
+        "name": "",
+        "func": "// Override the selected file.\nmsg.selectedFile=\"Porta aperta\"\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 270,
         "y": 400,
         "wires": [
             [
