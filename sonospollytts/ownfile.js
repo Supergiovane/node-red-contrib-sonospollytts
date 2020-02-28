@@ -31,13 +31,13 @@ module.exports = function (RED) {
                         files.forEach(function (file) {
                             if (file.indexOf("OwnFile_") !== -1) {
                                 RED.log.warn("SonospollyTTS: Deleted file " + __dirname + "/ttspermanentfiles/" + file);
-                                fs.unlink(__dirname + "/ttspermanentfiles/" + file), err => {};
+                                fs.unlink(__dirname + "/ttspermanentfiles/" + file), err => { };
                             }
                         });
                     });
-                        
+
                 } catch (error) {
-                    
+
                 }
             } else {
                 // Delete only one file
@@ -45,7 +45,7 @@ module.exports = function (RED) {
                     var newPath = __dirname + "/ttspermanentfiles/" + req.query.FileName;
                     fs.unlinkSync(newPath)
                 } catch (error) {
-                    
+
                 }
             }
         } catch (err) {
@@ -74,13 +74,15 @@ module.exports = function (RED) {
         });
 
         this.on('input', function (msg) {
-            if (msg.payload !== undefined) {
-                msg.payload = node.selectedFile;
-                node.send(msg);
-            } else {
+            if (msg.hasOwnProperty("selectedFile")) {
                 if (msg.hasOwnProperty("selectedFile")) msg.payload = "OwnFile_" + msg.selectedFile.replace(".mp3", "") + ".mp3";
                 node.send(msg);
-            };
+            } else {
+                if (msg.payload !== undefined && msg.payload === true || msg.payload === false) {
+                    msg.payload = node.selectedFile;
+                    node.send(msg);
+                }
+            }
         });
     }
     RED.nodes.registerType("ownfile", ownfile);
