@@ -5,6 +5,11 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
 <p>
+<b>Version 1.1.11</b><br/>
+- NEW: Added DELETE ALL FILES, to allow you to delete all custom files at once.<br/>
+- Added OwnFile samples audio and sample code in README<br/>
+</p>
+<p>
 <b>Version 1.1.10</b><br/>
 - Optimized UI for new OwnFile nodes<br/>
 </p>
