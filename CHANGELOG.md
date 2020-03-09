@@ -4,13 +4,9 @@
 
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
-<p>
-<b>***KNOWN ISSUES***</b> March 2020<br/>
-- On node upgrade (for example from a version to a newer one), the custom OwnFiles and custom Hailing are wiped out due to the update process<br/>
-</p>
 
 <p>
-<b>Version 1.1.14</b> March 2020<br/>
+<b>Version 1.1.15</b> March 2020<br/>
 - NEW: you can now add your own custom Hailing file.<br/>
 - NEW: you can now change the hailing with a msg.hailing property.<br/>
 </p>

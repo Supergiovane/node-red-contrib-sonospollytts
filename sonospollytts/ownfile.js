@@ -10,7 +10,7 @@ module.exports = function (RED) {
         var jListOwnFiles = [];
         var sName = "";
         try {
-            fs.readdirSync(__dirname + "/ttspermanentfiles").forEach(file => {
+            fs.readdirSync(node.userDir + "/ttspermanentfiles").forEach(file => {
                 if (file.indexOf("OwnFile_") > -1) {
                     sName = file.replace("OwnFile_", '').replace(".mp3", '');
                     jListOwnFiles.push({ name: sName, filename: file });
@@ -27,12 +27,12 @@ module.exports = function (RED) {
             if (req.query.FileName == "DELETEallFiles") {
                 // Delete all OwnFiles_
                 try {
-                    fs.readdir(__dirname + "/ttspermanentfiles/", (err, files) => {
+                    fs.readdir(node.userDir + "/ttspermanentfiles/", (err, files) => {
                         files.forEach(function (file) {
                             if (file.indexOf("OwnFile_") !== -1) {
-                                RED.log.warn("SonospollyTTS: Deleted file " + __dirname + "/ttspermanentfiles/" + file);
+                                RED.log.warn("SonospollyTTS: Deleted file " + node.userDir + "/ttspermanentfiles/" + file);
                                 try {
-                                    fs.unlink(__dirname + "/ttspermanentfiles/" + file), err => { };
+                                    fs.unlink(node.userDir + "/ttspermanentfiles/" + file), err => { };
                                 } catch (error) { }
                             }
                         });
@@ -42,7 +42,7 @@ module.exports = function (RED) {
             } else {
                 // Delete only one file
                 try {
-                    var newPath = __dirname + "/ttspermanentfiles/" + req.query.FileName;
+                    var newPath = node.userDir + "/ttspermanentfiles/" + req.query.FileName;
                     try {
                         fs.unlinkSync(newPath)
                     } catch (error) { }
@@ -66,7 +66,7 @@ module.exports = function (RED) {
                 if (err) { };
                 // Allow only mp3
                 if (files.customTTS.name.indexOf(".mp3") !== -1) {
-                    var newPath = __dirname + "/ttspermanentfiles/OwnFile_" + files.customTTS.name;
+                    var newPath = node.userDir + "/ttspermanentfiles/OwnFile_" + files.customTTS.name;
                     fs.rename(files.customTTS.path, newPath, function (err) { });
                 }
             });

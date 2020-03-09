@@ -528,13 +528,14 @@ module.exports = function (RED) {
         node.msg.completed = true;
         node.msg.connectionerror = true;
         node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
+        node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
 
         // 09/03/2020 Get list of filenames in hailing folder
         RED.httpAdmin.get("/getHailingFilesList", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
             var jListOwnFiles = [];
             var sName = "";
             try {
-                fs.readdirSync(__dirname + "/hailingpermanentfiles").forEach(file => {
+                fs.readdirSync(node.userDir + "/hailingpermanentfiles").forEach(file => {
                     if (file.indexOf("Hailing_") > -1) {
                         sName = file.replace("Hailing_", "").replace(".mp3", "");
                         jListOwnFiles.push({ name: sName, filename: file });
@@ -549,7 +550,7 @@ module.exports = function (RED) {
         RED.httpAdmin.get("/deleteHailingFile", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
             // Delete the file
             try {
-                var newPath = __dirname + "/hailingpermanentfiles/" + req.query.FileName;
+                var newPath = node.userDir + "/hailingpermanentfiles/" + req.query.FileName;
                 fs.unlinkSync(newPath)
             } catch (error) { }
             res.json({ status: 220 });
@@ -562,7 +563,7 @@ module.exports = function (RED) {
                 if (err) { };
                 // Allow only mp3
                 if (files.customHailing.name.indexOf(".mp3") !== -1) {
-                    var newPath = __dirname + "/hailingpermanentfiles/Hailing_" + files.customHailing.name;
+                    var newPath = node.userDir + "/hailingpermanentfiles/Hailing_" + files.customHailing.name;
                     fs.rename(files.customHailing.path, newPath, function (err) { });
                 }
             });
@@ -578,38 +579,55 @@ module.exports = function (RED) {
             node.status({ fill: fill, shape: shape, text: text + " (" + dDate.getDate() + ", " + dDate.toLocaleTimeString() + ")" });
         }
 
+        // 03/06/2019 you can select the temp dir
+        if (!setupDirectory(node.userDir)) {
+            RED.log.error('SonosPollyTTS: Unable to set up MAIN directory: ' + node.userDir);
+        }
+        if (!setupDirectory(node.userDir + "/ttsfiles")) {
+            RED.log.error('SonosPollyTTS: Unable to set up cache directory: ' + node.userDir + "/ttsfiles");
+        } else {
+            RED.log.info('SonosPollyTTS: TTS cache set to ' + node.userDir + "/ttsfiles");
+        }
+        if (!setupDirectory(node.userDir + "/hailingpermanentfiles")) {
+            RED.log.error('SonosPollyTTS: Unable to set up hailing directory: ' + node.userDir + "/hailingpermanentfiles");
+        } else {
+            RED.log.info('SonosPollyTTS: hailing path set to ' + node.userDir + "/hailingpermanentfiles");
+            // 09/03/2020 Copy defaults to the userDir
+            fs.readdirSync(__dirname + "/hailingpermanentfiles").forEach(file => {
+                try {
+                    fs.copyFileSync(__dirname + "/hailingpermanentfiles/" + file, node.userDir + "/hailingpermanentfiles/" + file);
+                } catch (error) { }
+            });
+        }
+        if (!setupDirectory(node.userDir + "/ttspermanentfiles")) {
+            RED.log.error('SonosPollyTTS: Unable to set up permanent files directory: ' + node.userDir + "/ttspermanentfiles");
+        } else {
+            RED.log.info('SonosPollyTTS: permanent files path set to ' + node.userDir + "/ttspermanentfiles");
+            // 09/03/2020 // Copy the samples of permanent files into the userDir
+            fs.readdirSync(__dirname + "/ttspermanentfiles").forEach(file => {
+                try {
+                    fs.copyFileSync(__dirname + "/ttspermanentfiles/" + file, node.userDir + "/ttspermanentfiles/" + file);
+                } catch (error) { }
+            });
+        }
+
         // 26/02/2020
         if (node.purgediratrestart === "purge") {
             // Delete all files, that are'nt OwnFiles_
             try {
-                fs.readdir(__dirname + "/ttsfiles/", (err, files) => {
-                    files.forEach(function (file) {
-                        RED.log.info("SonospollyTTS: Deleted TTS file " + __dirname + "/ttsfiles/" + file);
-                        try {
-                            fs.unlink(__dirname + "/ttsfiles/" + file), err => { };
-                        } catch (error) {
-                        }
-                    });
+                fs.readdir(node.userDir + "/ttsfiles/", (err, files) => {
+                    if (files.length > 0) {
+                        files.forEach(function (file) {
+                            RED.log.info("SonospollyTTS: Deleted TTS file " + node.userDir + "/ttsfiles/" + file);
+                            try {
+                                fs.unlink(node.userDir + "/ttsfiles/" + file), err => { };
+                            } catch (error) {
+                            }
+                        });
+                    };
                 });
             } catch (error) { }
         };
-
-        // 03/06/2019 you can select the temp dir
-        if (!setupDirectory(__dirname + "/ttsfiles")) {
-            RED.log.info('SonosPollyTTS: Unable to set up cache directory: ' + __dirname + "/ttsfiles");
-        } else {
-            RED.log.info('SonosPollyTTS: TTS cache set to ' + __dirname + "/ttsfiles");
-        }
-        if (!setupDirectory(__dirname + "/hailingpermanentfiles")) {
-            RED.log.info('SonosPollyTTS: Unable to set up hailing directory: ' + __dirname + "/hailingpermanentfiles");
-        } else {
-            RED.log.info('SonosPollyTTS: hailing path set to ' + __dirname + "/hailingpermanentfiles");
-        }
-        if (!setupDirectory(__dirname + "/ttspermanentfiles")) {
-            RED.log.info('SonosPollyTTS: Unable to set up permanent files directory: ' + __dirname + "/ttspermanentfiles");
-        } else {
-            RED.log.info('SonosPollyTTS: permanent files path set to ' + __dirname + "/ttspermanentfiles");
-        }
 
 
         // Set ssml
@@ -624,20 +642,8 @@ module.exports = function (RED) {
             return;
         }
 
-
         // Set the voice
         node.iVoice = voices[config.voice].Id;
-
-        // Store Noder-Red complete URL
-        // 27/10/2019 Changes made according to new httpRoot habdling, beginning from nodered 0.6.0 https://nodered.org/blog/2014/02/21/version-0-6-0-released
-        // if (RED.settings.httpAdminRoot !== "/") {
-        //     // Set the httpAdminRoot as the tts endpoint root
-        //     node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim()+ RED.settings.httpAdminRoot; // RED.settings.uiPort
-        // }else
-        // {
-        //     // Add the httpRoot (ignore httpNodeRoot. See above link
-        //     node.sNoderedURL="http://"+ config.noderedipaddress.trim() + ":" + config.noderedport.trim() + RED.settings.httpRoot;
-        // }
 
         // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
         if (config.noderedport.trim() == "1880") {
@@ -981,7 +987,7 @@ module.exports = function (RED) {
         // 27/02/2020 Handling OwnFile
         if (msg.indexOf("OwnFile_") !== -1) {
             RED.log.info('SonosPollyTTS: OwnFile .MP3, skip polly, filename: ' + msg);
-            var newPath = __dirname + "/ttspermanentfiles/" + msg;
+            var newPath = node.userDir + "/ttspermanentfiles/" + msg;
             PlaySonos(newPath, node);
             return;
         }
@@ -989,7 +995,7 @@ module.exports = function (RED) {
         // 09/03/2020 Handling Hailing_ files
         if (msg.indexOf("Hailing_") !== -1) {
             RED.log.info('SonosPollyTTS: Hailing .MP3, skip polly, filename: ' + msg);
-            var newPath = __dirname + "/hailingpermanentfiles/" + msg;
+            var newPath = node.userDir + "/hailingpermanentfiles/" + msg;
             PlaySonos(newPath, node);
             return;
         }
@@ -999,7 +1005,7 @@ module.exports = function (RED) {
         var filename = getFilename(msg, node.iVoice, node.ssml, outputFormat);
 
         // Get real filename, codified.
-        filename = __dirname + "/ttsfiles/" + filename;
+        filename = node.userDir + "/ttsfiles/" + filename;
 
         // Check if cached
         if (fs.existsSync(filename)) {
