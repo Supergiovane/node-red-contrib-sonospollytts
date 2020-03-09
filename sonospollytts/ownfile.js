@@ -12,7 +12,7 @@ module.exports = function (RED) {
         try {
             fs.readdirSync(__dirname + "/ttspermanentfiles").forEach(file => {
                 if (file.indexOf("OwnFile_") > -1) {
-                    sName = file.replace("OwnFile_", '');
+                    sName = file.replace("OwnFile_", '').replace(".mp3", '');
                     jListOwnFiles.push({ name: sName, filename: file });
                 }
             });
@@ -31,22 +31,23 @@ module.exports = function (RED) {
                         files.forEach(function (file) {
                             if (file.indexOf("OwnFile_") !== -1) {
                                 RED.log.warn("SonospollyTTS: Deleted file " + __dirname + "/ttspermanentfiles/" + file);
-                                fs.unlink(__dirname + "/ttspermanentfiles/" + file), err => { };
+                                try {
+                                    fs.unlink(__dirname + "/ttspermanentfiles/" + file), err => { };
+                                } catch (error) { }
                             }
                         });
                     });
 
-                } catch (error) {
-
-                }
+                } catch (error) { }
             } else {
                 // Delete only one file
                 try {
                     var newPath = __dirname + "/ttspermanentfiles/" + req.query.FileName;
-                    fs.unlinkSync(newPath)
-                } catch (error) {
+                    try {
+                        fs.unlinkSync(newPath)
+                    } catch (error) { }
 
-                }
+                } catch (error) { }
             }
         } catch (err) {
         }

@@ -43,7 +43,7 @@
                 return this.name || "";
             },
             oneditprepare: function () {
-           
+
             }
         });
 </script>
@@ -124,11 +124,6 @@
         <input type="checkbox" id="node-input-ssml" style="margin-left: 0px; vertical-align: top; width: auto !important;"> <label style="width:auto !important;"> Enable SSML</label>
     </div>
     <div class="form-row">
-        <label for="node-input-dir"><i class="fa fa-folder-o"></i> TTS path</label>
-        <input type="text" id="node-input-dir">
-    </div>
-    
-    <div class="form-row">
         <label for="node-input-purgediratrestart"><i class="fa fa-folder-o"></i> TTS Cache</label>
         <select id="node-input-purgediratrestart">
             <option value="purge">Purge and delete the TTS cache folder at deploy or restart(default)</option>
@@ -142,12 +137,11 @@
     </div>
     <div class="form-row">
         <label for="node-input-sonoshailing"><i class="fa fa-bell"></i> Sonos Hailing</label>
-        <select id="node-input-sonoshailing">
-            <option value='0'>Disable</option>
-            <option value='1'>Hailing</option>
-            <option value='2'>Computer call</option>
-            <option value='3'>Vintage space</option>
-        </select>
+        <select id="node-input-sonoshailing"></select> <input id="deleteSelectedFile" type="button" value="DELETE" style="width:100px">
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-upload"></i> Upload hail</label>
+        <input id="ownFileUpload" type="file" multiple="multiple">
     </div>
     <div class="form-row">
         <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Sonos IP</label>
@@ -184,6 +178,7 @@
         <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)<br/>
         <code>msg.nohailing</code> doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)<br/>
         <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";)<br/>
+        <code>msg.sonoshailing</code> Overrides the selected hailing and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your hailing files, in the sonospollytts config window) and do not include the <b>.mp3</b> extension.
     <p>
     <p>
         <b>OUTPUT:</b><br/> 
@@ -201,10 +196,9 @@
         <code>Polly Voice</code> select your preferred voice.<br/>
         <code>Sonos IP</code> insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
         <code>Sonos Volume</code> set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
-        <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.<br/>
+        <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it. You can upload and delete your own hailing sounds as well.<br/>
         <code>Node-Red IP</code> set IP of your node-red<br/>
         <code>Webserver port</code> default 1980. If you are behind firewall, remember to forward this port.<br/>
-        <code>TTS path</code> you can change the temp folder for storing cached TTS files. Default is "/tmp". Note that if you change that, you need to run node-red with user able to access the filesystem.
         <code>TTS Cache</code> Whether to delete (default) or leave it in places the TTS files in the cache folder on each Deploy or Reboot of node-red. Leaving TTS files in che cache, may put you in a disk space trouble.
     </p>
 
@@ -235,11 +229,6 @@
                 ssml:
                 {
                     value: false,
-                    required: true
-                },
-                dir:
-                {
-                    value: "/tmp",
                     required: true
                 },
                 sonosipaddress:
@@ -282,6 +271,118 @@
             icon: "sonospollytts.png",
             label: function () {
                 return this.name || "SonosPollyTTS";
+            },
+            oneditprepare: function () {
+
+                $("#node-input-sonoshailing").click(function () {
+                    // Refresh the combo
+                    $('#node-input-sonoshailing')
+                        .find('option')
+                        .remove()
+                        .end();
+                    $.getJSON("getHailingFilesList", new Date().getTime(), (data) => {
+                        $("#node-input-sonoshailing").append($("<option></option>")
+                            .attr("value", "0")
+                            .text("Disable")
+                        )
+                        data.sort().forEach(oFile => {
+                            $("#node-input-sonoshailing").append($("<option></option>")
+                                .attr("value", oFile.filename)
+                                .text(oFile.name)
+                            )
+                        });
+                    });
+                });
+
+                // 09/03/2020 Upload  file or files
+                // ##########################################################
+                $("#ownFileUpload").change(function (e) {
+                    var oFiles;
+                    oFiles = this.files;
+                    $.each(oFiles, function (i, file) {
+                        var fdata = new FormData();
+                        fdata.append("customHailing", file);
+
+                        $.ajax({
+                            url: "node-red-contrib-sonospollyttsHailing",
+                            type: "POST",
+                            data: fdata, //add the FormData object to the data parameter
+                            processData: false, //tell jquery not to process data
+                            contentType: false,
+                            success: function (response, status, jqxhr) {
+                                // Refresh the combo
+                                $('#node-input-sonoshailing')
+                                    .find('option')
+                                    .remove()
+                                    .end();
+                                $.getJSON("getHailingFilesList", new Date().getTime(), (data) => {
+                                    $("#node-input-sonoshailing").append($("<option></option>")
+                                        .attr("value", "0")
+                                        .text("Disable")
+                                    )
+                                    data.sort().forEach(oFile => {
+                                        $("#node-input-sonoshailing").append($("<option></option>")
+                                            .attr("value", oFile.filename)
+                                            .text(oFile.name)
+                                        )
+                                    });
+                                    $("#node-input-sonoshailing").val(typeof this.sonoshailing === "undefined" ? "" : this.sonoshailing)
+                                });
+                            },
+                            error: function (jqxhr, status, errorMessage) {
+                                //handle error
+                                alert("Error " + errorMessage + " " + status)
+                            }
+                        });
+                    });
+                });
+                // ##########################################################
+
+
+                // Get Hailingfile list
+                // ##########################################################
+                $.getJSON('getHailingFilesList', (data) => {
+                    $("#node-input-sonoshailing").append($("<option></option>")
+                        .attr("value", "0")
+                        .text("Disable")
+                    )
+                    data.sort().forEach(oFile => {
+                        $("#node-input-sonoshailing").append($("<option></option>")
+                            .attr("value", oFile.filename)
+                            .text(oFile.name)
+                        )
+                    });
+                    $("#node-input-sonoshailing").val(typeof this.sonoshailing === "undefined" ? "" : this.sonoshailing)
+                });
+                // ##########################################################
+
+
+                // Delete selected file
+                // ##########################################################
+                $("#deleteSelectedFile").click(function () {
+                    $.getJSON('deleteHailingFile?FileName=' + $("#node-input-sonoshailing").val(), (data) => {
+                        // Refresh the combo
+                        $('#node-input-sonoshailing')
+                            .find('option')
+                            .remove()
+                            .end();
+                        $.getJSON("getHailingFilesList", new Date().getTime(), (data) => {
+                            $("#node-input-sonoshailing").append($("<option></option>")
+                                .attr("value", "0")
+                                .text("Disable")
+                            )
+                            data.sort().forEach(oFile => {
+                                $("#node-input-sonoshailing").append($("<option></option>")
+                                    .attr("value", oFile.filename)
+                                    .text(oFile.name)
+                                )
+                            });
+                            $("#node-input-sonoshailing").val(typeof this.sonoshailing === "undefined" ? "" : this.sonoshailing)
+                        });
+                    });
+                });
+                // ##########################################################
+
             }
         });
 </script>

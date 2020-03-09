@@ -228,29 +228,30 @@ set IP of your node-red machine
 **Host Port**<br/>
 normally 1980. This is the IP of your machine, running node-red
 
-**TTS path**<br/>
-you can change the temp folder for storing cached TTS files. Default is "tmp". This is valid only if you select to purge the cache folder at each deploy or restart of node-red (see the next option below)
-
 **TTS Cache**
 <br/>
 Purge and delete the TTS cache folder at deploy or restart(default): on each deploy or node-red restart, delete all tts files in the cache. This is useful not to run out of disk space, in case you've a lot of TTS speech files.<br/>
 Leave the TTS cache folder untouched (not suggested if you have less disk space): don't delete any tts file. Useful if you wish to keep the tts files, even in case of internet outages.
 
-### INPUT MESSAGES TO THE NODE
-* <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)
-* <code>msg.nohailing</code> temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)
-* <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";). You can also play an mp3 stored on an http server, by passing the URL to the payload ( <code>msg.payload = "http://www.myserver.com/alarm.mp3"</code>)
+## INPUT MESSAGES TO THE NODE <br/>
+
+**msg.volume** set the volume (values between "0" and "100" with quotes)</br>
+**msg.nohailing** temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)</br>
+**msg.payload** the text to be spoken (for example msg.payload = "Hello World!";). You can also play an mp3 stored on an http server, by passing the URL to the payload ( <code>msg.payload = "http://www.myserver.com/alarm.mp3"</code>)</br>
+**msg.sonoshailing** Overrides the selected hailing and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your hailing files, in the sonospollytts config window) and do not include the <b>.mp3</b> extenson. For example *node.sonoshailing="ComputerCall"*<br/>
 
 *Example of using http mp3 in a function node*
 
 ```js
+node.send({sonoshailing:"ComputerCall"};
 node.send({payload:"http://192.125.22.44/intruderalarm.mp3"};
 node.send({payload:"Warning. Intruder in the dinning room."};
 ```
 
-### OUTPUT MESSAGES FROM THE NODE
-* <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing
-* <code>msg.connectionerror</code> <b>true</b> when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>
+## OUTPUT MESSAGES FROM THE NODE
+
+**msg.completed** "true" when the node has finished playing, <b>false</b> if the node is playing<br/>
+**msg.connectionerror** "true" when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>
 
 
 
@@ -398,14 +399,13 @@ This node allow you to upload your custom message and play it via SonosPollyTTS 
 **Name**<br/>
 Node name
 
-**File to be player**<br/>
+**File to be player** <br/>
 Select a file to be played. You can upload one or multiple files at the same time via the "upload" button.
 
-### INPUT MESSAGE <br/>
-**msg.payload = true**<br/>
-Begin play of the message<br/>
-**msg.selectedFile = "Garage door open"**<br/>
-Overrides the selected message and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your own files, in the node config window) and do not include the <b>.mp3</b> extenson.<br/>
+## INPUT MESSAGE 
+
+**msg.payload = true** Begin play of the message <br/>
+**msg.selectedFile = "Garage door open"** Overrides the selected message and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your own files, in the node config window) and do not include the <b>.mp3</b> extenson.<br/>
 
     
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg

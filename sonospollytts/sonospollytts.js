@@ -8,6 +8,7 @@ module.exports = function (RED) {
     var util = require('util');
     var path = require('path');
     const sonos = require('sonos');
+    var formidable = require('formidable');
 
 
     AWS.config.update({
@@ -521,13 +522,55 @@ module.exports = function (RED) {
         node.sSonosPlayState = "stopped"; // Play state
         node.sSonosTrackTitle = ""; // Track title
         node.sSonosIPAddress = "";
-        node.sHailingFile = ""; // Hailing file
-        node.bNoHailing = false; // Dont't play Hailing music temporarely (from msg node ommand "nohailing="true")
+        node.sonoshailing = "0"; // Hailing file
         node.msg = {}; // 08/05/2019 Node message
         node.oWebserver; // 11/11/2019 Stores the Webserver
         node.msg.completed = true;
         node.msg.connectionerror = true;
         node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
+
+        // 09/03/2020 Get list of filenames in hailing folder
+        RED.httpAdmin.get("/getHailingFilesList", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
+            var jListOwnFiles = [];
+            var sName = "";
+            try {
+                fs.readdirSync(__dirname + "/hailingpermanentfiles").forEach(file => {
+                    if (file.indexOf("Hailing_") > -1) {
+                        sName = file.replace("Hailing_", "").replace(".mp3", "");
+                        jListOwnFiles.push({ name: sName, filename: file });
+                    }
+                });
+
+            } catch (error) { }
+            res.json(jListOwnFiles)
+        });
+
+        // 09/03/2020 Delete Hailing
+        RED.httpAdmin.get("/deleteHailingFile", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
+            // Delete the file
+            try {
+                var newPath = __dirname + "/hailingpermanentfiles/" + req.query.FileName;
+                fs.unlinkSync(newPath)
+            } catch (error) { }
+            res.json({ status: 220 });
+        });
+
+        // 09/03/2020 Receive new hailing files from html
+        RED.httpAdmin.post("/node-red-contrib-sonospollyttsHailing", function (req, res) {
+            var form = new formidable.IncomingForm();
+            form.parse(req, function (err, fields, files) {
+                if (err) { };
+                // Allow only mp3
+                if (files.customHailing.name.indexOf(".mp3") !== -1) {
+                    var newPath = __dirname + "/hailingpermanentfiles/Hailing_" + files.customHailing.name;
+                    fs.rename(files.customHailing.path, newPath, function (err) { });
+                }
+            });
+            res.json({ status: 220 });
+            res.end;
+        });
+
+
 
         // 20/11/2019 Used to call the status update
         node.setNodeStatus = ({ fill, shape, text }) => {
@@ -536,22 +579,38 @@ module.exports = function (RED) {
         }
 
         // 26/02/2020
-        if (node.purgediratrestart == "leave") {
-            // Change the temp dir acccordingly, to a folder inside the current path of sonospollytts
-            config.dir = __dirname + "/ttspermanentfiles"
+        if (node.purgediratrestart === "purge") {
+            // Delete all files, that are'nt OwnFiles_
+            try {
+                fs.readdir(__dirname + "/ttsfiles/", (err, files) => {
+                    files.forEach(function (file) {
+                        RED.log.info("SonospollyTTS: Deleted TTS file " + __dirname + "/ttsfiles/" + file);
+                        try {
+                            fs.unlink(__dirname + "/ttsfiles/" + file), err => { };    
+                        } catch (error) {
+                        }
+                    });
+                });
+            } catch (error) { }
         };
 
         // 03/06/2019 you can select the temp dir
-        if (!setupDirectory(config.dir)) {
-            RED.log.info('SonosPollyTTS: Unable to set up cache directory: ' + config.dir);
-            // Error, revert to the node temp
-            config.dir = "/tmp";
-            //config.dir = __dirname;         
-            RED.log.info('SonosPollyTTS: Revert to default tmp dir: ' + config.dir);
+        if (!setupDirectory(__dirname + "/ttsfiles")) {
+            RED.log.info('SonosPollyTTS: Unable to set up cache directory: ' + __dirname + "/ttsfiles");
         } else {
-            RED.log.info('SonosPollyTTS: Temp dir set to ' + config.dir);
+            RED.log.info('SonosPollyTTS: TTS cache set to ' + __dirname + "/ttsfiles");
         }
-        this.dir = config.dir;
+        if (!setupDirectory(__dirname + "/hailingpermanentfiles")) {
+            RED.log.info('SonosPollyTTS: Unable to set up hailing directory: ' + __dirname + "/hailingpermanentfiles");
+        } else {
+            RED.log.info('SonosPollyTTS: hailing path set to ' + __dirname + "/hailingpermanentfiles");
+        }
+        if (!setupDirectory(__dirname + "/ttspermanentfiles")) {
+            RED.log.info('SonosPollyTTS: Unable to set up permanent files directory: ' + __dirname + "/ttspermanentfiles");
+        } else {
+            RED.log.info('SonosPollyTTS: permanent files path set to ' + __dirname + "/ttspermanentfiles");
+        }
+
 
         // Set ssml
         this.ssml = config.ssml;
@@ -601,47 +660,11 @@ module.exports = function (RED) {
         // 27/11/2019 Start the connection healty check
         node.oTimerSonosConnectionCheck = setTimeout(function () { CheckSonosConnection(node); }, 5000);
 
-        // Downloads hailing.mp3. Check if the file already exist
-        node.sHailingFile = config.sonoshailing;
-        if (node.sHailingFile == "0") {
+        node.sonoshailing = config.sonoshailing;
+        if (node.sonoshailing == "0") {
             // Remove the hailing.mp3 default file
             RED.log.info('SonosPollyTTS: Hailing disabled');
-            /* pathExists(path.join(config.dir, "hailing.mp3")).then(res => {
-               if (res) {fs.unlinkSync(path.join(config.dir, "hailing.mp3"));}
-               }); */
-            node.sHailingFile = "";
-        } else if (node.sHailingFile == "1") {
-            node.sHailingFile = "hailing.mp3";
-        } else if (node.sHailingFile == "2") {
-            node.sHailingFile = "2.mp3";
-        } else if (node.sHailingFile == "3") {
-            node.sHailingFile = "3.mp3";
-        } else {
-            node.sHailingFile = "hailing.mp3";
         }
-
-
-
-        // 03/06/2019 Move the hailing file from the original location (shipped with SonosPollyTTS) to the temp folder.
-        if (node.sHailingFile != "") {
-            RED.log.info("Moving hailing file " + node.sHailingFile + " to temp dir " + this.dir);
-            // Is the temp dir the same as node dir?
-            if (__dirname != config.dir) {
-
-                fs.copyFile(__dirname + "/" + node.sHailingFile, path.join(config.dir, node.sHailingFile), (err) => {
-                    if (err) {
-                        RED.log.error('SonosPollyTTS: Error moving hailing.mp3 to temp dir : ' + err);
-                        // 03/06/2019 Revert to standard /tmp
-                        RED.log.info('SonosPollyTTS: revert to standard /tmp dir.');
-                        config.dir = "/tmp";
-                        this.dir = config.dir;
-                    }
-                });
-
-            };
-        }
-
-
 
         node.setNodeStatus({
             fill: 'green',
@@ -661,25 +684,19 @@ module.exports = function (RED) {
                     shape: 'dot',
                     text: 'Processing ' + msg.payload
                 });
-            } catch (error) {
-            }
-
-
-            // 17/04/2019 Verifico se possso mandare in play l'hailing
-            if (msg.hasOwnProperty("nohailing")) {
-                if (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true") {
-                    node.bNoHailing = true;
-                } else {
-                    node.bNoHailing = false;
-                }
-            } else {
-                node.bNoHailing = false;
-            }
+            } catch (error) { }
 
             if (!msg.hasOwnProperty("payload")) {
                 notifyError(node, msg, 'msg.payload must be of type String');
                 return;
             }
+
+            // 17/04/2019 Verifico se possso mandare in play l'hailing
+            if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) node.sonoshailing = "0";
+
+            // 09/03/2020 Change hailing
+            if (msg.hasOwnProperty("sonoshailing")) node.sonoshailing = "Hailing_" + msg.sonoshailing + ".mp3";
+
 
             // 07/05/2019 Set "completed" to false and send it
             if (node.aMessageQueue.length == 0) {
@@ -687,18 +704,13 @@ module.exports = function (RED) {
                 node.send(node.msg);
             }
 
-
             // If the queue is empty and if i can play the Haniling, add the hailing file first
-            if (node.aMessageQueue.length == 0 && node.bNoHailing == false) {
-                // If the field sonoshailing is not empty, add the hailing to the queue
-                if (node.sHailingFile != "") {
-                    node.aMessageQueue.push(node.sHailingFile);
-                }
+            if (node.aMessageQueue.length == 0 && node.sonoshailing !== "0") {
+                node.aMessageQueue.push(node.sonoshailing);
             }
 
             // Add the message to the array
             node.aMessageQueue.push(msg.payload);
-
 
         });
 
@@ -962,28 +974,21 @@ module.exports = function (RED) {
             PlaySonos(newPath, node);
             return;
         }
-        
 
-
-        // If the msg contains a string .mp3, skip polly and go to Playsonos
-        if (msg.indexOf(".mp3") !== -1) {
-            RED.log.info('SonosPollyTTS: Leggi .MP3 diretto e skip polly, filename: ' + msg);
-            PlaySonos(path.join(node.dir, node.sHailingFile), node);
+        // 09/03/2020 Handling Hailing_ files
+        if (msg.indexOf("Hailing_") !== -1) {
+            RED.log.info('SonosPollyTTS: Hailing .MP3, skip polly, filename: ' + msg);
+            var newPath = __dirname + "/hailingpermanentfiles/" + msg;
+            PlaySonos(newPath, node);
             return;
         }
 
-
         // Otherwise, it's a TTS
-        //RED.log.info('SonosPollyTTS: DEBUG - Leggi Punto 1 - TTS : ' + msg);
-        var polly = node.Pollyconfig.polly;
         var outputFormat = "mp3";
         var filename = getFilename(msg, node.iVoice, node.ssml, outputFormat);
-        //RED.log.info('SonosPollyTTS: DEBUG - Leggi Punto 2 - filename : ' + filename);
 
-        // Store it
-        filename = path.join(node.dir, filename);
-        //RED.log.info('SonosPollyTTS: DEBUG - Leggi Punto 3 - filename : ' + filename);
-
+        // Get real filename, codified.
+        filename = __dirname + "/ttsfiles/" + filename;
 
         // Check if cached
         if (fs.existsSync(filename)) {
@@ -992,18 +997,9 @@ module.exports = function (RED) {
             PlaySonos(filename, node);
             return;
         }
-        // pathExists(filename).then(res => {
-        // if (res) {
-        //     // Cached
-        //     // Play
-        //     PlaySonos(filename, node);
-        //     return;
-        //     //return node.send([msg, null]);
-        // };
 
         // Not cached
         node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'asking online' });
-
 
         var params = {
             OutputFormat: outputFormat,
@@ -1013,14 +1009,13 @@ module.exports = function (RED) {
             VoiceId: node.iVoice
         };
 
-
+        var polly = node.Pollyconfig.polly;
         synthesizeSpeech([polly, params]).then(data => { return [filename, data.AudioStream]; }).then(cacheSpeech).then(function () {
-
+            //RED.log.info("synthesizeSpeech filename " + filename);
             // Play
             PlaySonos(filename, node);
 
         }).catch(error => { notifyError(node, filename, error); });
-        //});
 
     }
 
@@ -1068,8 +1063,6 @@ module.exports = function (RED) {
         return filename;
     }
 
-
-
     function notifyError(node, msg, err) {
         var errorMessage = err.message;
         // Output error to console
@@ -1103,10 +1096,9 @@ module.exports = function (RED) {
         } else {
             sUrl = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
         }
-        RED.log.info('SonosPollyTTS: PlaySonos - _songuri: ' + _songuri + ' sUrl: ' + sUrl);
+        RED.log.info('SonosPollyTTS: PlaySonos - URL: ' + sUrl);
 
         node.SonosClient.setVolume(node.sSonosVolume).then(success => {
-
 
             node.SonosClient.setAVTransportURI(sUrl).then(playing => {
 
