@@ -586,7 +586,7 @@ module.exports = function (RED) {
                     files.forEach(function (file) {
                         RED.log.info("SonospollyTTS: Deleted TTS file " + __dirname + "/ttsfiles/" + file);
                         try {
-                            fs.unlink(__dirname + "/ttsfiles/" + file), err => { };    
+                            fs.unlink(__dirname + "/ttsfiles/" + file), err => { };
                         } catch (error) {
                         }
                     });
@@ -661,10 +661,21 @@ module.exports = function (RED) {
         node.oTimerSonosConnectionCheck = setTimeout(function () { CheckSonosConnection(node); }, 5000);
 
         node.sonoshailing = config.sonoshailing;
+
+        // Backwart compatibiliyy, to remove with the next Version
+        // ################
         if (node.sonoshailing == "0") {
             // Remove the hailing.mp3 default file
             RED.log.info('SonosPollyTTS: Hailing disabled');
+        } else if (node.sonoshailing == "1") {
+            node.sonoshailing = "Hailing_Hailing.mp3";
+        } else if (node.sonoshailing == "2") {
+            node.sonoshailing = "Hailing_ComputerCall.mp3";
+        } else if (node.sonoshailing == "3") {
+            node.sonoshailing = "Hailing_VintageSpace.mp3";
         }
+        // ################
+
 
         node.setNodeStatus({
             fill: 'green',

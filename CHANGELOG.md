@@ -5,7 +5,7 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
 <p>
-<b>Version 1.1.14</b><br/> March 2020
+<b>Version 1.1.14</b> March 2020<br/>
 - NEW: you can now add your own custom Hailing file.<br/>
 - NEW: you can now change the hailing with a msg.hailing property.<br/>
 </p>
