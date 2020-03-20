@@ -474,43 +474,12 @@ module.exports = function (RED) {
     };
 
 
-    // Configuration Node Register
-    function PollyConfigNode(config) {
-        RED.nodes.createNode(this, config);
-       
-
-        if (this.credentials) {
-            this.accessKey = this.credentials.accessKey;
-            this.secretKey = this.credentials.secretKey;
-        }
-
-        var params = {
-            accessKeyId: this.accessKey,
-            secretAccessKey: this.secretKey,
-            apiVersion: '2016-06-10'
-        };
-
-        this.polly = new AWS.Polly(params);
-
-    }
-    //RED.nodes.registerType('sonospollytts-config', PollyConfigNode);
-    RED.nodes.registerType('sonospollytts-config', PollyConfigNode, {
-        credentials: {
-            accessKey: {
-                type: 'text'
-            },
-            secretKey: {
-                type: 'password'
-            }
-        }
-    });
-    
-
-
+  
     // Node Register
     function PollyNode(config) {
         RED.nodes.createNode(this, config);
-        var node = this;
+        var node = this
+        node.server = RED.nodes.getNode(config.config)
         node.sPollyState = "done";
         node.iTimeoutPollyState = 0;
         node.aMessageQueue = []; // Array of incoming TTS messages
@@ -525,21 +494,13 @@ module.exports = function (RED) {
         node.sSonosCoordinatorGroupName = "";
         node.sonoshailing = "0"; // Hailing file
         node.msg = {}; // 08/05/2019 Node message
-        node.oWebserver; // 11/11/2019 Stores the Webserver
         node.msg.completed = true;
         node.msg.connectionerror = true;
-        node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
         node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
         node.oAdditionalSonosPlayers = []; // 20/03/2020 Contains other players to be grouped
         node.rules = config.rules || [{}];
-        
-        // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
-        if (config.noderedport.trim() == "1880") {
-            RED.log.warn("SonosPollyTTS: The webserver port ist 1880. Please change it to another port, not to conflict with default node-red 1880 port. I've changed this temporarly for you to 1980");
-            config.noderedport = "1980";
-        }
-        node.sNoderedURL = "http://" + config.noderedipaddress.trim() + ":" + config.noderedport.trim(); // 11/11/2019 New Endpoint to overcome https problem.
-        RED.log.info('SonosPollyTTS: Node-Red node.js Endpoint will be created here: ' + node.sNoderedURL + "/tts");
+        node.sNoderedURL = node.server.sNoderedURL || "";
+       
 
         // 20/03/2020 in the middle of coronavirus, get the sonos groups
         RED.httpAdmin.get("/sonosgetAllGroups", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
@@ -642,24 +603,6 @@ module.exports = function (RED) {
                 } catch (error) { }
             });
         }
-
-        // 26/02/2020
-        if (node.purgediratrestart === "purge") {
-            // Delete all files, that are'nt OwnFiles_
-            try {
-                fs.readdir(node.userDir + "/ttsfiles/", (err, files) => {
-                    if (files.length > 0) {
-                        files.forEach(function (file) {
-                            RED.log.info("SonospollyTTS: Deleted TTS file " + node.userDir + "/ttsfiles/" + file);
-                            try {
-                                fs.unlink(node.userDir + "/ttsfiles/" + file), err => { };
-                            } catch (error) {
-                            }
-                        });
-                    };
-                });
-            } catch (error) { }
-        };
 
 
         // Set ssml
@@ -820,68 +763,7 @@ module.exports = function (RED) {
 
 
 
-        // 11/11/2019 CREATE THE ENDPOINT
-        // #################################
-        const http = require('http')
-        const sWebport = config.noderedport.trim();
-        const requestHandler = (req, res) => {
-            try {
-
-                var url = require('url');
-                var url_parts = url.parse(req.url, true);
-                var query = url_parts.query;
-
-                res.setHeader('Content-Disposition', 'attachment; filename=tts.mp3')
-                if (fs.existsSync(query.f)) {
-                    var readStream = fs.createReadStream(query.f);
-                    readStream.on("error", function (err) {
-                        fine(err);
-                    });
-                    readStream.pipe(res);
-                    res.end;
-                } else {
-                    RED.log.error("Playsonos RED.httpAdmin file not found: " + query.f);
-                    res.write("File not found");
-                    res.end();
-                }
-
-            } catch (error) {
-                RED.log.error("Playsonos RED.httpAdmin error: " + error + " on: " + query.f);
-            }
-            function fine(err) {
-                RED.log.error("Playsonos error opening stream : " + query.f + ' : ' + error);
-                res.end;
-            }
-        }
-
-
-        try {
-            node.oWebserver = http.createServer(requestHandler);
-            node.oWebserver.on('error', function (e) {
-                RED.log.error("SonosPollyTTS: " + node.ID + " error starting webserver on port " + sWebport + " " + e);
-                node.setNodeStatus({
-                    fill: 'red',
-                    shape: 'dot',
-                    text: 'Error. Port ' + sWebport + " already in use."
-                });
-            });
-        } catch (error) {
-            // Already open. Close it and redo.
-            RED.log.error("SonosPollyTTS: Webserver creation error: " + error);
-        }
-
-        try {
-            node.oWebserver.listen(sWebport, (err) => {
-                if (err) {
-                    RED.log.error("SonosPollyTTS: error listening webserver on port " + sWebport + " " + err);
-                }
-            });
-
-        } catch (error) {
-            // In case oWebserver is null
-            RED.log.error("SonosPollyTTS: error listening webserver on port " + sWebport + " " + error);
-        }
-        // #################################
+       
 
 
 

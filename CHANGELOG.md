@@ -4,7 +4,11 @@
 
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
-
+<p>
+<b>Version 1.1.18</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
+- NEW: now the webserver config is in the config-node, so you can have multiple sonospollytts nodes without problem with duplicated webserver ports.<br/>
+- Update help accordingly.<br/>
+</p>
 <p>
 <b>Version 1.1.16</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
 - NEW: Automatic discovery added. No more IP addresses to remember.<br/>

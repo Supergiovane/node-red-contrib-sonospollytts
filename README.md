@@ -207,19 +207,7 @@ This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos a
 
 <br/><br/><br/><br/>
 
-# SONOSPOLLYTTS CONFIGURATION
-
-**Polly Config**<br/>
-Create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: *"The security token included in the request is invalid."*
-
-**Polly Voice**<br/>
-Select your preferred voice
-
-**Sonos Volume** <br/>
-set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
-
-**Sonos Hailing**<br/>
-before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
+# SONOSPOLLYTTS-CONFIG NODE
 
 **Node-Red IP**<br/>
 set IP of your node-red machine
@@ -233,6 +221,22 @@ Purge and delete the TTS cache folder at deploy or restart(default): on each dep
 Leave the TTS cache folder untouched (not suggested if you have less disk space): don't delete any tts file. Useful if you wish to keep the tts files, even in case of internet outages.
 
 
+
+# SONOSPOLLYTTS NODE
+
+**Polly Config**<br/>
+Create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: *"The security token included in the request is invalid."*
+
+**Polly Voice**<br/>
+Select your preferred voice
+
+**Sonos Volume** <br/>
+set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
+
+**Sonos Hailing**<br/>
+before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
+
+
 **Main Sonos Player** <br/>
 Select your Sonos primary player. (It's strongly suggested to set a fixed IP for this player; you can reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server).<br/>
 Starting from Version 1.1.16, it's possibile to group players, so your announcement can be played on all selected players. For this to happen, you need to select your primary coordinator player. All other players will be then controlled by this coordinator.
@@ -241,7 +245,7 @@ Starting from Version 1.1.16, it's possibile to group players, so your announcem
 Here you can add all additional players that will be grouped toghether to the *Main Sonos Player* coordinator group. You can add a player using the "ADD" button, below the list.
 
 
-## INPUT MESSAGES TO THE NODE <br/>
+# INPUT MESSAGES TO THE NODE <br/>
 
 **msg.volume** set the volume (values between "0" and "100" with quotes)</br>
 **msg.nohailing** temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)</br>
@@ -256,7 +260,7 @@ node.send({payload:"http://192.125.22.44/intruderalarm.mp3"};
 node.send({payload:"Warning. Intruder in the dinning room."};
 ```
 
-## OUTPUT MESSAGES FROM THE NODE
+# OUTPUT MESSAGES FROM THE NODE
 
 **msg.completed** "true" when the node has finished playing, <b>false</b> if the node is playing<br/>
 **msg.connectionerror** "true" when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>

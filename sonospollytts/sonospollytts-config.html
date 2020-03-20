@@ -1,0 +1,72 @@
+<script type="text/javascript">
+    RED.nodes.registerType("sonospollytts-config", {
+        category: 'config',
+        defaults:
+        {
+            name: { value: "" },
+            noderedipaddress:
+            {
+                value: "192.168.1.146",
+                required: true,
+                type: "text"
+            },
+            noderedport:
+            {
+                value: "1980",
+                required: true,
+                type: "text"
+            },
+            accessKey:
+            {
+                type: 'text'
+            },
+            secretKey:
+            {
+                type: 'password'
+            },
+            purgediratrestart: { value: "purge", required: true }
+        },
+        label: function () {
+            return this.name || "";
+        },
+        oneditprepare: function () {
+
+        }
+    });
+</script>
+
+
+<script type="text/x-red" data-template-name="sonospollytts-config">
+
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-user"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-accessKey"><i class="fa fa-user"></i> Polly Access key</label>
+        <input type="text" id="node-config-input-accessKey">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-secretKey"><i class="fa fa-user"></i> Polly Secret key</label>
+        <input type="password" id="node-config-input-secretKey">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
+        <input type="text" id="node-config-input-noderedipaddress">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-noderedport"><i class="fa fa-globe"></i> Webserver port, default 1980</label>
+        <input type="text" id="node-config-input-noderedport">
+        <div> <i>The node will create a webserver, listening on this port, to serve files to Sonos.<br/>Sonos will connect to this port ans starts playing.<br/>Please do not use 1880, that's the default node-red port.</i></div>
+    </div>
+   
+    <div class="form-row">
+        <label for="node-config-input-purgediratrestart"><i class="fa fa-folder-o"></i> TTS Cache</label>
+        <select id="node-config-input-purgediratrestart">
+            <option value="purge">Purge and delete the TTS cache folder at deploy or restart(default)</option>
+            <option value="leave">Leave the TTS cache folder untouched (not suggested if you have less disk space)</option>
+        </select>
+    </div>
+
+</script>

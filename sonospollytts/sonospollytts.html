@@ -1,56 +1,3 @@
-<script type="text/x-red" data-template-name="sonospollytts-config">
-
-    <div class="form-row">
-        <label for="node-config-input-name"><i class="fa fa-user"></i> Name</label>
-        <input type="text" id="node-config-input-name">
-    </div>
-
-    <div class="form-row">
-        <label for="node-config-input-accessKey"><i class="fa fa-user"></i> Polly Access key</label>
-        <input type="text" id="node-config-input-accessKey">
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-secretKey"><i class="fa fa-user"></i> Polly Secret key</label>
-        <input type="password" id="node-config-input-secretKey">
-    </div>
-
-  
- 
-
-</script>
-
-<script type="text/javascript">
-    RED.nodes.registerType("sonospollytts-config",
-        {
-            category: 'config',
-            defaults:
-            {
-                name: { value: "" }
-            },
-            credentials:
-            {
-                accessKey:
-                {
-                    type: 'text'
-                },
-                secretKey:
-                {
-                    type: 'password'
-                }
-            },
-            label: function () {
-                return this.name || "";
-            },
-            oneditprepare: function () {
-
-            }
-        });
-</script>
-
-
-
-
-
 <script type="text/x-red" data-help-name="sonospollytts">
     <p>
         <a href="https://www.paypal.me/techtoday" target="_blank"><img src='https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square' width='30%'></a>
@@ -177,25 +124,11 @@
         <label></label>
         <input type="checkbox" id="node-input-ssml" style="margin-left: 0px; vertical-align: top; width: auto !important;"> <label style="width:auto !important;"> Enable SSML</label>
     </div>
-    <div class="form-row">
-        <label for="node-input-purgediratrestart"><i class="fa fa-folder-o"></i> TTS Cache</label>
-        <select id="node-input-purgediratrestart">
-            <option value="purge">Purge and delete the TTS cache folder at deploy or restart(default)</option>
-            <option value="leave">Leave the TTS cache folder untouched (not suggested if you have less disk space)</option>
-        </select>
-    </div>
-    <div class="form-row">
-        <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
-        <input type="text" id="node-input-noderedipaddress">
-    </div>
-    <div class="form-row">
-        <label for="node-input-noderedport"><i class="fa fa-globe"></i> Webserver port, default 1980</label>
-        <input type="text" id="node-input-noderedport">
-        <div> <i>The node will create a webserver, listening on this port, to serve files to Sonos.<br/>Sonos will connect to this port ans starts playing.<br/>Please do not use 1880, that's the default node-red port.</i></div>
-    </div>
+   
+   
     <div class="form-row">
         <label for="node-input-sonosvolume"><i class="fa fa-volume-up"></i> Sonos Volume</label>
-        <input type="text" id="node-input-sonosvolume">
+        <input type="text" id="node-input-sonosvolume" style="width:150px"> 
     </div>
     <div class="form-row">
         <label for="node-input-sonoshailing"><i class="fa fa-bell"></i> Sonos Hailing</label>
@@ -207,19 +140,9 @@
     </div>
     <div class="form-row">
         <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Main Sonos Player</label>
-        <!-- <input type="text" id="node-input-sonosipaddress"> -->
         <select id="node-input-sonosipaddress"></select>
     </div>
-    <!-- <div class="form-row">
-        <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
-        <input type="text" id="node-input-noderedipaddress">
-    </div>
-    <div class="form-row">
-        <label for="node-input-noderedport"><i class="fa fa-globe"></i> Webserver port, default 1980</label>
-        <input type="text" id="node-input-noderedport">
-        <div> <i>The node will create a webserver, listening on this port, to serve files to Sonos.<br/>Sonos will connect to this port ans starts playing.<br/>Please do not use 1880, that's the default node-red port.</i></div>
-    </div> -->
-
+   
     <dt><i class="fa fa-code-fork"></i>&nbsp; Additional players</dt>
     <div class="form-row node-input-rule-container-row">
         <ol id="node-input-rule-container"></ol>
@@ -238,7 +161,6 @@
             defaults:
             {
                 name: { value: "" },
-                purgediratrestart: { value: "purge", required: true },
                 voice:
                 {
                     value: "0",
@@ -270,18 +192,7 @@
                     type: "sonospollytts-config",
                     required: true
                 },
-                noderedipaddress:
-                {
-                    value: "192.168.1.146",
-                    required: true,
-                    type: "text"
-                },
-                noderedport:
-                {
-                    value: "1980",
-                    required: true,
-                    type: "text"
-                },
+                
 
                 property: { value: "payload", required: true, validate: RED.validators.typedInput("propertyType") },
                 propertyType: { value: "msg" },
