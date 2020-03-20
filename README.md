@@ -199,9 +199,11 @@ This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos a
 
 ## FEATURES
 * Works with node-red in HTTP and in HTTPS mode.
-* TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.
+* Automatic grouping is supported. You can group all players you want to play your announcements.
+* Automatic discovery of your players.
 * TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
+
 
 <br/><br/><br/><br/>
 
@@ -212,9 +214,6 @@ Create a config with your AWS credentials. If you put incorrect credentials, you
 
 **Polly Voice**<br/>
 Select your preferred voice
-
-**Sonos IP** <br/>
-Insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)
 
 **Sonos Volume** <br/>
 set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
@@ -232,6 +231,15 @@ normally 1980. This is the IP of your machine, running node-red
 <br/>
 Purge and delete the TTS cache folder at deploy or restart(default): on each deploy or node-red restart, delete all tts files in the cache. This is useful not to run out of disk space, in case you've a lot of TTS speech files.<br/>
 Leave the TTS cache folder untouched (not suggested if you have less disk space): don't delete any tts file. Useful if you wish to keep the tts files, even in case of internet outages.
+
+
+**Main Sonos Player** <br/>
+Select your Sonos primary player. (It's strongly suggested to set a fixed IP for this player; you can reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server).<br/>
+Starting from Version 1.1.16, it's possibile to group players, so your announcement can be played on all selected players. For this to happen, you need to select your primary coordinator player. All other players will be then controlled by this coordinator.
+
+**Additional Players** <br/>
+Here you can add all additional players that will be grouped toghether to the *Main Sonos Player* coordinator group. You can add a player using the "ADD" button, below the list.
+
 
 ## INPUT MESSAGES TO THE NODE <br/>
 

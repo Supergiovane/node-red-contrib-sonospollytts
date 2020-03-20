@@ -6,6 +6,11 @@
 
 
 <p>
+<b>Version 1.1.16</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
+- NEW: Automatic discovery added. No more IP addresses to remember.<br/>
+- NEW: Grouping function. Now you can add more players to the play group.<br/>
+</p>
+<p>
 <b>Version 1.1.15</b> March 2020<br/>
 - NEW: you can now add your own custom Hailing file.<br/>
 - NEW: you can now change the hailing with a msg.hailing property.<br/>

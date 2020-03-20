@@ -14,19 +14,18 @@
         <input type="password" id="node-config-input-secretKey">
     </div>
 
-
+  
  
 
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('sonospollytts-config',
+    RED.nodes.registerType("sonospollytts-config",
         {
             category: 'config',
             defaults:
             {
                 name: { value: "" }
-
             },
             credentials:
             {
@@ -48,6 +47,61 @@
         });
 </script>
 
+
+
+
+
+<script type="text/x-red" data-help-name="sonospollytts">
+    <p>
+        <a href="https://www.paypal.me/techtoday" target="_blank"><img src='https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square' width='30%'></a>
+        and
+        <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel</a> for news about my nodes.
+    </p>
+    <p>
+        This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and requires <b>NODE 8.9.x</b> or higher.
+    </p>
+    <p>
+        Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/>
+        Please read the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/README.md">README</a><br/>
+    </p>
+    <p>
+        <b>INPUT:</b><br/> 
+        <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)<br/>
+        <code>msg.nohailing</code> doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)<br/>
+        <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";)<br/>
+        <code>msg.sonoshailing</code> Overrides the selected hailing and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your hailing files, in the sonospollytts config window) and do not include the <b>.mp3</b> extension.
+    <p>
+    <p>
+        <b>OUTPUT:</b><br/> 
+        <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing<br/>
+        <code>msg.connectionerror</code> <b>true</b> when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>
+    <p>
+        <b>FEATURES:</b><br/> 
+        - TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.<br/>
+        - TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.<br/>
+        - Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
+    </p>
+    <p>
+        <b>CONFIG:</b><br/>
+        <code>Polly Config</code> create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: "The security token included in the request is invalid."<br/>
+        <code>Polly Voice</code> select your preferred voice.<br/>
+        <code>Main Sonos player</code> insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
+        <code>Sonos Volume</code> set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
+        <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it. You can upload and delete your own hailing sounds as well.<br/>
+        <code>Node-Red IP</code> set IP of your node-red<br/>
+        <code>Webserver port</code> default 1980. If you are behind firewall, remember to forward this port.<br/>
+        <code>TTS Cache</code> Whether to delete (default) or leave it in places the TTS files in the cache folder on each Deploy or Reboot of node-red. Leaving TTS files in che cache, may put you in a disk space trouble.
+    </p>
+
+    <p>
+    <b>USE:</b><br/>
+    Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Main Sonos player device (Sonos
+    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
+    router/firewall's DHCP Server).<br/>
+    From Version <b>0.0.18</b> onward, you can send a message with full http path of an mp3, to play it directly, ex: <code>http://www.mysite.com/myfile.mp3</code><br/>
+    </p>
+
+</script>
 
 <script type="text/x-red" data-template-name="sonospollytts">
 
@@ -130,9 +184,17 @@
             <option value="leave">Leave the TTS cache folder untouched (not suggested if you have less disk space)</option>
         </select>
     </div>
-
     <div class="form-row">
-        <label for="node-input-sonosipaddress"><i class="fa fa-volume-up"></i> Sonos Volume</label>
+        <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
+        <input type="text" id="node-input-noderedipaddress">
+    </div>
+    <div class="form-row">
+        <label for="node-input-noderedport"><i class="fa fa-globe"></i> Webserver port, default 1980</label>
+        <input type="text" id="node-input-noderedport">
+        <div> <i>The node will create a webserver, listening on this port, to serve files to Sonos.<br/>Sonos will connect to this port ans starts playing.<br/>Please do not use 1880, that's the default node-red port.</i></div>
+    </div>
+    <div class="form-row">
+        <label for="node-input-sonosvolume"><i class="fa fa-volume-up"></i> Sonos Volume</label>
         <input type="text" id="node-input-sonosvolume">
     </div>
     <div class="form-row">
@@ -144,10 +206,11 @@
         <input id="ownFileUpload" type="file" multiple="multiple">
     </div>
     <div class="form-row">
-        <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Sonos IP</label>
-        <input type="text" id="node-input-sonosipaddress">
+        <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Main Sonos Player</label>
+        <!-- <input type="text" id="node-input-sonosipaddress"> -->
+        <select id="node-input-sonosipaddress"></select>
     </div>
-    <div class="form-row">
+    <!-- <div class="form-row">
         <label for="node-input-noderedipaddress"><i class="fa fa-globe"></i> Node-Red IP</label>
         <input type="text" id="node-input-noderedipaddress">
     </div>
@@ -155,60 +218,15 @@
         <label for="node-input-noderedport"><i class="fa fa-globe"></i> Webserver port, default 1980</label>
         <input type="text" id="node-input-noderedport">
         <div> <i>The node will create a webserver, listening on this port, to serve files to Sonos.<br/>Sonos will connect to this port ans starts playing.<br/>Please do not use 1880, that's the default node-red port.</i></div>
+    </div> -->
+
+    <dt><i class="fa fa-code-fork"></i>&nbsp; Additional players</dt>
+    <div class="form-row node-input-rule-container-row">
+        <ol id="node-input-rule-container"></ol>
     </div>
-</script>
-
-
-
-<script type="text/x-red" data-help-name="sonospollytts">
-    <p>
-        <a href="https://www.paypal.me/techtoday" target="_blank"><img src='https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square' width='30%'></a>
-        and
-        <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel</a> for news about my nodes.
-    </p>
-    <p>
-        This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS api and Node Sonos api and requires <b>NODE 8.9.x</b> or higher.
-    </p>
-    <p>
-        Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/>
-        Please read the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/README.md">README</a><br/>
-    </p>
-    <p>
-        <b>INPUT:</b><br/> 
-        <code>msg.volume</code> set the volume (values between "0" and "100" with quotes)<br/>
-        <code>msg.nohailing</code> doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)<br/>
-        <code>msg.payload</code> the text to be spoken (for example msg.payload = "Hello World!";)<br/>
-        <code>msg.sonoshailing</code> Overrides the selected hailing and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your hailing files, in the sonospollytts config window) and do not include the <b>.mp3</b> extension.
-    <p>
-    <p>
-        <b>OUTPUT:</b><br/> 
-        <code>msg.completed</code> <b>true</b> when the node has finished playing, <b>false</b> if the node is playing<br/>
-        <code>msg.connectionerror</code> <b>true</b> when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>
-    <p>
-        <b>FEATURES:</b><br/> 
-        - TTS queues handling. If you send multiple payloads to the node, it'll handle it in his own queue.<br/>
-        - TTS caching. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.<br/>
-        - Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
-    </p>
-    <p>
-        <b>CONFIG:</b><br/>
-        <code>Polly Config</code> create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: "The security token included in the request is invalid."<br/>
-        <code>Polly Voice</code> select your preferred voice.<br/>
-        <code>Sonos IP</code> insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
-        <code>Sonos Volume</code> set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
-        <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it. You can upload and delete your own hailing sounds as well.<br/>
-        <code>Node-Red IP</code> set IP of your node-red<br/>
-        <code>Webserver port</code> default 1980. If you are behind firewall, remember to forward this port.<br/>
-        <code>TTS Cache</code> Whether to delete (default) or leave it in places the TTS files in the cache folder on each Deploy or Reboot of node-red. Leaving TTS files in che cache, may put you in a disk space trouble.
-    </p>
-
-    <p>
-    <b>USE:</b><br/>
-    Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Sonos IP Address (Sonos
-    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
-    router/firewall's DHCP Server).<br/>
-    From Version <b>0.0.18</b> onward, you can send a message with full http path of an mp3, to play it directly, ex: <code>http://www.mysite.com/myfile.mp3</code><br/>
-    </p>
+    <div class="form-row">
+        <p>Press ADD, to add a player in the list.</p>
+    </div>
 
 </script>
 
@@ -234,8 +252,7 @@
                 sonosipaddress:
                 {
                     value: "",
-                    required: true,
-                    type: "text"
+                    required: true
                 },
                 sonosvolume:
                 {
@@ -248,9 +265,14 @@
                     value: "1",
                     required: false,
                 },
+                config:
+                {
+                    type: "sonospollytts-config",
+                    required: true
+                },
                 noderedipaddress:
                 {
-                    value: "",
+                    value: "192.168.1.146",
                     required: true,
                     type: "text"
                 },
@@ -260,11 +282,10 @@
                     required: true,
                     type: "text"
                 },
-                config:
-                {
-                    type: "sonospollytts-config",
-                    required: true
-                }
+
+                property: { value: "payload", required: true, validate: RED.validators.typedInput("propertyType") },
+                propertyType: { value: "msg" },
+                rules: { value: [{ t: "eq", v: "", vt: "str" }] }
             },
             inputs: 1,
             outputs: 1,
@@ -383,6 +404,104 @@
                 });
                 // ##########################################################
 
+
+
+                // 20/03/2020 Coronavirus issue in Itay. Getting all Sonos Groups
+                // ##########################################################
+                $.getJSON('sonosgetAllGroups', (data) => {
+                    data.sort().forEach(oGroup => {
+                        $("#node-input-sonosipaddress").append($("<option></option>")
+                            .attr("value", oGroup.host)
+                            .text(oGroup.name)
+                        )
+                    });
+                    $("#node-input-sonosipaddress").val(typeof this.sonosipaddress === "undefined" ? "" : this.sonosipaddress)
+                });
+                // ##########################################################
+
+
+                // 20/03/2020 ADDITIONAL PLAYERS
+                // ##########################################################
+                var previousValueType = { value: "prev", label: this._("switch.previous"), hasValue: false };
+                function resizeRule(rule) { }
+                $("#node-input-rule-container").css('min-height', '150px').css('min-width', '450px').editableList({
+                    addItem: function (container, i, opt) { // row, index, data
+                        // opt.r is: { topic: rowRuleTopic, devicename: rowRuleDeviceName, dpt:rowRuleDPT, send: rowRuleSend}
+
+                        if (!opt.hasOwnProperty('r')) {
+                            opt.r = {};
+                        }
+                        var rule = opt.r;
+                        if (!opt.hasOwnProperty('i')) {
+                            opt._i = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
+                        }
+                        container.css({
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap'
+                        });
+
+
+                        var row = $('<div class="form-row"/>').appendTo(container);
+                        var oPlayer = $('<select/>', { class: "rowRulePlayerHost", type: "text", style: "width:300px; margin-left: 5px; text-align: left;" }).appendTo(row);
+
+                        oPlayer.on("change", function () {
+                            resizeRule(container);
+                        });
+
+                        $.getJSON('sonosgetAllGroups', (data) => {
+                            data.sort().forEach(oGroup => {
+                                oPlayer.append($("<option></option>")
+                                    .attr("value", oGroup.host)
+                                    .text(oGroup.name)
+                                )
+                            });
+                            oPlayer.val(rule.host);
+                        });
+
+                        //oPlayer.change();
+                    },
+                    removeItem: function (opt) {
+
+                    },
+                    resizeItem: resizeRule,
+                    sortItems: function (rules) {
+                    },
+                    sortable: true,
+                    removable: true
+                });
+
+                // 20/03/2020 For each rule, create a row
+                for (var i = 0; i < this.rules.length; i++) {
+                    var rule = this.rules[i];
+                    $("#node-input-rule-container").editableList('addItem', { r: rule, i: i });
+                }
+                // ##########################################################
+
+
+            }, oneditsave: function () {
+                var node = this;
+
+                var rules = $("#node-input-rule-container").editableList('items');
+                node.rules = [];
+                rules.each(function (i) {
+                    var rule = $(this);
+                    var rowRulePlayerHost = rule.find(".rowRulePlayerHost").val();
+                    node.rules.push({ host: rowRulePlayerHost });
+                });
+                this.propertyType = $("#node-input-property").typedInput('type');
+            },
+            oneditresize: function (size) {
+                var node = this;
+
+                var rows = $("#dialog-form>div:not(.node-input-rule-container-row)");
+                var height = size.height;
+                for (var i = 0; i < rows.length; i++) {
+                    height -= $(rows[i]).outerHeight(true);
+                }
+                var editorRow = $("#dialog-form>div.node-input-rule-container-row");
+                height -= (parseInt(editorRow.css("marginTop")) + parseInt(editorRow.css("marginBottom")));
+                height += 16;
+                $("#node-input-rule-container").editableList('height', height);
             }
         });
 </script>

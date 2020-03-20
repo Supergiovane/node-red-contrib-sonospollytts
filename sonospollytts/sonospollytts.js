@@ -477,6 +477,7 @@ module.exports = function (RED) {
     // Configuration Node Register
     function PollyConfigNode(config) {
         RED.nodes.createNode(this, config);
+       
 
         if (this.credentials) {
             this.accessKey = this.credentials.accessKey;
@@ -492,7 +493,7 @@ module.exports = function (RED) {
         this.polly = new AWS.Polly(params);
 
     }
-
+    //RED.nodes.registerType('sonospollytts-config', PollyConfigNode);
     RED.nodes.registerType('sonospollytts-config', PollyConfigNode, {
         credentials: {
             accessKey: {
@@ -503,7 +504,7 @@ module.exports = function (RED) {
             }
         }
     });
-
+    
 
 
     // Node Register
@@ -515,13 +516,13 @@ module.exports = function (RED) {
         node.aMessageQueue = []; // Array of incoming TTS messages
         node.SonosClient;
         node.iVoice;
-        node.sNoderedURL; // Stores the node.red URL and port
         node.oTimer;
         node.oTimerSonosConnectionCheck;
         node.sSonosVolume; // Sonos Volume
         node.sSonosPlayState = "stopped"; // Play state
         node.sSonosTrackTitle = ""; // Track title
         node.sSonosIPAddress = "";
+        node.sSonosCoordinatorGroupName = "";
         node.sonoshailing = "0"; // Hailing file
         node.msg = {}; // 08/05/2019 Node message
         node.oWebserver; // 11/11/2019 Stores the Webserver
@@ -529,6 +530,39 @@ module.exports = function (RED) {
         node.msg.connectionerror = true;
         node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
         node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
+        node.oAdditionalSonosPlayers = []; // 20/03/2020 Contains other players to be grouped
+        node.rules = config.rules || [{}];
+        
+        // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
+        if (config.noderedport.trim() == "1880") {
+            RED.log.warn("SonosPollyTTS: The webserver port ist 1880. Please change it to another port, not to conflict with default node-red 1880 port. I've changed this temporarly for you to 1980");
+            config.noderedport = "1980";
+        }
+        node.sNoderedURL = "http://" + config.noderedipaddress.trim() + ":" + config.noderedport.trim(); // 11/11/2019 New Endpoint to overcome https problem.
+        RED.log.info('SonosPollyTTS: Node-Red node.js Endpoint will be created here: ' + node.sNoderedURL + "/tts");
+
+        // 20/03/2020 in the middle of coronavirus, get the sonos groups
+        RED.httpAdmin.get("/sonosgetAllGroups", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
+            var jListGroups = [];
+            try {
+                const discovery = new sonos.AsyncDeviceDiscovery()
+                discovery.discover().then((device, model) => {
+                    RED.log.warn('Found one sonos device ' + device.host + ' getting all groups')
+                    return device.getAllGroups().then((groups) => {
+                        //RED.log.warn('Groups ' + JSON.stringify(groups, null, 2))
+                        for (let index = 0; index < groups.length; index++) {
+                            const element = groups[index];
+                            jListGroups.push({ name: element.Name, host: element.host })
+                        }
+                        res.json(jListGroups)
+                        //return groups[0].CoordinatorDevice().togglePlayback()
+                    })
+                }).catch(e => {
+                    RED.log.warn(' Error in discovery ' + e)
+                })
+            } catch (error) { }
+        });
+
 
         // 09/03/2020 Get list of filenames in hailing folder
         RED.httpAdmin.get("/getHailingFilesList", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
@@ -570,8 +604,6 @@ module.exports = function (RED) {
             res.json({ status: 220 });
             res.end;
         });
-
-
 
         // 20/11/2019 Used to call the status update
         node.setNodeStatus = ({ fill, shape, text }) => {
@@ -631,13 +663,13 @@ module.exports = function (RED) {
 
 
         // Set ssml
-        this.ssml = config.ssml;
+        node.ssml = config.ssml;
 
-        this.Pollyconfig = RED.nodes.getNode(config.config);
+        node.Pollyconfig = RED.nodes.getNode(config.config);
 
         node.sSonosIPAddress = config.sonosipaddress.trim();
 
-        if (!this.Pollyconfig) {
+        if (!node.Pollyconfig) {
             RED.log.error('Missing Polly config');
             return;
         }
@@ -645,17 +677,21 @@ module.exports = function (RED) {
         // Set the voice
         node.iVoice = voices[config.voice].Id;
 
-        // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
-        if (config.noderedport.trim() == "1880") {
-            RED.log.warn("SonosPollyTTS: The webserver port ist 1880. Please change it to another port, not to conflict with default node-red 1880 port. I've changed this temporarly for you to 1980");
-            config.noderedport = "1980";
-        }
-        node.sNoderedURL = "http://" + config.noderedipaddress.trim() + ":" + config.noderedport.trim(); // 11/11/2019 New Endpoint to overcome https problem.
-        RED.log.info('SonosPollyTTS: Node-Red node.js Endpoint will be created here: ' + node.sNoderedURL + "/tts");
 
         // Create sonos client
         node.SonosClient = new sonos.Sonos(node.sSonosIPAddress);
 
+        // 20/03/2020 Set the coorinator's zone name
+        node.SonosClient.getName().then(info => {
+            node.sSonosCoordinatorGroupName = info;
+            RED.log.info("SonosPollyTTS: ZONE COORDINATOR " + info);
+        });
+        // Fill the node.oAdditionalSonosPlayers with all sonos object in the rules
+        for (let index = 0; index < node.rules.length; index++) {
+            const element = node.rules[index];
+            node.oAdditionalSonosPlayers.push(new sonos.Sonos(element.host));
+            RED.log.info("SonosPollyTTS: FOUND ADDITIONAL PLAYER " + element.host);
+        }
 
         // Get default sonos volume
         node.sSonosVolume = config.sonosvolume;
@@ -689,7 +725,37 @@ module.exports = function (RED) {
             text: 'Ready'
         });
 
-        this.on('input', function (msg) {
+
+        // 20/03=2020 QUEUINPLAYERS
+        // ######################################################
+        // 20/03/2020 Join Coordinator queue
+        node.groupSpeakers = () => {
+            // 30/03/2020 in the middle of coronavirus emergency. Group Speakers
+            // You don't have to worry about who is the coordinator.
+            for (let index = 0; index < node.oAdditionalSonosPlayers.length; index++) {
+                const element = node.oAdditionalSonosPlayers[index];
+                element.joinGroup(node.sSonosCoordinatorGroupName).then(success => {
+                    //RED.log.warn('SonosPollyTTS: Joining ' + deviceToJoin + " with " + (success ? 'Success' : 'Failure'))
+                }).catch(err => {
+                    RED.log.warn('SonosPollyTTS: Error joining device ' + err)
+                });
+            }
+        }
+        // 20/03/2020 Ungroup Coordinator queue
+        node.ungroupSpeakers = () => {
+            for (let index = 0; index < node.oAdditionalSonosPlayers.length; index++) {
+                const element = node.oAdditionalSonosPlayers[index];
+                element.leaveGroup().then(success => {
+                    //RED.log.warn('Leaving the group is a ' + (success ? 'Success' : 'Failure'))
+                }).catch(err => {
+                    RED.log.warn('SonosPollyTTS: Error joining device ' + err)
+                })
+            }
+        }
+        // ######################################################
+
+
+        node.on('input', function (msg) {
             // 12/06/2018 Controllo se il payload è un'impostazione del volume
             if (msg.hasOwnProperty("volume")) {
                 node.sSonosVolume = msg.volume;
@@ -718,6 +784,7 @@ module.exports = function (RED) {
             // 07/05/2019 Set "completed" to false and send it
             if (node.aMessageQueue.length == 0) {
                 node.msg.completed = false;
+                node.groupSpeakers(); // 20/03/2020 Group Speakers toghether
                 node.send(node.msg);
             }
 
@@ -731,14 +798,24 @@ module.exports = function (RED) {
 
         });
 
-        this.on('close', function () {
+        node.on('close', function (done) {
             clearTimeout(node.oTimer);
+            node.SonosClient.stop().then(() => {
+                node.ungroupSpeakers();
+            });
+            node.msg.completed = true;
+            node.send(node.msg);
+            node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
             // 11/11/2019 Close the Webserver
             try {
                 node.oWebserver.close(function () { RED.log.info("SonosPollyTTS: Webserver UP. Closing down."); });
             } catch (error) {
 
             }
+            setTimeout(function () {
+                // Wait some time to allow time to do promises.
+                done();
+            }, 3000);
         });
 
 
@@ -894,7 +971,6 @@ module.exports = function (RED) {
 
     // Handle queue 2 
     function HandleQueue2(node) {
-        //RED.log.error('SonosPollyTTS: HandleQueue2 - DEBUG ' +node.sSonosIPAddress + " " + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
 
         // Play next msg
         if (node.aMessageQueue.length > 0) {
@@ -965,6 +1041,7 @@ module.exports = function (RED) {
             // 07/05/2019 Check if i have ended playing the queue as well
             if (node.msg.completed == false && node.sSonosPlayState == "stopped") {
                 node.msg.completed = true;
+                node.ungroupSpeakers(); // 20/03/2020 Ungroup Speakers
                 node.send(node.msg);
                 node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
             }
@@ -1028,7 +1105,6 @@ module.exports = function (RED) {
 
         var polly = node.Pollyconfig.polly;
         synthesizeSpeech([polly, params]).then(data => { return [filename, data.AudioStream]; }).then(cacheSpeech).then(function () {
-            //RED.log.info("synthesizeSpeech filename " + filename);
             // Play
             PlaySonos(filename, node);
 
@@ -1113,10 +1189,8 @@ module.exports = function (RED) {
         } else {
             sUrl = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
         }
-        RED.log.info('SonosPollyTTS: PlaySonos - URL: ' + sUrl);
 
         node.SonosClient.setVolume(node.sSonosVolume).then(success => {
-
             node.SonosClient.setAVTransportURI(sUrl).then(playing => {
 
                 // Polly has ended downloading file
