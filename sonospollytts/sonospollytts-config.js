@@ -19,7 +19,6 @@ module.exports = function (RED) {
             secretAccessKey: node.credentials.secretKey,
             apiVersion: '2016-06-10'
         };
-        RED.log.warn("param " + params.accessKeyId + " " + params.apiVersion + " - " + this.credentials.accessKey)
         node.polly = new AWS.Polly(params);
         node.oWebserver; // 11/11/2019 Stores the Webserver
         node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
