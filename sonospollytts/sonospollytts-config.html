@@ -16,20 +16,17 @@
                 required: true,
                 type: "text"
             },
-            accessKey:
-            {
-                type: 'text'
-            },
-            secretKey:
-            {
-                type: 'password'
-            },
             purgediratrestart: { value: "leave", required: true }
+        },
+        credentials: {
+            accessKey: { type: "text" },
+            secretKey: { type: "password" }
         },
         label: function () {
             return this.name || "";
         },
         oneditprepare: function () {
+
             if (typeof this.noderedipaddress === "undefined") {
                 // Put the default address of the machine
                 $.getJSON('sonospollyTTSGetEthAddress', (data) => {
@@ -44,6 +41,7 @@
                 // Put the default port 
                 $("#node-config-input-purgediratrestart").val("leave");
             }
+
         }
     });
 </script>

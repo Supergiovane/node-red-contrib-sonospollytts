@@ -3,20 +3,11 @@ module.exports = function (RED) {
 
     var AWS = require('aws-sdk');
     var fs = require('fs');
-    var mkdirp = require('mkdirp');
-    var MD5 = require('crypto-js').MD5;
-    var util = require('util');
-    var path = require('path');
-    const sonos = require('sonos');
-    var formidable = require('formidable');
     const oOS = require('os');
 
     AWS.config.update({
         region: 'us-east-1'
     });
-
-
-
 
     // Configuration Node Register
     function PollyConfigNode(config) {
@@ -24,10 +15,11 @@ module.exports = function (RED) {
         var node = this;
         node.noderedipaddress = typeof config.noderedipaddress === "undefined" ? "" : config.noderedipaddress;
         var params = {
-            accessKeyId: config.accessKey,
-            secretAccessKey: config.secretKey,
+            accessKeyId: node.credentials.accessKey,
+            secretAccessKey: node.credentials.secretKey,
             apiVersion: '2016-06-10'
         };
+        RED.log.warn("param " + params.accessKeyId + " " + params.apiVersion + " - " + this.credentials.accessKey)
         node.polly = new AWS.Polly(params);
         node.oWebserver; // 11/11/2019 Stores the Webserver
         node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
@@ -71,7 +63,7 @@ module.exports = function (RED) {
                     } else {
                         var sAddresses = "";
                         oiFaces[ifname].forEach(function (iface) {
-                            if (iface.internal == false && iface.family === "IPv4") sAddresses =  iface.address;
+                            if (iface.internal == false && iface.family === "IPv4") sAddresses = iface.address;
                         });
                         if (sAddresses !== "") jListInterfaces.push({ name: ifname, address: sAddresses });
                     }
@@ -154,7 +146,12 @@ module.exports = function (RED) {
 
 
     }
-    RED.nodes.registerType("sonospollytts-config", PollyConfigNode);
+    RED.nodes.registerType("sonospollytts-config", PollyConfigNode, {
+        credentials: {
+            accessKey: { type: "text" },
+            secretKey: { type: "password" }
+        }
+    });
 
 }
 
