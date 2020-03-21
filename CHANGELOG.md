@@ -5,7 +5,7 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
 
 <p>
-<b>Version 1.1.18</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
+<b>Version 1.1.19</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
 - CAUTION: You may need to re-enter the AWS credentials.<br/>
 - NEW: now the webserver config is in the config-node, so you can have multiple sonospollytts nodes without problem with duplicated webserver ports.<br/>
 - FIX: Ownfile, fixed a problem in refreshing the file list upon upload of new files.<br/>
