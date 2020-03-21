@@ -10,7 +10,7 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
-<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/README.png' width="80%">
+<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/img/README.png' width="80%">
 
 <details><summary> VIEW SAMPLE CODE </summary>
 
@@ -280,129 +280,7 @@ node.send({payload:"Warning. Intruder in the dinning room."};
 > Adjust the nodes according to your setup
 
 ```js
-[
-    {
-        "id": "9389863f.c9e44",
-        "type": "sonospollytts",
-        "z": "2e6a2c30.383f64",
-        "name": "",
-        "purgediratrestart": "leave",
-        "voice": "51",
-        "ssml": false,
-        "dir": "/tmp",
-        "sonosipaddress": "192.168.1.109",
-        "sonosvolume": "20",
-        "sonoshailing": "0",
-        "noderedipaddress": "192.168.1.146",
-        "noderedport": "1980",
-        "config": "8194024b.fa7",
-        "x": 680,
-        "y": 340,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "90a05585.bc514",
-        "type": "ownfile",
-        "z": "2e6a2c30.383f64",
-        "name": "",
-        "selectedFile": "OwnFile_Tur geoeffnet.mp3",
-        "x": 310,
-        "y": 340,
-        "wires": [
-            [
-                "9389863f.c9e44"
-            ]
-        ]
-    },
-    {
-        "id": "d416ac1c.e5c8b",
-        "type": "inject",
-        "z": "2e6a2c30.383f64",
-        "name": "",
-        "topic": "",
-        "payload": "true",
-        "payloadType": "bool",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 150,
-        "y": 340,
-        "wires": [
-            [
-                "90a05585.bc514"
-            ]
-        ]
-    },
-    {
-        "id": "3b08c36d.aba304",
-        "type": "comment",
-        "z": "2e6a2c30.383f64",
-        "name": "You can upload your own voice messages and use it with SonosPollyTTS",
-        "info": "",
-        "x": 340,
-        "y": 300,
-        "wires": []
-    },
-    {
-        "id": "b6061743.7f9ce",
-        "type": "ownfile",
-        "z": "2e6a2c30.383f64",
-        "name": "",
-        "selectedFile": "OwnFile_Tur geoeffnet.mp3",
-        "x": 410,
-        "y": 400,
-        "wires": [
-            [
-                "9389863f.c9e44"
-            ]
-        ]
-    },
-    {
-        "id": "6cac28fd.4088a8",
-        "type": "inject",
-        "z": "2e6a2c30.383f64",
-        "name": "",
-        "topic": "",
-        "payload": "true",
-        "payloadType": "bool",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 150,
-        "y": 400,
-        "wires": [
-            [
-                "fc569484.6604a8"
-            ]
-        ]
-    },
-    {
-        "id": "fc569484.6604a8",
-        "type": "function",
-        "z": "2e6a2c30.383f64",
-        "name": "",
-        "func": "// Override the selected file.\nmsg.selectedFile=\"Porta aperta\"\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 270,
-        "y": 400,
-        "wires": [
-            [
-                "b6061743.7f9ce"
-            ]
-        ]
-    },
-    {
-        "id": "8194024b.fa7",
-        "type": "sonospollytts-config",
-        "z": "",
-        "name": "asd"
-    }
-]
+[{"id":"9389863f.c9e44","type":"sonospollytts","z":"2e6a2c30.383f64","name":"","voice":"51","ssml":false,"sonosipaddress":"192.168.1.109","sonosvolume":"25","sonoshailing":"Hailing_Hailing.mp3","config":"7182770d.79d208","propertyType":{},"rules":[],"x":660,"y":340,"wires":[[]]},{"id":"90a05585.bc514","type":"ownfile","z":"2e6a2c30.383f64","name":"","selectedFile":"OwnFile_Tur geoeffnet.mp3","x":310,"y":340,"wires":[["9389863f.c9e44"]]},{"id":"d416ac1c.e5c8b","type":"inject","z":"2e6a2c30.383f64","name":"","topic":"","payload":"true","payloadType":"bool","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":150,"y":340,"wires":[["90a05585.bc514"]]},{"id":"3b08c36d.aba304","type":"comment","z":"2e6a2c30.383f64","name":"You can upload your own voice messages and use it with SonosPollyTTS","info":"","x":340,"y":300,"wires":[]},{"id":"b6061743.7f9ce","type":"ownfile","z":"2e6a2c30.383f64","name":"","selectedFile":"OwnFile_Tur geoeffnet.mp3","x":410,"y":400,"wires":[["9389863f.c9e44"]]},{"id":"6cac28fd.4088a8","type":"inject","z":"2e6a2c30.383f64","name":"","topic":"","payload":"true","payloadType":"bool","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":150,"y":400,"wires":[["fc569484.6604a8"]]},{"id":"fc569484.6604a8","type":"function","z":"2e6a2c30.383f64","name":"","func":"// Override the selected file.\nmsg.selectedFile=\"Porta aperta\"\nreturn msg;","outputs":1,"noerr":0,"x":270,"y":400,"wires":[["b6061743.7f9ce"]]},{"id":"7182770d.79d208","type":"sonospollytts-config","z":"","name":"Config","noderedipaddress":"192.168.1.236","noderedport":"1980","accessKey":"AKIAI7HWLENGB5NF6BTA","secretKey":"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","purgediratrestart":"leave"}]
 ```
 </details>
 

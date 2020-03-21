@@ -3,10 +3,10 @@
         category: 'config',
         defaults:
         {
-            name: { value: "" },
+            name: { value: "Config" },
             noderedipaddress:
             {
-                value: "192.168.1.146",
+                value: "",
                 required: true,
                 type: "text"
             },
@@ -24,13 +24,26 @@
             {
                 type: 'password'
             },
-            purgediratrestart: { value: "purge", required: true }
+            purgediratrestart: { value: "leave", required: true }
         },
         label: function () {
             return this.name || "";
         },
         oneditprepare: function () {
-
+            if (typeof this.noderedipaddress === "undefined") {
+                // Put the default address of the machine
+                $.getJSON('sonospollyTTSGetEthAddress', (data) => {
+                    $("#node-config-input-noderedipaddress").val(data);
+                });
+            }
+            if (typeof this.noderedport === "undefined") {
+                // Put the default port 
+                $("#node-config-input-noderedport").val("1980");
+            }
+            if (typeof this.purgediratrestart === "undefined") {
+                // Put the default port 
+                $("#node-config-input-purgediratrestart").val("leave");
+            }
         }
     });
 </script>

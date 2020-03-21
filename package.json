@@ -41,7 +41,8 @@
     "path": "^0.12.7",
     "sonos": "1.12.7",
     "util": ">=0.10.1",
-    "formidable": "1.2.2"
+    "formidable": "1.2.2",
+    "os": ">=0.1.1"
   },
   "devDependencies": {
     "eslint": ">=4.18.2",

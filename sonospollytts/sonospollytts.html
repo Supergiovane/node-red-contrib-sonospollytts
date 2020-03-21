@@ -192,7 +192,7 @@
                     type: "sonospollytts-config",
                     required: true
                 },
-                
+
 
                 property: { value: "payload", required: true, validate: RED.validators.typedInput("propertyType") },
                 propertyType: { value: "msg" },
@@ -205,9 +205,11 @@
                 return this.name || "SonosPollyTTS";
             },
             oneditprepare: function () {
+                var node = this;
 
-                $("#node-input-sonoshailing").click(function () {
-                    // Refresh the combo
+                // Refresh the combo
+                // #####################################
+                node.refreshHailingList = () => {
                     $('#node-input-sonoshailing')
                         .find('option')
                         .remove()
@@ -223,8 +225,11 @@
                                 .text(oFile.name)
                             )
                         });
+                        $("#node-input-sonoshailing").val(typeof node.sonoshailing === "undefined" ? "" : node.sonoshailing)
                     });
-                });
+                }
+                // #####################################
+
 
                 // 09/03/2020 Upload  file or files
                 // ##########################################################
@@ -243,23 +248,11 @@
                             contentType: false,
                             success: function (response, status, jqxhr) {
                                 // Refresh the combo
-                                $('#node-input-sonoshailing')
-                                    .find('option')
-                                    .remove()
-                                    .end();
-                                $.getJSON("getHailingFilesList", new Date().getTime(), (data) => {
-                                    $("#node-input-sonoshailing").append($("<option></option>")
-                                        .attr("value", "0")
-                                        .text("Disable")
-                                    )
-                                    data.sort().forEach(oFile => {
-                                        $("#node-input-sonoshailing").append($("<option></option>")
-                                            .attr("value", oFile.filename)
-                                            .text(oFile.name)
-                                        )
-                                    });
-                                    $("#node-input-sonoshailing").val(typeof this.sonoshailing === "undefined" ? "" : this.sonoshailing)
-                                });
+                                // The only way is to wait some time, then refresh
+                                setTimeout(function () {
+                                    node.refreshHailingList();
+                                    $("#ownFileUpload").val("");// Otherwise will not re-upload a file with the same name
+                                }, 500);
                             },
                             error: function (jqxhr, status, errorMessage) {
                                 //handle error
@@ -271,46 +264,12 @@
                 // ##########################################################
 
 
-                // Get Hailingfile list
-                // ##########################################################
-                $.getJSON('getHailingFilesList', (data) => {
-                    $("#node-input-sonoshailing").append($("<option></option>")
-                        .attr("value", "0")
-                        .text("Disable")
-                    )
-                    data.sort().forEach(oFile => {
-                        $("#node-input-sonoshailing").append($("<option></option>")
-                            .attr("value", oFile.filename)
-                            .text(oFile.name)
-                        )
-                    });
-                    $("#node-input-sonoshailing").val(typeof this.sonoshailing === "undefined" ? "" : this.sonoshailing)
-                });
-                // ##########################################################
-
-
+           
                 // Delete selected file
                 // ##########################################################
                 $("#deleteSelectedFile").click(function () {
                     $.getJSON('deleteHailingFile?FileName=' + $("#node-input-sonoshailing").val(), (data) => {
-                        // Refresh the combo
-                        $('#node-input-sonoshailing')
-                            .find('option')
-                            .remove()
-                            .end();
-                        $.getJSON("getHailingFilesList", new Date().getTime(), (data) => {
-                            $("#node-input-sonoshailing").append($("<option></option>")
-                                .attr("value", "0")
-                                .text("Disable")
-                            )
-                            data.sort().forEach(oFile => {
-                                $("#node-input-sonoshailing").append($("<option></option>")
-                                    .attr("value", oFile.filename)
-                                    .text(oFile.name)
-                                )
-                            });
-                            $("#node-input-sonoshailing").val(typeof this.sonoshailing === "undefined" ? "" : this.sonoshailing)
-                        });
+                        node.refreshHailingList();
                     });
                 });
                 // ##########################################################
@@ -323,10 +282,10 @@
                     data.sort().forEach(oGroup => {
                         $("#node-input-sonosipaddress").append($("<option></option>")
                             .attr("value", oGroup.host)
-                            .text(oGroup.name)
+                            .text(oGroup.name + " (" + oGroup.host + ")")
                         )
                     });
-                    $("#node-input-sonosipaddress").val(typeof this.sonosipaddress === "undefined" ? "" : this.sonosipaddress)
+                    $("#node-input-sonosipaddress").val(typeof node.sonosipaddress === "undefined" ? "" : node.sonosipaddress)
                 });
                 // ##########################################################
 
@@ -363,7 +322,7 @@
                             data.sort().forEach(oGroup => {
                                 oPlayer.append($("<option></option>")
                                     .attr("value", oGroup.host)
-                                    .text(oGroup.name)
+                                    .text(oGroup.name + " (" + oGroup.host + ")")
                                 )
                             });
                             oPlayer.val(rule.host);
@@ -388,6 +347,7 @@
                 }
                 // ##########################################################
 
+                node.refreshHailingList();
 
             }, oneditsave: function () {
                 var node = this;

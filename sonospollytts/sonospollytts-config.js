@@ -9,7 +9,7 @@ module.exports = function (RED) {
     var path = require('path');
     const sonos = require('sonos');
     var formidable = require('formidable');
-
+    const oOS = require('os');
 
     AWS.config.update({
         region: 'us-east-1'
@@ -23,7 +23,6 @@ module.exports = function (RED) {
         RED.nodes.createNode(this, config);
         var node = this;
         node.noderedipaddress = typeof config.noderedipaddress === "undefined" ? "" : config.noderedipaddress;
-        node.noderedport = typeof config.noderedport === "1980" ? "" : config.noderedport;
         var params = {
             accessKeyId: config.accessKey,
             secretAccessKey: config.secretKey,
@@ -33,11 +32,11 @@ module.exports = function (RED) {
         node.oWebserver; // 11/11/2019 Stores the Webserver
         node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
         node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
-       
+        node.noderedport = typeof config.noderedport === "undefined" ? "1980" : config.noderedport;
         // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
         if (node.noderedport.trim() == "1880") {
             RED.log.warn("SonosPollyTTS-config: The webserver port ist 1880. Please change it to another port, not to conflict with default node-red 1880 port. I've changed this temporarly for you to 1980");
-            config.noderedport = "1980";
+            node.noderedport = "1980";
         }
         node.sNoderedURL = "http://" + node.noderedipaddress.trim() + ":" + node.noderedport.trim(); // 11/11/2019 New Endpoint to overcome https problem.
         RED.log.info('SonosPollyTTS-config: Node-Red node.js Endpoint will be created here: ' + node.sNoderedURL + "/tts");
@@ -59,6 +58,27 @@ module.exports = function (RED) {
                 });
             } catch (error) { }
         };
+
+        // 21/03/2019 Endpoint for retrieving the default IP
+        RED.httpAdmin.get("/sonospollyTTSGetEthAddress", RED.auth.needsPermission('sonospollytts-config.read'), function (req, res) {
+            var oiFaces = oOS.networkInterfaces();
+            var jListInterfaces = [];
+            try {
+                Object.keys(oiFaces).forEach(ifname => {
+                    // Interface with single IP
+                    if (Object.keys(oiFaces[ifname]).length === 1) {
+                        if (Object.keys(oiFaces[ifname])[0].internal == false) jListInterfaces.push({ name: ifname, address: Object.keys(oiFaces[ifname])[0].address });
+                    } else {
+                        var sAddresses = "";
+                        oiFaces[ifname].forEach(function (iface) {
+                            if (iface.internal == false && iface.family === "IPv4") sAddresses =  iface.address;
+                        });
+                        if (sAddresses !== "") jListInterfaces.push({ name: ifname, address: sAddresses });
+                    }
+                })
+            } catch (error) { }
+            res.json(jListInterfaces[0].address); // Retunr the first usable IP
+        });
 
 
         // 11/11/2019 CREATE THE ENDPOINT
@@ -100,11 +120,6 @@ module.exports = function (RED) {
             node.oWebserver = http.createServer(requestHandler);
             node.oWebserver.on('error', function (e) {
                 RED.log.error("SonosPollyTTS-config: " + node.ID + " error starting webserver on port " + sWebport + " " + e);
-                node.setNodeStatus({
-                    fill: 'red',
-                    shape: 'dot',
-                    text: 'Error. Port ' + sWebport + " already in use."
-                });
             });
         } catch (error) {
             // Already open. Close it and redo.

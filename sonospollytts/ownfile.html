@@ -18,22 +18,26 @@
             return this.name ? 'node_label_italic' : '';
         },
         oneditprepare: function () {
+            var node = this;
 
-            $("#node-input-selectedFile").click(function () {
-                // Refresh the combo
-                $('#node-input-selectedFile')
+            // refreshListaFiles
+            // ##########################################################
+            node.refreshListaFiles = () => {
+                $("#node-input-selectedFile")
                     .find('option')
                     .remove()
                     .end();
-                $.getJSON("getOwnFilesList", new Date().getTime(), (data) => {
+                $.getJSON('getOwnFilesList', new Date().getTime(), (data) => {
                     data.sort().forEach(oFile => {
                         $("#node-input-selectedFile").append($("<option></option>")
                             .attr("value", oFile.filename)
                             .text(oFile.name)
                         )
                     });
+                    $("#node-input-selectedFile").val(typeof node.selectedFile === "undefined" ? "" : node.selectedFile)
                 });
-            });
+            }
+            // ##########################################################
 
             // 27/02/2020 Upload  file or files
             // ##########################################################
@@ -51,20 +55,11 @@
                         processData: false, //tell jquery not to process data
                         contentType: false,
                         success: function (response, status, jqxhr) {
-                            // Refresh the combo
-                            $('#node-input-selectedFile')
-                                .find('option')
-                                .remove()
-                                .end();
-                            $.getJSON("getOwnFilesList", new Date().getTime(), (data) => {
-                                data.sort().forEach(oFile => {
-                                    $("#node-input-selectedFile").append($("<option></option>")
-                                        .attr("value", oFile.filename)
-                                        .text(oFile.name)
-                                    )
-                                });
-                                $("#node-input-selectedFile").val(typeof this.selectedFile === "undefined" ? "" : this.selectedFile)
-                            });
+                            // The only way is to wait some time, then refresh
+                            setTimeout(function () {
+                                node.refreshListaFiles();
+                                $("#ownFileUpload").val("");// Otherwise will not re-upload a file with the same name
+                            }, 500);
                         },
                         error: function (jqxhr, status, errorMessage) {
                             //handle error
@@ -72,20 +67,7 @@
                         }
                     });
                 });
-            });
-            // ##########################################################
 
-
-            // Get Ownfile list
-            // ##########################################################
-            $.getJSON('getOwnFilesList', (data) => {
-                data.sort().forEach(oFile => {
-                    $("#node-input-selectedFile").append($("<option></option>")
-                        .attr("value", oFile.filename)
-                        .text(oFile.name)
-                    )
-                });
-                $("#node-input-selectedFile").val(typeof this.selectedFile === "undefined" ? "" : this.selectedFile)
             });
             // ##########################################################
 
@@ -95,19 +77,7 @@
             $("#deleteSelectedFile").click(function () {
                 $.getJSON('deleteOwnFile?FileName=' + $("#node-input-selectedFile").val(), (data) => {
                     // Refresh the combo
-                    $('#node-input-selectedFile')
-                        .find('option')
-                        .remove()
-                        .end();
-                    $.getJSON("getOwnFilesList", new Date().getTime(), (data) => {
-                        data.sort().forEach(oFile => {
-                            $("#node-input-selectedFile").append($("<option></option>")
-                                .attr("value", oFile.filename)
-                                .text(oFile.name)
-                            )
-                        });
-                        $("#node-input-selectedFile").val(typeof this.selectedFile === "undefined" ? "" : this.selectedFile)
-                    });
+                    node.refreshListaFiles();
                 });
             });
             // ##########################################################
@@ -145,20 +115,7 @@
                                                     text: "CONFIRM DELETE",
                                                     click: function (e) {
                                                         $.getJSON("deleteOwnFile?FileName=DELETEallFiles", (data) => {
-                                                            // Refresh the combo
-                                                            $('#node-input-selectedFile')
-                                                                .find('option')
-                                                                .remove()
-                                                                .end();
-                                                            $.getJSON("getOwnFilesList", new Date().getTime(), (data) => {
-                                                                data.sort().forEach(oFile => {
-                                                                    $("#node-input-selectedFile").append($("<option></option>")
-                                                                        .attr("value", oFile.filename)
-                                                                        .text(oFile.name)
-                                                                    )
-                                                                });
-                                                            });
-
+                                                            node.refreshListaFiles();
                                                         });
                                                         myNotification2.close();
                                                     }
@@ -179,7 +136,7 @@
             });
             // ##########################################################
 
-
+            node.refreshListaFiles();
         }
     });
 </script>

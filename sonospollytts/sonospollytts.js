@@ -508,7 +508,6 @@ module.exports = function (RED) {
             try {
                 const discovery = new sonos.AsyncDeviceDiscovery()
                 discovery.discover().then((device, model) => {
-                    RED.log.warn('Found one sonos device ' + device.host + ' getting all groups')
                     return device.getAllGroups().then((groups) => {
                         //RED.log.warn('Groups ' + JSON.stringify(groups, null, 2))
                         for (let index = 0; index < groups.length; index++) {
@@ -519,7 +518,7 @@ module.exports = function (RED) {
                         //return groups[0].CoordinatorDevice().togglePlayback()
                     })
                 }).catch(e => {
-                    RED.log.warn(' Error in discovery ' + e)
+                    RED.log.warn('SonosPollyTTS: Error in discovery ' + e)
                 })
             } catch (error) { }
         });

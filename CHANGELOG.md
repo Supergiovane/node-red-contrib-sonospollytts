@@ -6,7 +6,10 @@
 
 <p>
 <b>Version 1.1.18</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
+- CAUTION: You may need to re-enter the AWS credentials.<br/>
 - NEW: now the webserver config is in the config-node, so you can have multiple sonospollytts nodes without problem with duplicated webserver ports.<br/>
+- FIX: Ownfile, fixed a problem in refreshing the file list upon upload of new files.<br/>
+- FIX: SonosPollyTTS, fixed a problem in refreshing the hailing list upon upload of new hailing files.<br/>
 - Update help accordingly.<br/>
 </p>
 <p>
