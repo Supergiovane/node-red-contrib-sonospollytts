@@ -184,7 +184,7 @@
                 },
                 sonoshailing:
                 {
-                    value: "1",
+                    value: "0",
                     required: false,
                 },
                 config:
@@ -196,7 +196,7 @@
 
                 property: { value: "payload", required: true, validate: RED.validators.typedInput("propertyType") },
                 propertyType: { value: "msg" },
-                rules: { value: [{ t: "eq", v: "", vt: "str" }] }
+                rules: { value: [] }
             },
             inputs: 1,
             outputs: 1,
@@ -264,7 +264,7 @@
                 // ##########################################################
 
 
-           
+
                 // Delete selected file
                 // ##########################################################
                 $("#deleteSelectedFile").click(function () {
@@ -285,7 +285,9 @@
                             .text(oGroup.name + " (" + oGroup.host + ")")
                         )
                     });
-                    $("#node-input-sonosipaddress").val(typeof node.sonosipaddress === "undefined" ? "" : node.sonosipaddress)
+                    if (typeof node.sonosipaddress === "undefined" || node.sonosipaddress == "") {
+                        $("#node-input-sonosipaddress").val($("#node-input-sonosipaddress option:first").val());
+                    } else { $("#node-input-sonosipaddress").val(node.sonosipaddress) }
                 });
                 // ##########################################################
 

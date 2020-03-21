@@ -9,7 +9,7 @@ module.exports = function (RED) {
     var path = require('path');
     const sonos = require('sonos');
     var formidable = require('formidable');
-
+    const oOS = require('os');
 
     AWS.config.update({
         region: 'us-east-1'
@@ -474,11 +474,11 @@ module.exports = function (RED) {
     };
 
 
-  
+
     // Node Register
     function PollyNode(config) {
         RED.nodes.createNode(this, config);
-        var node = this
+        var node = this;
         node.server = RED.nodes.getNode(config.config)
         node.sPollyState = "done";
         node.iTimeoutPollyState = 0;
@@ -499,9 +499,32 @@ module.exports = function (RED) {
         node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
         node.oAdditionalSonosPlayers = []; // 20/03/2020 Contains other players to be grouped
         node.rules = config.rules || [{}];
-        node.sNoderedURL = node.server.sNoderedURL || "";
-       
+        node.sNoderedURL = "";
+        if (typeof node.server !== "undefined" && node.server !== null) {
+            node.sNoderedURL = node.server.sNoderedURL || "";
+        }
 
+           // 21/03/2019 Endpoint for retrieving the default IP
+           RED.httpAdmin.get("/sonospollyTTSGetEthAddress", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
+            var oiFaces = oOS.networkInterfaces();
+            var jListInterfaces = [];
+            try {
+                Object.keys(oiFaces).forEach(ifname => {
+                    // Interface with single IP
+                    if (Object.keys(oiFaces[ifname]).length === 1) {
+                        if (Object.keys(oiFaces[ifname])[0].internal == false) jListInterfaces.push({ name: ifname, address: Object.keys(oiFaces[ifname])[0].address });
+                    } else {
+                        var sAddresses = "";
+                        oiFaces[ifname].forEach(function (iface) {
+                            if (iface.internal == false && iface.family === "IPv4") sAddresses = iface.address;
+                        });
+                        if (sAddresses !== "") jListInterfaces.push({ name: ifname, address: sAddresses });
+                    }
+                })
+            } catch (error) { }
+            res.json(jListInterfaces[0].address); // Retunr the first usable IP
+           });
+        
         // 20/03/2020 in the middle of coronavirus, get the sonos groups
         RED.httpAdmin.get("/sonosgetAllGroups", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
             var jListGroups = [];
@@ -762,7 +785,7 @@ module.exports = function (RED) {
 
 
 
-       
+
 
 
 

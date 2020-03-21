@@ -26,7 +26,7 @@
             return this.name || "";
         },
         oneditprepare: function () {
-
+ 
             if (typeof this.noderedipaddress === "undefined") {
                 // Put the default address of the machine
                 $.getJSON('sonospollyTTSGetEthAddress', (data) => {

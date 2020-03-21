@@ -2,8 +2,13 @@
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
-<a href="http://eepurl.com/gJm095" target="_blank">Subscribe to my channel.</a> Only news about my nodes, no spam, no ads. I'm a github developer, not a merchant.
+<a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
+<p>
+<b>Version 1.1.21</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
+- Enhancement: Automatic discover for new node, now automatically adds the first avaiable player.<br/>
+- Fix some minor glitches in new added nodes.<br/>
+</p>
 <p>
 <b>Version 1.1.20</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
 - CAUTION: You may need to re-enter the AWS credentials.<br/>

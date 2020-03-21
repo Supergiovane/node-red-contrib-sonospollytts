@@ -3,7 +3,6 @@ module.exports = function (RED) {
 
     var AWS = require('aws-sdk');
     var fs = require('fs');
-    const oOS = require('os');
 
     AWS.config.update({
         region: 'us-east-1'
@@ -21,7 +20,7 @@ module.exports = function (RED) {
         };
         node.polly = new AWS.Polly(params);
         node.oWebserver; // 11/11/2019 Stores the Webserver
-        node.purgediratrestart = config.purgediratrestart || "purge"; // 26/02/2020
+        node.purgediratrestart = config.purgediratrestart || "leave"; // 26/02/2020
         node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
         node.noderedport = typeof config.noderedport === "undefined" ? "1980" : config.noderedport;
         // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
@@ -49,27 +48,8 @@ module.exports = function (RED) {
                 });
             } catch (error) { }
         };
-
-        // 21/03/2019 Endpoint for retrieving the default IP
-        RED.httpAdmin.get("/sonospollyTTSGetEthAddress", RED.auth.needsPermission('sonospollytts-config.read'), function (req, res) {
-            var oiFaces = oOS.networkInterfaces();
-            var jListInterfaces = [];
-            try {
-                Object.keys(oiFaces).forEach(ifname => {
-                    // Interface with single IP
-                    if (Object.keys(oiFaces[ifname]).length === 1) {
-                        if (Object.keys(oiFaces[ifname])[0].internal == false) jListInterfaces.push({ name: ifname, address: Object.keys(oiFaces[ifname])[0].address });
-                    } else {
-                        var sAddresses = "";
-                        oiFaces[ifname].forEach(function (iface) {
-                            if (iface.internal == false && iface.family === "IPv4") sAddresses = iface.address;
-                        });
-                        if (sAddresses !== "") jListInterfaces.push({ name: ifname, address: sAddresses });
-                    }
-                })
-            } catch (error) { }
-            res.json(jListInterfaces[0].address); // Retunr the first usable IP
-        });
+        
+     
 
 
         // 11/11/2019 CREATE THE ENDPOINT
