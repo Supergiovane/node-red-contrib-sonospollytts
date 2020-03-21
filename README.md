@@ -10,7 +10,7 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
-<img src='https://github.com/Supergiovane/node-red-contrib-sonospollytts/raw/master/img/README.png' width="80%">
+<img src='https://raw.githubusercontent.com/Supergiovane/node-red-contrib-sonospollytts/master/img/Readme.png' width="80%">
 
 <details><summary> VIEW SAMPLE CODE </summary>
 
