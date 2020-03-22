@@ -184,7 +184,7 @@
                 },
                 sonoshailing:
                 {
-                    value: "0",
+                    value: "Hailing_Hailing.mp3",
                     required: false,
                 },
                 config:
@@ -234,7 +234,7 @@
                                 .text(oFile.name)
                             )
                         });
-                        $("#node-input-sonoshailing").val(typeof node.sonoshailing === "undefined" ? "" : node.sonoshailing)
+                        $("#node-input-sonoshailing").val(typeof node.sonoshailing === "undefined" ? "Hailing_Hailing.mp3" : node.sonoshailing)
                     });
                 }
                 // #####################################
