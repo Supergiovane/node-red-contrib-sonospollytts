@@ -5,6 +5,11 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
+<b>Version 1.1.23</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
+- Help and README enhancement with new samples<br/>
+- Fix some minor glitches in new added nodes.<br/>
+</p>
+<p>
 <b>Version 1.1.22</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
 - Enhancement: Automatic discover for new node, now automatically adds the first avaiable player.<br/>
 - Fix some minor glitches in new added nodes.<br/>
