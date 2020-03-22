@@ -32,21 +32,14 @@
         <b>CONFIG:</b><br/>
         <code>Polly Config</code> create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: "The security token included in the request is invalid."<br/>
         <code>Polly Voice</code> select your preferred voice.<br/>
-        <code>Main Sonos player</code> insert your sonos's IP (If your Sonos device doesn't allow you to set a fixed IP, you need to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
         <code>Sonos Volume</code> set the preferred TTS volume, from "0" to "100" (can be overridden by passing msg.volume="40"; to the node)<br/>
         <code>Sonos Hailing</code> before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it. You can upload and delete your own hailing sounds as well.<br/>
-        <code>Node-Red IP</code> set IP of your node-red<br/>
-        <code>Webserver port</code> default 1980. If you are behind firewall, remember to forward this port.<br/>
-        <code>TTS Cache</code> Whether to delete (default) or leave it in places the TTS files in the cache folder on each Deploy or Reboot of node-red. Leaving TTS files in che cache, may put you in a disk space trouble.
+        <code>Main Sonos player</code> Select your primary player coordinator. (It's advisable to reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server)<br/>
+        <code>Additional players</code> If you've more than one player, you can add players to the group. Your announcement will be played simultaneusly to all these players as well.<br/>
+        
     </p>
 
-    <p>
-    <b>USE:</b><br/>
-    Set the configuration of Polly (you need the free Amazon AWS credentials), then set your Main Sonos player device (Sonos
-    doesn't allow to set a fixed IP to the sonos's device, so you need to reserve an IP using the DHCP Reservation function of your
-    router/firewall's DHCP Server).<br/>
-    From Version <b>0.0.18</b> onward, you can send a message with full http path of an mp3, to play it directly, ex: <code>http://www.mysite.com/myfile.mp3</code><br/>
-    </p>
+
 
 </script>
 
