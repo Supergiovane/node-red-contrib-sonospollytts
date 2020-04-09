@@ -85,8 +85,11 @@ Here you can add all additional players that will be grouped toghether to the *M
 # INPUT MESSAGES TO THE NODE
 
 **msg.volume** set the volume (values between "0" and "100" with quotes)  
-**msg.nohailing** temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)  
+
+**msg.nohailing** temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes) 
+
 **msg.payload** the text to be spoken (for example msg.payload = "Hello World!";). You can also play an mp3 stored on an http server, by passing the URL to the payload ( <code>msg.payload = "http://www.myserver.com/alarm.mp3"</code>) 
+
 **msg.sonoshailing** Overrides the selected hailing and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your hailing files, in the sonospollytts config window) and do not include the <b>.mp3</b> extenson. For example *node.sonoshailing="ComputerCall"*  
 
 *Example of using http mp3 in a function node*
@@ -130,8 +133,11 @@ Select a file to be played. You can upload one or multiple files at the same tim
 
 ## INPUT MESSAGE 
 
-**msg.payload = true** Begin play of the message  
-**msg.selectedFile = "Garage door open"** Overrides the selected message and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your own files, in the node config window) and do not include the **.mp3** extenson.
+**msg.payload = true** 
+Begin play of the message 
+
+**msg.selectedFile = "Garage door open"** 
+Overrides the selected message and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your own files, in the node config window) and do not include the **.mp3** extenson.
 
     
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg
