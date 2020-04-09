@@ -21,74 +21,73 @@
 ```
 </details>
 
-<br/>
-<br/>
+  
+  
 
 ## DESCRIPTION
-This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
-This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api. It supports PLAYERS GROUPING.<br/>
-You can use it with your own audio file as well and it can be used offline, without internet connection.
+This node transforms a text into spoken audio. It supports many languages. You can hear the voice through Sonos.
+This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api. It supports SONOS PLAYER GROUPING.  
+You can use it with your own audio files as well and it can be used offline, without internet connection.
 
-[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday)  and <a href="http://eepurl.com/gJm095" target="_blank">subscribe to my channel</a> for the latest news, if you enjoy my node.
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday)  and [subscribe to my channel](http://eepurl.com/gJm095) for the latest news, if you enjoy my node.
 
 ## CHANGELOG
-* See <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">here the changelog</a>
+* See [the changelog here](https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md)
 
 ## FEATURES
 * **Automatic grouping** is supported. You can group all players you want to play your announcements.
 * **Automatic discovery** of your players.
-* **TTS caching**. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
+* **TTS caching**. Amazon AWS charges you if you use Polly for a very high rate of Text To Speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
 * **UPLOAD your own audio files**. You can upload your own audio files with OwnFile node.
 * **Can work offline**. You can use your own audio files to make the node works offline. If you use the node with the integrated TTS Polly, thank to the **offline cache**, once you played the TTS only one time, the node will cache this TTS and you can use it **even without internet connection**. 
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
 * Works with node-red in HTTP and in HTTPS mode.
-
-<br/><br/><br/><br/>
-
+  
+    
+    
 # SONOSPOLLYTTS-CONFIG NODE
 
-**Node-Red IP**<br/>
+**Node-Red IP**  
 set IP of your node-red machine
 
-**Host Port**<br/>
+**Host Port**  
 normally 1980. This is the IP of your machine, running node-red
 
-**TTS Cache**
-<br/>
-Purge and delete the TTS cache folder at deploy or restart(default): on each deploy or node-red restart, delete all tts files in the cache. This is useful not to run out of disk space, in case you've a lot of TTS speech files.<br/>
+**TTS Cache**  
+Purge and delete the TTS cache folder at deploy or restart(default): on each deploy or node-red restart, delete all tts files in the cache. This helps to not run out of disk space, in case you've a lot of TTS speech files.<br/>
 Leave the TTS cache folder untouched (not suggested if you have less disk space): don't delete any tts file. Useful if you wish to keep the tts files, even in case of internet outages.
 
 
 
 # SONOSPOLLYTTS NODE
 
-**Polly Config**<br/>
+**Polly Config**  
 Create a config with your AWS credentials. If you put incorrect credentials, you'll see this error in the node-red's debug window: *"The security token included in the request is invalid."*
 
-**Polly Voice**<br/>
+**Polly Voice**  
 Select your preferred voice
 
-**Sonos Volume** <br/>
+**Sonos Volume**  
 set the preferred TTS volume, from "0" to "100" (can be overridden by passing <code>msg.volume="40";</code> to the node)
 
-**Sonos Hailing**<br/>
+**Sonos Hailing**  
 before the first TTS message of the message queues, Sonos will play an "hailing" sound. You can select the hailing or totally disable it.
 
+**Main Sonos Player**  
+Select your Sonos primary player. (It's strongly suggested to set a fixed IP for this player; you can reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server).
 
-**Main Sonos Player** <br/>
-Select your Sonos primary player. (It's strongly suggested to set a fixed IP for this player; you can reserve an IP using the DHCP Reservation function of your router/firewall's DHCP Server).<br/>
 Starting from Version 1.1.16, it's possibile to group players, so your announcement can be played on all selected players. For this to happen, you need to select your primary coordinator player. All other players will be then controlled by this coordinator.
 
-**Additional Players** <br/>
+**Additional Players**  
 Here you can add all additional players that will be grouped toghether to the *Main Sonos Player* coordinator group. You can add a player using the "ADD" button, below the list.
 
 
-# INPUT MESSAGES TO THE NODE <br/>
+# INPUT MESSAGES TO THE NODE
 
-**msg.volume** set the volume (values between "0" and "100" with quotes)</br>
-**msg.nohailing** temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)</br>
-**msg.payload** the text to be spoken (for example msg.payload = "Hello World!";). You can also play an mp3 stored on an http server, by passing the URL to the payload ( <code>msg.payload = "http://www.myserver.com/alarm.mp3"</code>)</br>
-**msg.sonoshailing** Overrides the selected hailing and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your hailing files, in the sonospollytts config window) and do not include the <b>.mp3</b> extenson. For example *node.sonoshailing="ComputerCall"*<br/>
+**msg.volume** set the volume (values between "0" and "100" with quotes)  
+**msg.nohailing** temporarely doesn't play the Hailing sound prior to the message (values "true" or "1" with quotes)  
+**msg.payload** the text to be spoken (for example msg.payload = "Hello World!";). You can also play an mp3 stored on an http server, by passing the URL to the payload ( <code>msg.payload = "http://www.myserver.com/alarm.mp3"</code>). 
+**msg.sonoshailing** Overrides the selected hailing and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your hailing files, in the sonospollytts config window) and do not include the <b>.mp3</b> extenson. For example *node.sonoshailing="ComputerCall"*  
 
 *Example of using http mp3 in a function node*
 
@@ -100,12 +99,11 @@ node.send({payload:"Warning. Intruder in the dinning room."};
 
 # OUTPUT MESSAGES FROM THE NODE
 
-**msg.completed** "true" when the node has finished playing, <b>false</b> if the node is playing<br/>
-**msg.connectionerror** "true" when the node cannot connect to the Sonos device, <b>false</b> if the connection is restored.<br/>
-
-
-
-<br/><br/><br/>
+**msg.completed** "true" when the node has finished playing, **false** if the node is playing<br/>
+**msg.connectionerror** "true" when the node cannot connect to the Sonos device, **false** if the connection is restored.  
+  
+  
+  
 
 # OWNFILE NODE CONFIGURATION
 
@@ -124,16 +122,16 @@ node.send({payload:"Warning. Intruder in the dinning room."};
 
 This node allow you to upload your custom message and play it via SonosPollyTTS without the need of an internet connection. You can use it, for example, with your alarm panel, to annuce a zone breach, a doorbell or so.
 
-**Name**<br/>
+**Name**  
 Node name
 
-**File to be player** <br/>
+**File to be played**  
 Select a file to be played. You can upload one or multiple files at the same time via the "upload" button.
 
 ## INPUT MESSAGE 
 
-**msg.payload = true** Begin play of the message <br/>
-**msg.selectedFile = "Garage door open"** Overrides the selected message and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your own files, in the node config window) and do not include the <b>.mp3</b> extenson.<br/>
+**msg.payload = true** Begin play of the message  
+**msg.selectedFile = "Garage door open"** Overrides the selected message and plays the filename you passed in. Please double check the spelling of the filename (must be the same as you can see in the dropdown list of your own files, in the node config window) and do not include the **.mp3** extenson.
 
     
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg
