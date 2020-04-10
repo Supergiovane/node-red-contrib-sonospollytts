@@ -47,6 +47,12 @@ You can use it with your own audio files as well and it can be used offline, wit
     
 # SONOSPOLLYTTS-CONFIG NODE
 
+**Polly Access key**
+AWS access key credential. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the **OwnFile** node. Please see the below in this page.
+
+**Polly Secret key**
+AWS access Secret key. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the **OwnFile** node. Please see the below in this page.
+
 **Node-Red IP**  
 set IP of your node-red machine
 
