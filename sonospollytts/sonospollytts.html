@@ -134,7 +134,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-sonosipaddress"><i class="fa fa-globe"></i> Main Sonos Player</label>
-        <select id="node-input-sonosipaddress"></select>
+        <label style="width:200px;" id="node-input-sonosipaddress">Discovering.... wait...</label>
     </div>
    
     <dt><i class="fa fa-code-fork"></i>&nbsp; Additional players</dt>
@@ -149,7 +149,9 @@
     <p align="center"> <b>PLEASE SAVE, DEPLOY AND RE-OPEN THIS WINDOW</b><br/>
         EVEN IF NODE-RED TELLS YOU<br/>
          THAT THE NODE ISN'T CORRECTLY CONFIGURED<br/>
-    TO ACCESS THE CONFIGURATION </p>
+    TO ACCESS THE CONFIGURATION<br/>
+IF YOU'RE RUNNING NODE-RED IN DOCKER OR SIMILAR<br/>
+BE SURE TO FORWARD PORTS 1980 AND 1400 </p>
 </div>
 </script>
 
@@ -288,12 +290,18 @@
                 // 20/03/2020 Coronavirus issue in Itay. Getting all Sonos Groups
                 // ##########################################################
                 $.getJSON('sonosgetAllGroups', (data) => {
-                    data.sort().forEach(oGroup => {
-                        $("#node-input-sonosipaddress").append($("<option></option>")
-                            .attr("value", oGroup.host)
-                            .text(oGroup.name + " (" + oGroup.host + ")")
-                        )
-                    });
+                    if (typeof data === "string" && data == "ERRORDISCOVERY") { // 10/04/2020 if error in discovery, fallback to manual IP input
+                        // Transform the dropdown to a simple input
+                        $("#node-input-sonosipaddress").replaceWith('<input type="text" id="node-input-sonosipaddress" style="width:150px">');
+                    } else {
+                        $("#node-input-sonosipaddress").replaceWith('<select id="node-input-sonosipaddress"></select>');
+                        data.sort().forEach(oGroup => {
+                            $("#node-input-sonosipaddress").append($("<option></option>")
+                                .attr("value", oGroup.host)
+                                .text(oGroup.name + " (" + oGroup.host + ")")
+                            )
+                        });
+                    }
                     if (typeof node.sonosipaddress === "undefined" || node.sonosipaddress == "") {
                         $("#node-input-sonosipaddress").val($("#node-input-sonosipaddress option:first").val());
                     } else { $("#node-input-sonosipaddress").val(node.sonosipaddress) }
@@ -323,19 +331,27 @@
 
 
                         var row = $('<div class="form-row"/>').appendTo(container);
-                        var oPlayer = $('<select/>', { class: "rowRulePlayerHost", type: "text", style: "width:300px; margin-left: 5px; text-align: left;" }).appendTo(row);
-
+                        var oPlayer = $('<label>Discovering.... wait...</label>', { class: "rowRulePlayerHost", type: "text", style: "width:300px; margin-left: 5px; text-align: left;" }).appendTo(row);
+                                
                         oPlayer.on("change", function () {
                             resizeRule(container);
                         });
 
                         $.getJSON('sonosgetAllGroups', (data) => {
-                            data.sort().forEach(oGroup => {
-                                oPlayer.append($("<option></option>")
-                                    .attr("value", oGroup.host)
-                                    .text(oGroup.name + " (" + oGroup.host + ")")
-                                )
-                            });
+                            if (typeof data === "string" && data == "ERRORDISCOVERY") { // 10/04/2020 if error in discovery, fallback to manual IP input
+                                // Transform the dropdown to a simple input
+                                oPlayer.remove();
+                                oPlayer = $('<input/>', { class: "rowRulePlayerHost", type: "text", style: "width:300px; margin-left: 5px; text-align: left;" }).appendTo(row);
+                            } else {
+                                oPlayer.remove();
+                                oPlayer = $('<select/>', { class: "rowRulePlayerHost", type: "text", style: "width:300px; margin-left: 5px; text-align: left;" }).appendTo(row);
+                                data.sort().forEach(oGroup => {
+                                    oPlayer.append($("<option></option>")
+                                        .attr("value", oGroup.host)
+                                        .text(oGroup.name + " (" + oGroup.host + ")")
+                                    )
+                                });
+                            }
                             oPlayer.val(rule.host);
                         });
 

@@ -504,8 +504,8 @@ module.exports = function (RED) {
             node.sNoderedURL = node.server.sNoderedURL || "";
         }
 
-           // 21/03/2019 Endpoint for retrieving the default IP
-           RED.httpAdmin.get("/sonospollyTTSGetEthAddress", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
+        // 21/03/2019 Endpoint for retrieving the default IP
+        RED.httpAdmin.get("/sonospollyTTSGetEthAddress", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
             var oiFaces = oOS.networkInterfaces();
             var jListInterfaces = [];
             try {
@@ -522,9 +522,14 @@ module.exports = function (RED) {
                     }
                 })
             } catch (error) { }
-            res.json(jListInterfaces[0].address); // Retunr the first usable IP
-           });
-        
+            if (jListInterfaces.length > 0) {
+                res.json(jListInterfaces[0].address); // Retunr the first usable IP
+            } else {
+                res.json("NO ETH INTERFACE FOUND");
+            }
+
+        });
+
         // 20/03/2020 in the middle of coronavirus, get the sonos groups
         RED.httpAdmin.get("/sonosgetAllGroups", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
             var jListGroups = [];
@@ -541,7 +546,8 @@ module.exports = function (RED) {
                         //return groups[0].CoordinatorDevice().togglePlayback()
                     })
                 }).catch(e => {
-                    RED.log.warn('SonosPollyTTS: Error in discovery ' + e)
+                    RED.log.warn('SonosPollyTTS: Error in discovery ' + e);
+                    res.json("ERRORDISCOVERY");
                 })
             } catch (error) { }
         });

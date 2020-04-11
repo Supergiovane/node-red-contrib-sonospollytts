@@ -27,7 +27,7 @@
 ## DESCRIPTION
 This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
 This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api. It supports PLAYERS GROUPING.<br/>
-You can use it with your own audio file as well and it can be used offline, without internet connection.
+You can use it with **your own audio file** as well and it can be used **totally offline** even without the use of TTS, without internet connection.
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday)  and <a href="http://eepurl.com/gJm095" target="_blank">subscribe to my channel</a> for the latest news, if you enjoy my node.
 
@@ -48,13 +48,13 @@ You can use it with your own audio file as well and it can be used offline, with
 # SONOSPOLLYTTS-CONFIG NODE
 
 **Polly Access key**
-AWS access key credential. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the **OwnFile** node. Please see the below in this page.
+AWS access key credential. Optional. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the **OwnFile** node. Please see the below in this page.
 
 **Polly Secret key**
-AWS access Secret key.
+AWS access Secret key. Optional. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the **OwnFile** node. Please see the below in this page.
 
 **Node-Red IP**<br/>
-set IP of your node-red machine. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the **OwnFile** node. Please see the below in this page.
+set IP of your node-red machine.
 
 **Host Port**<br/>
 normally 1980. This is the IP of your machine, running node-red

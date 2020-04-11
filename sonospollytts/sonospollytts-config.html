@@ -26,7 +26,7 @@
             return this.name || "";
         },
         oneditprepare: function () {
- 
+
             if (typeof this.noderedipaddress === "undefined") {
                 // Put the default address of the machine
                 $.getJSON('sonospollyTTSGetEthAddress', (data) => {
@@ -93,10 +93,15 @@
         Please see the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">Changelog</a><br/>
         Please read the <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/README.md">README</a><br/>
     </p>
-    <p>Set the configuration of Polly (you need the free Amazon AWS credentials).<br/> Put in your AWS access key and AWS secret key.</p>
+    <p>
+        If you wish to use Amazon Polly for TTS, you need the free Amazon AWS credentials (AWS access key and AWS secret key).
+        <br/>If you wish to use the node only with your own audio files, leave the <code>Polly Access key</code> and <code>Polly Secret key</code> blank and use the <b>OwnFile</b> node. See the readme about that, there is an example.
+    </p>
     <p>
         <b>CONFIG:</b><br/>
-     <code>Node-Red IP</code> set IP of your node-red. This field is automatically filled with your current IP, but if your node-red is behind Redmatic or some other frontends, you need to insert here the public reachable IP ot these frontends.<br/>
+        <code>Polly Access key</code> AWS access key credential. Optional. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the <b>OwnFile</b> node. Please see the below in this page.<br/>
+        <code>Polly Secret key</code>AWS access Secret key. Optional. If you do not wish to use the Amazon Polly service or wish to use the node totally OFFLINE, leave it blank and use the  <b>OwnFile</b> node. Please see the below in this page.<br/>
+        <code>Node-Red IP</code> set IP of your node-red. This field is automatically filled with your current IP, but if your node-red is behind Redmatic or some other frontends, you need to insert here the public reachable IP ot these frontends.<br/>
         <code>Webserver port</code> default 1980. If you are behind firewall, remember to forward this port.<br/>
         <code>TTS Cache</code> Whether to delete or leave (default) in places the TTS files in the cache folder on each Deploy or Reboot of node-red. Leaving TTS files in che cache, may put you in a disk space trouble.
     </p>
