@@ -5,7 +5,7 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
-<b>Version 1.1.24</b> June 2020<br/>
+<b>Version 1.1.25</b> June 2020<br/>
 - Update sonos api to 1.13.0<br/>
 - Fix some minor glitches in new added nodes.<br/>
 </p>
