@@ -847,7 +847,7 @@ module.exports = function (RED) {
                     node.sSonosTrackTitle = track.uri;
                     HandleQueue2(node);
                 }).catch(err => {
-                    node.setNodeStatus({ fill: "red", shape: "dot", text: "err currtrack: " + err });
+                    node.setNodeStatus({ fill: "red", shape: "dot", text: "err currtrack: " + err  + " " + node.sSonosPlayState});
                     node.sSonosTrackTitle = "stopped"; // force stopped
                     HandleQueue2(node);
                 }); // node.SonosClient.currentTrack().then(track=>{

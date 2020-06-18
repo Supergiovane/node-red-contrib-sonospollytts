@@ -5,6 +5,11 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
+<b>Version 1.1.24</b> June 2020<br/>
+- Update sonos api to 1.13.0<br/>
+- Fix some minor glitches in new added nodes.<br/>
+</p>
+<p>
 <b>Version 1.1.23</b> March 2020 - In the middle of Coronavirus emergency in Italy<br/>
 - Help and README enhancement with new samples<br/>
 - Fix some minor glitches in new added nodes.<br/>
