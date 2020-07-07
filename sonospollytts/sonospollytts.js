@@ -818,6 +818,14 @@ module.exports = function (RED) {
                 node.iTimeoutPollyState = 0;
                 node.sPollyState = "idle";
                 RED.log.info('SonosPollyTTS: HandleQueue - Polly is in downloading Timeout');
+                node.setNodeStatus({
+                    fill: 'yellow',
+                    shape: 'dot',
+                    text: 'SonosPollyTTS: HandleQueue - Polly is in downloading Timeout'
+                });
+                node.sSonosPlayState = "stopped";
+                node.oTimer = setTimeout(function () { HandleQueue(node); }, 1000);
+                return;
             }
 
             // Not cached
@@ -847,7 +855,7 @@ module.exports = function (RED) {
                     node.sSonosTrackTitle = track.uri;
                     HandleQueue2(node);
                 }).catch(err => {
-                    node.setNodeStatus({ fill: "red", shape: "dot", text: "err currtrack: " + err  + " " + node.sSonosPlayState});
+                    node.setNodeStatus({ fill: "red", shape: "dot", text: "err currtrack: " + err + " " + node.sSonosPlayState });
                     node.sSonosTrackTitle = "stopped"; // force stopped
                     HandleQueue2(node);
                 }); // node.SonosClient.currentTrack().then(track=>{

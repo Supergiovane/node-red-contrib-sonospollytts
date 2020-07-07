@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-sonospollytts",
-  "version": "1.1.25",
+  "version": "1.1.26",
   "description": "Node-Red TTS with Sonos and Amazon Polly or with your own local mp3 announcement files. Transforms the text in speech and hear it using Sonos player. Can work OFFLINE as well! This node is specific for security alarm announcement, doorbell, weather annoucement etc.",
   "main": "index.js",
   "scripts": {

@@ -5,6 +5,10 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
+<b>Version 1.1.26</b> Juli 2020<br/>
+- Stability improvement whenever internet connection is broken while downloading TTS audio from Amazon AWS service.<br/>
+</p>
+<p>
 <b>Version 1.1.25</b> June 2020<br/>
 - Update sonos api to 1.13.0<br/>
 - Fix some minor glitches in new added nodes.<br/>
