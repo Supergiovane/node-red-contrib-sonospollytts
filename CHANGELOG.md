@@ -7,6 +7,7 @@
 <p>
 <b>Version 1.1.26</b> Juli 2020<br/>
 - Stability improvement whenever internet connection is broken while downloading TTS audio from Amazon AWS service.<br/>
+- Full support for SSML syntax (https://docs.aws.amazon.com/polly/latest/dg/supportedtags.html).<br/>
 </p>
 <p>
 <b>Version 1.1.25</b> June 2020<br/>
