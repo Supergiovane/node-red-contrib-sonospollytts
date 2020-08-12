@@ -5,6 +5,11 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
+<b>Version 1.1.27</b> August 2020<br/>
+- Fixed an odd issue. Now "msg.nohailing=true" temporarly (and not permanently anymore) disables the hailing. If you send a new payload without msg.nohailing=true, the hailing will be heard again (that's the standard and intended behaviour.)<br/>
+- Sometime the node remains in "Processing" state. Added a fix to that.
+</p>
+<p>
 <b>Version 1.1.26</b> Juli 2020<br/>
 - Stability improvement whenever internet connection is broken while downloading TTS audio from Amazon AWS service.<br/>
 - Full support for SSML syntax (https://docs.aws.amazon.com/polly/latest/dg/supportedtags.html).<br/>

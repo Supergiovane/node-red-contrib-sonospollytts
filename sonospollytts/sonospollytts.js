@@ -744,6 +744,11 @@ module.exports = function (RED) {
                 node.sSonosVolume = msg.volume;
             }
 
+            if (!msg.hasOwnProperty("payload")) {
+                notifyError(node, msg, 'msg.payload must be of type String');
+                return;
+            }
+
             try {
                 node.setNodeStatus({
                     fill: 'yellow',
@@ -752,13 +757,27 @@ module.exports = function (RED) {
                 });
             } catch (error) { }
 
-            if (!msg.hasOwnProperty("payload")) {
-                notifyError(node, msg, 'msg.payload must be of type String');
-                return;
+            // 17/04/2019 Verifico se possso mandare in play l'hailing
+            if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) {
+                node.sonoshailing = "0";
+            } else {
+                node.sonoshailing = config.sonoshailing;
+
+                // Backwart compatibiliyy, to remove with the next Version
+                // ################
+                if (node.sonoshailing == "0") {
+                    // Remove the hailing.mp3 default file
+                    RED.log.info('SonosPollyTTS: Hailing disabled');
+                } else if (node.sonoshailing == "1") {
+                    node.sonoshailing = "Hailing_Hailing.mp3";
+                } else if (node.sonoshailing == "2") {
+                    node.sonoshailing = "Hailing_ComputerCall.mp3";
+                } else if (node.sonoshailing == "3") {
+                    node.sonoshailing = "Hailing_VintageSpace.mp3";
+                }
+                // ################
             }
 
-            // 17/04/2019 Verifico se possso mandare in play l'hailing
-            if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) node.sonoshailing = "0";
 
             // 09/03/2020 Change hailing
             if (msg.hasOwnProperty("sonoshailing")) node.sonoshailing = "Hailing_" + msg.sonoshailing + ".mp3";
@@ -774,10 +793,12 @@ module.exports = function (RED) {
             // If the queue is empty and if i can play the Haniling, add the hailing file first
             if (node.aMessageQueue.length == 0 && node.sonoshailing !== "0") {
                 node.aMessageQueue.push(node.sonoshailing);
+                node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued Hail' });
             }
 
             // Add the message to the array
             node.aMessageQueue.push(msg.payload);
+            node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued' + msg.payload });
 
         });
 
@@ -933,23 +954,30 @@ module.exports = function (RED) {
                 // It's playing something. Stop
                 node.SonosClient.pause().then(success => {
                     RED.log.info('SonosPollyTTS: HandleQueue2 - stopped: ' + success + " " + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
-                    var sMsg = node.aMessageQueue[0];
-                    node.aMessageQueue.splice(0, 1); // Remove the TTS message from the queue
+                    try {
+                        var sMsg = node.aMessageQueue[0];
+                        node.aMessageQueue.splice(0, 1); // Remove the TTS message from the queue
+                    } catch (error) {
+                    }
+                    // Create the TTS mp3 with Polly
                     node.sPollyState = "transitioning";
                     node.sSonosPlayState = "transitioning";
-                    // Create the TTS mp3 with Polly
                     Leggi(sMsg, node);
+
                     // Start the TTS queue timer
                     node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
 
                 }).catch(err => {
                     node.setNodeStatus({ fill: "red", shape: "dot", text: node.sSonosIPAddress + " Error pausing: " + err });
                     // 15/11/2019 Workaround for grouping
-                    var sMsg = node.aMessageQueue[0];
-                    node.aMessageQueue.splice(0, 1); // Remove the TTS message from the queue
+                    try {
+                        var sMsg = node.aMessageQueue[0];
+                        node.aMessageQueue.splice(0, 1); // Remove the TTS message from the queue
+                    } catch (error) {
+                    }
+                    // Create the TTS mp3 with Polly
                     node.sPollyState = "transitioning";
                     node.sSonosPlayState = "transitioning";
-                    // Create the TTS mp3 with Polly
                     Leggi(sMsg, node);
 
                     // Set  timeout
@@ -961,7 +989,6 @@ module.exports = function (RED) {
                 node.setNodeStatus({ fill: "green", shape: "dot", text: "" + node.sSonosPlayState });
                 // Start the TTS queue timer
                 node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
-
             }
 
         } else {
