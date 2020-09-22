@@ -8,6 +8,7 @@
 <b>Version 1.1.28</b> September 2020<br/>
 - Updated sonos API to 1.14.0<br/>
 - Fixed an issue where if you power cycle your sonos and it comes up too fast, the node won't detect the disconnection and won't reset the link to sonos.<br/>
+- Major code revision, to clean up old things.<br/>
 </p>
 <p>
 <b>Version 1.1.27</b> August 2020<br/>
