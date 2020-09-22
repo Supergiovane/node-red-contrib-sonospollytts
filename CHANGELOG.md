@@ -5,6 +5,11 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
+<b>Version 1.1.28</b> September 2020<br/>
+- Updated sonos API to 1.14.0<br/>
+- Fixed an issue where if you power cycle your sonos and it comes up too fast, the node won't detect the disconnection and won't reset the link to sonos.<br/>
+</p>
+<p>
 <b>Version 1.1.27</b> August 2020<br/>
 - Fixed an odd issue. Now "msg.nohailing=true" temporarly (and not permanently anymore) disables the hailing. If you send a new payload without msg.nohailing=true, the hailing will be heard again (that's the standard and intended behaviour.)<br/>
 - Sometime the node remains in "Processing" state. Added a fix to that.

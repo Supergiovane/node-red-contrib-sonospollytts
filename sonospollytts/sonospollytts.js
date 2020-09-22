@@ -608,8 +608,11 @@ module.exports = function (RED) {
 
         // 20/11/2019 Used to call the status update
         node.setNodeStatus = ({ fill, shape, text }) => {
-            var dDate = new Date();
-            node.status({ fill: fill, shape: shape, text: text + " (" + dDate.getDate() + ", " + dDate.toLocaleTimeString() + ")" });
+            try {
+                var dDate = new Date();
+                node.status({ fill: fill, shape: shape, text: text + " (" + dDate.getDate() + ", " + dDate.toLocaleTimeString() + ")" });
+            } catch (error) { }
+
         }
 
         // 03/06/2019 you can select the temp dir
@@ -798,7 +801,7 @@ module.exports = function (RED) {
 
             // Add the message to the array
             node.aMessageQueue.push(msg.payload);
-            node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued' + msg.payload });
+            node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued ' + msg.payload });
 
         });
 
@@ -819,7 +822,7 @@ module.exports = function (RED) {
             setTimeout(function () {
                 // Wait some time to allow time to do promises.
                 done();
-            }, 3000);
+            }, 1500);
         });
 
 
@@ -836,7 +839,6 @@ module.exports = function (RED) {
 
     // Handle the queue
     function HandleQueue(node) {
-        // Check if Polly is downloading the file (in case the phrase is very long)
 
         // 06/05/2019 check if the SonosClient is already instantiate (an error can occur if a very slow PC is used)
         if (node.SonosClient == null) {
@@ -844,6 +846,10 @@ module.exports = function (RED) {
             node.oTimer = setTimeout(function () { HandleQueue(node); }, 5000);
             return;
         }
+
+        try {
+            node.setNodeStatus({ fill: "yellow", shape: "dot", text: "HandleQueue: " + node.sPollyState });
+        } catch (error) { }
 
         if (node.sPollyState == "transitioning") {
             node.iTimeoutPollyState += 1; // Increase Timeout
@@ -887,10 +893,12 @@ module.exports = function (RED) {
                 node.SonosClient.currentTrack().then(track => {
                     node.sSonosTrackTitle = track.uri;
                     HandleQueue2(node);
+                    return;
                 }).catch(err => {
                     node.setNodeStatus({ fill: "red", shape: "dot", text: "err currtrack: " + err + " " + node.sSonosPlayState });
                     node.sSonosTrackTitle = "stopped"; // force stopped
                     HandleQueue2(node);
+                    return;
                 }); // node.SonosClient.currentTrack().then(track=>{
 
 
@@ -901,22 +909,22 @@ module.exports = function (RED) {
                 // 10/04/2018 Remove the TTS message from the queue
                 if (node.aMessageQueue.length > 0) {
                     node.aMessageQueue = [];
-                    RED.log.info('SonosPollyTTS: HandleQueue2 - error, flushed queue');
+                    //RED.log.info('SonosPollyTTS: HandleQueue2 - error, flushed queue');
                 }
-
-                // Set  timeout
-                node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
+                // Restart
+                node.oTimer = setTimeout(function () { HandleQueue(node); }, 2000);
+                return;
 
             }); // node.SonosClient.getCurrentState().then(state=>{
         } catch (error) {
 
             // 06/05/2019 restart timer. To be removed if the try catch is removed as well.
-            // Set  timeout
-            node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
             RED.log.info('SonosPollyTTS: errHandleQueue1 ' + error.toString());
+            // Restart
+            node.oTimer = setTimeout(function () { HandleQueue(node); }, 2000);
+            return;
 
         }
-
 
     }
 
@@ -925,6 +933,10 @@ module.exports = function (RED) {
 
         // Play next msg
         if (node.aMessageQueue.length > 0) {
+
+            try {
+                node.setNodeStatus({ fill: "yellow", shape: "dot", text: "HandleQueue2: " + node.aMessageQueue.length });
+            } catch (error) { }
 
             // It's playing something. Check what's playing.
             // If Music, then stop the music and play the TTS message
@@ -946,14 +958,15 @@ module.exports = function (RED) {
                 Leggi(sMsg, node);
                 // Set  timeout
                 node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
+                return;
 
             } else if (node.sSonosPlayState == "playing" && node.sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3") == -1) {
 
-                RED.log.info('SonosPollyTTS: HandleQueue2 - stopping: ' + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
+                //RED.log.info('SonosPollyTTS: HandleQueue2 - stopping: ' + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
 
                 // It's playing something. Stop
                 node.SonosClient.pause().then(success => {
-                    RED.log.info('SonosPollyTTS: HandleQueue2 - stopped: ' + success + " " + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
+                    //RED.log.info('SonosPollyTTS: HandleQueue2 - stopped: ' + success + " " + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
                     try {
                         var sMsg = node.aMessageQueue[0];
                         node.aMessageQueue.splice(0, 1); // Remove the TTS message from the queue
@@ -966,9 +979,13 @@ module.exports = function (RED) {
 
                     // Start the TTS queue timer
                     node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
+                    return;
 
                 }).catch(err => {
-                    node.setNodeStatus({ fill: "red", shape: "dot", text: node.sSonosIPAddress + " Error pausing: " + err });
+                    try {
+                        node.setNodeStatus({ fill: "red", shape: "dot", text: node.sSonosIPAddress + " Error pausing: " + err });
+                    } catch (error) { }
+
                     // 15/11/2019 Workaround for grouping
                     try {
                         var sMsg = node.aMessageQueue[0];
@@ -981,7 +998,8 @@ module.exports = function (RED) {
                     Leggi(sMsg, node);
 
                     // Set  timeout
-                    node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
+                    node.oTimer = setTimeout(function () { HandleQueue(node); }, 1000);
+                    return;
                 });
 
             } else {
@@ -992,16 +1010,18 @@ module.exports = function (RED) {
             }
 
         } else {
-            // Start the TTS queue timer
-            node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
 
             // 07/05/2019 Check if i have ended playing the queue as well
-            if (node.msg.completed == false && node.sSonosPlayState == "stopped") {
-                node.msg.completed = true;
-                node.ungroupSpeakers(); // 20/03/2020 Ungroup Speakers
-                node.send(node.msg);
-                node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
-            }
+            try {
+                if (node.msg.completed == false && node.sSonosPlayState == "stopped") {
+                    node.msg.completed = true;
+                    node.ungroupSpeakers(); // 20/03/2020 Ungroup Speakers
+                    node.send(node.msg);
+                    node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
+                }
+            } catch (error) { }
+            // Start the TTS queue timer
+            node.oTimer = setTimeout(function () { HandleQueue(node); }, 1000);
 
         }
     }
@@ -1010,6 +1030,10 @@ module.exports = function (RED) {
 
     // Reas the text via Polly
     function Leggi(msg, node) {
+
+        try {
+            node.setNodeStatus({ fill: "yellow", shape: "dot", text: "Leggi: " + msg });
+        } catch (error) { }
 
         // Play directly files starting with http://
         if (msg.toLowerCase().startsWith("http://")) {
@@ -1121,11 +1145,11 @@ module.exports = function (RED) {
         node.setNodeStatus({
             fill: 'red',
             shape: 'dot',
-            text: 'Error: ' + errorMessage
+            text: 'notifyError: ' + errorMessage
         });
-        node.sPollyState == "criticalwriting";
+        //node.sPollyState == "criticalwriting";
         // RED.log.error('SonosPollyTTS: notifyError - unable to write TTS file. Check user permissions');
-        RED.log.error('SonosPollyTTS: notifyError - msg: ' + msg + ' error: ' + errorMessage);
+        //RED.log.error('SonosPollyTTS: notifyError - msg: ' + msg + ' error: ' + errorMessage);
         // Set error in message
         msg.error = errorMessage;
 
