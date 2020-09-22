@@ -957,7 +957,7 @@ module.exports = function (RED) {
                 // Create the TTS mp3 with Polly
                 Leggi(sMsg, node);
                 // Set  timeout
-                node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
+                node.oTimer = setTimeout(function () { HandleQueue(node); }, 1000);
                 return;
 
             } else if (node.sSonosPlayState == "playing" && node.sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3") == -1) {
@@ -978,7 +978,7 @@ module.exports = function (RED) {
                     Leggi(sMsg, node);
 
                     // Start the TTS queue timer
-                    node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
+                    node.oTimer = setTimeout(function () { HandleQueue(node); }, 1000);
                     return;
 
                 }).catch(err => {
@@ -1006,7 +1006,7 @@ module.exports = function (RED) {
                 // Reset status
                 node.setNodeStatus({ fill: "green", shape: "dot", text: "" + node.sSonosPlayState });
                 // Start the TTS queue timer
-                node.oTimer = setTimeout(function () { HandleQueue(node); }, 500);
+                node.oTimer = setTimeout(function () { HandleQueue(node); }, 1000);
             }
 
         } else {
