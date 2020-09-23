@@ -847,12 +847,13 @@ module.exports = function (RED) {
 
         node.on('close', function (done) {
             clearTimeout(node.oTimer);
+            clearTimeout(node.oTimerSonosConnectionCheck);
             node.SonosClient.stop().then(() => {
                 node.ungroupSpeakers();
             });
             node.msg.completed = true;
             node.send(node.msg);
-            node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
+            node.setNodeStatus({ fill: "green", shape: "ring", text: "Shutdown" });
             node.flushQueue();
             // 11/11/2019 Close the Webserver
             try {
@@ -863,29 +864,8 @@ module.exports = function (RED) {
             setTimeout(function () {
                 // Wait some time to allow time to do promises.
                 done();
-            }, 1500);
+            }, 1000);
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         // Handle the queue
@@ -898,9 +878,9 @@ module.exports = function (RED) {
                 return;
             }
 
-            try {
-                node.setNodeStatus({ fill: "yellow", shape: "dot", text: "HandleQueue: " + node.sPollyState });
-            } catch (error) { }
+            // try {
+            //     node.setNodeStatus({ fill: "yellow", shape: "dot", text: "Queue: " + node.sPollyState });
+            // } catch (error) { }
 
             if (node.sPollyState == "transitioning") {
                 node.iTimeoutPollyState += 1; // Increase Timeout
@@ -941,30 +921,25 @@ module.exports = function (RED) {
                     node.SonosClient.currentTrack().then(track => {
                         node.sSonosTrackTitle = track.uri;
                         HandleQueue2();
+                        node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
                         return;
                     }).catch(err => {
                         node.flushQueue();
                         node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
-                        return;
                     }); // node.SonosClient.currentTrack().then(track=>{
 
 
                 }).catch(err => {
                     node.setNodeStatus({ fill: "red", shape: "dot", text: "err currstate: " + err });
                     node.flushQueue();
-                    // Restart
                     node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
-                    return;
-
                 }); // node.SonosClient.getCurrentState().then(state=>{
             } catch (error) {
 
                 // 06/05/2019 restart timer. To be removed if the try catch is removed as well.
                 RED.log.info('SonosPollyTTS: errHandleQueue1 ' + error.toString());
-                // Restart
+                node.flushQueue();
                 node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
-                return;
-
             }
 
         }
@@ -1008,9 +983,6 @@ module.exports = function (RED) {
                     });
                     // Create the TTS mp3 with Polly
                     Leggi(sMsg);
-                    // Set  timeout
-                    node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
-                    return;
 
                 } else if (node.sSonosPlayState == "playing" && node.sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3") == -1) {
 
@@ -1029,10 +1001,6 @@ module.exports = function (RED) {
                         node.sSonosPlayState = "transitioning";
                         Leggi(sMsg);
 
-                        // Start the TTS queue timer
-                        node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
-                        return;
-
                     }).catch(err => {
                         try {
                             node.setNodeStatus({ fill: "red", shape: "dot", text: node.sSonosIPAddress + " Error pausing: " + err });
@@ -1048,17 +1016,11 @@ module.exports = function (RED) {
                         node.sPollyState = "transitioning";
                         node.sSonosPlayState = "transitioning";
                         Leggi(sMsg);
-
-                        // Set  timeout
-                        node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
-                        return;
                     });
 
                 } else {
                     // Reset status
                     node.setNodeStatus({ fill: "green", shape: "dot", text: "" + node.sSonosPlayState });
-                    // Start the TTS queue timer
-                    node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
                 }
 
             } else {
@@ -1072,13 +1034,9 @@ module.exports = function (RED) {
                         node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
                     }
                 } catch (error) { }
-                // Start the TTS queue timer
-                node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
 
             }
         }
-
-
 
         // Reas the text via Polly
         function Leggi(msg) {
@@ -1141,7 +1099,7 @@ module.exports = function (RED) {
                 // Play
                 PlaySonos(filename, node);
 
-            }).catch(error => { notifyError( filename, error); });
+            }).catch(error => { notifyError(filename, error); });
 
         }
 
