@@ -5,6 +5,10 @@
 <a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
+<b>Version 1.1.29</b> September 2020<br/>
+- If you run node-red behind natted docker (for example kubertness) and you've added sonos devices to the group list, the devices belonging to the group doesn't accept volume setting. This has been fixed. Thanks @JorinL for raising the issue.<br/>
+</p>
+<p>
 <b>Version 1.1.28</b> September 2020<br/>
 - Updated sonos API to 1.14.0<br/>
 - Fixed an issue where if you power cycle your sonos and it comes up too fast, the node won't detect the disconnection and won't reset the link to sonos.<br/>

@@ -762,14 +762,13 @@ module.exports = function (RED) {
                 const element = node.oAdditionalSonosPlayers[index];
                 element.joinGroup(node.sSonosCoordinatorGroupName).then(success => {
                     // 24/09/2020 Set Volume of each device in the group
-                    element.setVolume(node.sSonosVolume).then(success => {
-                        element.getVolume().then(sVol => {
-                            RED.log.warn('SonosPollyTTS: get volume of grouped device: ' + JSON.stringify(sVol));
-                     }).catch(err => {
-                     });
-                        
-                    }).catch(err => {
-                    });
+                    try {
+                        element.setVolume(node.sSonosVolume).then(success => {
+                            // element.getVolume().then(sVol => {
+                            //     RED.log.warn('SonosPollyTTS: get volume of grouped device: ' + JSON.stringify(sVol));
+                            // }).catch(err => { });
+                        }).catch(err => { });
+                    } catch (error) { }
                 }).catch(err => {
                     RED.log.warn('SonosPollyTTS: Error joining device ' + err)
                 });
@@ -1188,19 +1187,6 @@ module.exports = function (RED) {
             } else {
                 sUrl = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
             }
-
-            // Set Group volume // This doesn't work if you run node-red behind NAT, without multicast access.
-            // try {
-            //     var oGroup = new sonos.Services.GroupRenderingControl(node.sSonosIPAddress); //SetGroupVolume
-            //     oGroup.SetGroupVolume().then(sVol => {
-            //         //node.send({ "BANANA SET": sVol });
-            //         // oGroup.GetGroupVolume().then(sVol => {
-            //         //     node.send({ "BANANA GET": sVol });
-            //         // }).catch(err => {
-            //         // });
-            //     }).catch(err => {
-            //     });
-            // } catch (error) {}
 
             node.SonosClient.setVolume(node.sSonosVolume).then(success => {
                 node.SonosClient.setAVTransportURI(sUrl).then(playing => {
