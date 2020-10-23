@@ -82,407 +82,497 @@ module.exports = function (RED) {
             Id: 'Joanna',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Joanna'
+            Name: 'Joanna',
+            Engine: 'standard'
         },
         '1': {
             Gender: 'Female',
             Id: 'Mizuki',
             LanguageCode: 'ja-JP',
             LanguageName: 'Japanese',
-            Name: 'Mizuki'
+            Name: 'Mizuki',
+            Engine: 'standard'
         },
         '2': {
             Gender: 'Female',
             Id: 'Filiz',
             LanguageCode: 'tr-TR',
             LanguageName: 'Turkish',
-            Name: 'Filiz'
+            Name: 'Filiz',
+            Engine: 'standard'
         },
         '3': {
             Gender: 'Female',
             Id: 'Astrid',
             LanguageCode: 'sv-SE',
             LanguageName: 'Swedish',
-            Name: 'Astrid'
+            Name: 'Astrid',
+            Engine: 'standard'
         },
         '4': {
             Gender: 'Male',
             Id: 'Maxim',
             LanguageCode: 'ru-RU',
             LanguageName: 'Russian',
-            Name: 'Maxim'
+            Name: 'Maxim',
+            Engine: 'standard'
         },
         '5': {
             Gender: 'Female',
             Id: 'Tatyana',
             LanguageCode: 'ru-RU',
             LanguageName: 'Russian',
-            Name: 'Tatyana'
+            Name: 'Tatyana',
+            Engine: 'standard'
         },
         '6': {
             Gender: 'Female',
             Id: 'Carmen',
             LanguageCode: 'ro-RO',
             LanguageName: 'Romanian',
-            Name: 'Carmen'
+            Name: 'Carmen',
+            Engine: 'standard'
         },
         '7': {
             Gender: 'Female',
             Id: 'Ines',
             LanguageCode: 'pt-PT',
             LanguageName: 'Portuguese',
-            Name: 'Inês'
+            Name: 'Inês',
+            Engine: 'standard'
         },
         '8': {
             Gender: 'Male',
             Id: 'Cristiano',
             LanguageCode: 'pt-PT',
             LanguageName: 'Portuguese',
-            Name: 'Cristiano'
+            Name: 'Cristiano',
+            Engine: 'standard'
         },
         '9': {
             Gender: 'Female',
             Id: 'Vitoria',
             LanguageCode: 'pt-BR',
             LanguageName: 'Brazilian Portuguese',
-            Name: 'Vitória'
+            Name: 'Vitória',
+            Engine: 'standard'
         },
         '10': {
             Gender: 'Male',
             Id: 'Ricardo',
             LanguageCode: 'pt-BR',
             LanguageName: 'Brazilian Portuguese',
-            Name: 'Ricardo'
+            Name: 'Ricardo',
+            Engine: 'standard'
         },
         '11': {
             Gender: 'Female',
             Id: 'Maja',
             LanguageCode: 'pl-PL',
             LanguageName: 'Polish',
-            Name: 'Maja'
+            Name: 'Maja',
+            Engine: 'standard'
         },
         '12': {
             Gender: 'Male',
             Id: 'Jan',
             LanguageCode: 'pl-PL',
             LanguageName: 'Polish',
-            Name: 'Jan'
+            Name: 'Jan',
+            Engine: 'standard'
         },
         '13': {
             Gender: 'Female',
             Id: 'Ewa',
             LanguageCode: 'pl-PL',
             LanguageName: 'Polish',
-            Name: 'Ewa'
+            Name: 'Ewa',
+            Engine: 'standard'
         },
         '14': {
             Gender: 'Male',
             Id: 'Ruben',
             LanguageCode: 'nl-NL',
             LanguageName: 'Dutch',
-            Name: 'Ruben'
+            Name: 'Ruben',
+            Engine: 'standard'
         },
         '15': {
             Gender: 'Female',
             Id: 'Lotte',
             LanguageCode: 'nl-NL',
             LanguageName: 'Dutch',
-            Name: 'Lotte'
+            Name: 'Lotte',
+            Engine: 'standard'
         },
         '16': {
             Gender: 'Female',
             Id: 'Liv',
             LanguageCode: 'nb-NO',
             LanguageName: 'Norwegian',
-            Name: 'Liv'
+            Name: 'Liv',
+            Engine: 'standard'
         },
         '17': {
             Gender: 'Male',
             Id: 'Giorgio',
             LanguageCode: 'it-IT',
             LanguageName: 'Italian',
-            Name: 'Giorgio'
+            Name: 'Giorgio',
+            Engine: 'standard'
         },
         '18': {
             Gender: 'Female',
             Id: 'Carla',
             LanguageCode: 'it-IT',
             LanguageName: 'Italian',
-            Name: 'Carla'
+            Name: 'Carla',
+            Engine: 'standard'
         },
         '19': {
             Gender: 'Male',
             Id: 'Karl',
             LanguageCode: 'is-IS',
             LanguageName: 'Icelandic',
-            Name: 'Karl'
+            Name: 'Karl',
+            Engine: 'standard'
         },
         '20': {
             Gender: 'Female',
             Id: 'Dora',
             LanguageCode: 'is-IS',
             LanguageName: 'Icelandic',
-            Name: 'Dóra'
+            Name: 'Dóra',
+            Engine: 'standard'
         },
         '21': {
             Gender: 'Male',
             Id: 'Mathieu',
             LanguageCode: 'fr-FR',
             LanguageName: 'French',
-            Name: 'Mathieu'
+            Name: 'Mathieu',
+            Engine: 'standard'
         },
         '22': {
             Gender: 'Female',
             Id: 'Celine',
             LanguageCode: 'fr-FR',
             LanguageName: 'French',
-            Name: 'Céline'
+            Name: 'Céline',
+            Engine: 'standard'
         },
         '23': {
             Gender: 'Female',
             Id: 'Chantal',
             LanguageCode: 'fr-CA',
             LanguageName: 'Canadian French',
-            Name: 'Chantal'
+            Name: 'Chantal',
+            Engine: 'standard'
         },
         '24': {
             Gender: 'Female',
             Id: 'Penelope',
             LanguageCode: 'es-US',
             LanguageName: 'US Spanish',
-            Name: 'Penélope'
+            Name: 'Penélope',
+            Engine: 'standard'
         },
         '25': {
             Gender: 'Male',
             Id: 'Miguel',
             LanguageCode: 'es-US',
             LanguageName: 'US Spanish',
-            Name: 'Miguel'
+            Name: 'Miguel',
+            Engine: 'standard'
         },
         '26': {
             Gender: 'Male',
             Id: 'Enrique',
             LanguageCode: 'es-ES',
             LanguageName: 'Castilian Spanish',
-            Name: 'Enrique'
+            Name: 'Enrique',
+            Engine: 'standard'
         },
         '27': {
             Gender: 'Female',
             Id: 'Conchita',
             LanguageCode: 'es-ES',
             LanguageName: 'Castilian Spanish',
-            Name: 'Conchita'
+            Name: 'Conchita',
+            Engine: 'standard'
         },
         '28': {
             Gender: 'Male',
             Id: 'Geraint',
             LanguageCode: 'en-GB-WLS',
             LanguageName: 'Welsh English',
-            Name: 'Geraint'
+            Name: 'Geraint',
+            Engine: 'standard'
         },
         '29': {
             Gender: 'Female',
             Id: 'Salli',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Salli'
+            Name: 'Salli',
+            Engine: 'standard'
         },
         '30': {
             Gender: 'Female',
             Id: 'Kimberly',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Kimberly'
+            Name: 'Kimberly',
+            Engine: 'standard'
         },
         '31': {
             Gender: 'Female',
             Id: 'Kendra',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Kendra'
+            Name: 'Kendra',
+            Engine: 'standard'
         },
         '32': {
             Gender: 'Male',
             Id: 'Justin',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Justin'
+            Name: 'Justin',
+            Engine: 'standard'
         },
         '33': {
             Gender: 'Male',
             Id: 'Joey',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Joey'
+            Name: 'Joey',
+            Engine: 'standard'
         },
         '34': {
             Gender: 'Female',
             Id: 'Ivy',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Ivy'
+            Name: 'Ivy',
+            Engine: 'standard'
         },
         '35': {
             Gender: 'Female',
             Id: 'Raveena',
             LanguageCode: 'en-IN',
             LanguageName: 'Indian English',
-            Name: 'Raveena'
+            Name: 'Raveena',
+            Engine: 'standard'
         },
         '36': {
             Gender: 'Female',
             Id: 'Emma',
             LanguageCode: 'en-GB',
             LanguageName: 'British English',
-            Name: 'Emma'
+            Name: 'Emma',
+            Engine: 'standard'
         },
         '37': {
             Gender: 'Male',
             Id: 'Brian',
             LanguageCode: 'en-GB',
             LanguageName: 'British English',
-            Name: 'Brian'
+            Name: 'Brian',
+            Engine: 'standard'
         },
         '38': {
             Gender: 'Female',
             Id: 'Amy',
             LanguageCode: 'en-GB',
             LanguageName: 'British English',
-            Name: 'Amy'
+            Name: 'Amy',
+            Engine: 'standard'
         },
         '39': {
             Gender: 'Male',
             Id: 'Russell',
             LanguageCode: 'en-AU',
             LanguageName: 'Australian English',
-            Name: 'Russell'
+            Name: 'Russell',
+            Engine: 'standard'
         },
         '40': {
             Gender: 'Female',
             Id: 'Nicole',
             LanguageCode: 'en-AU',
             LanguageName: 'Australian English',
-            Name: 'Nicole'
+            Name: 'Nicole',
+            Engine: 'standard'
         },
         '41': {
             Gender: 'Female',
             Id: 'Marlene',
             LanguageCode: 'de-DE',
             LanguageName: 'German',
-            Name: 'Marlene'
+            Name: 'Marlene',
+            Engine: 'standard'
         },
         '42': {
             Gender: 'Male',
             Id: 'Hans',
             LanguageCode: 'de-DE',
             LanguageName: 'German',
-            Name: 'Hans'
+            Name: 'Hans',
+            Engine: 'standard'
         },
         '43': {
             Gender: 'Female',
             Id: 'Naja',
             LanguageCode: 'da-DK',
             LanguageName: 'Danish',
-            Name: 'Naja'
+            Name: 'Naja',
+            Engine: 'standard'
         },
         '44': {
             Gender: 'Male',
             Id: 'Mads',
             LanguageCode: 'da-DK',
             LanguageName: 'Danish',
-            Name: 'Mads'
+            Name: 'Mads',
+            Engine: 'standard'
         },
         '45': {
             Gender: 'Female',
             Id: 'Gwyneth',
             LanguageCode: 'cy-GB',
             LanguageName: 'Welsh',
-            Name: 'Gwyneth'
+            Name: 'Gwyneth',
+            Engine: 'standard'
         },
         '46': {
             Gender: 'Male',
             Id: 'Jacek',
             LanguageCode: 'pl-PL',
             LanguageName: 'Polish',
-            Name: 'Jacek'
+            Name: 'Jacek',
+            Engine: 'standard'
         },
         '47': {
             Gender: 'Male',
             Id: 'Matthew',
             LanguageCode: 'en-US',
             LanguageName: 'US English',
-            Name: 'Matthew'
+            Name: 'Matthew',
+            Engine: 'standard'
         },
         '48': {
-            Gender: 'Female',
-            Id: 'Vicki',
-            LanguageCode: 'de-DE',
-            LanguageName: 'German',
-            Name: 'Vicki'
-        },
+            Gender: 'Male',
+            Id: 'Matthew',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Matthew (neural)',
+            Engine: 'neural'
+		},
         '49': {
             Gender: 'Female',
-            Id: 'Aditi',
-            LanguageCode: 'hi-IN',
-            LanguageName: 'Hindi',
-            Name: 'Aditi'
-        },
+            Id: 'Amy',
+            LanguageCode: 'en-GB',
+            LanguageName: 'British English',
+            Name: 'Amy (neural)',
+            Engine: 'neural'
+		},
         '50': {
             Gender: 'Female',
-            Id: 'Aditi',
-            LanguageCode: 'en-IN',
-            LanguageName: 'English',
-            Name: 'Aditi'
-        },
+            Id: 'Emma',
+            LanguageCode: 'en-GB',
+            LanguageName: 'British English',
+            Name: 'Emma (neural)',
+            Engine: 'neural'
+		},
         '51': {
-            Gender: 'Female',
-            Id: 'Bianca',
-            LanguageCode: 'it-IT',
-            LanguageName: 'Italian',
-            Name: 'Bianca'
-        },
+            Gender: 'Male',
+            Id: 'Brian',
+            LanguageCode: 'en-GB',
+            LanguageName: 'British English',
+            Name: 'Brian (neural)',
+            Engine: 'neural'
+		},
         '52': {
             Gender: 'Female',
-            Id: 'Lucia',
-            LanguageCode: 'es-ES',
-            LanguageName: 'Spanish',
-            Name: 'Lucia'
-        },
+            Id: 'Ivy',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Ivy (neural)',
+            Engine: 'neural'
+		},
         '53': {
             Gender: 'Female',
-            Id: 'Mia',
-            LanguageCode: 'es-MX',
-            LanguageName: 'Spanish Mexican',
-            Name: 'Mia'
-        },
+            Id: 'Joanna',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Joanna (neural)',
+            Engine: 'neural'
+		},
         '54': {
             Gender: 'Female',
-            Id: 'Seoyeon',
-            LanguageCode: 'ko-KR',
-            LanguageName: 'Korean',
-            Name: 'Seoyeon'
-        },
+            Id: 'Kendra',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Kendra (neural)',
+            Engine: 'neural'
+		},
         '55': {
-            Gender: 'Male',
-            Id: 'Takumi',
-            LanguageCode: 'ja-JP',
-            LanguageName: 'Japanese',
-            Name: 'Takumi'
-        },
+            Gender: 'Female',
+            Id: 'Kimberly',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Kimberly (neural)',
+            Engine: 'neural'
+		},
         '56': {
             Gender: 'Female',
-            Id: 'Zeina',
-            LanguageCode: 'arb',
-            LanguageName: 'Arabic',
-            Name: 'Zeina'
-        },
+            Id: 'Salli',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Salli (neural)',
+            Engine: 'neural'
+		},
         '57': {
+            Gender: 'Male',
+            Id: 'Joey',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Joey (neural)',
+            Engine: 'neural'
+		},
+        '58': {
+            Gender: 'Male',
+            Id: 'Justin',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Justin (neural)',
+            Engine: 'neural'
+		},
+        '59': {
+            Gender: 'Male',
+            Id: 'Kevin',
+            LanguageCode: 'en-US',
+            LanguageName: 'US English',
+            Name: 'Kevin (neural)',
+            Engine: 'neural'
+		},
+        '60': {
             Gender: 'Female',
-            Id: 'Zhiyu',
-            LanguageCode: 'cmn-CN',
-            LanguageName: 'Chinese, Mandarin',
-            Name: 'Zhiyu'
-        }
+            Id: 'Camila',
+            LanguageCode: 'pt-BR',
+            LanguageName: 'Brazilian Portuguese',
+            Name: 'Camila (neural)',
+            Engine: 'neural'
+		},
+        '61': {
+            Gender: 'Female',
+            Id: 'Lupe',
+            LanguageCode: 'es-US',
+            LanguageName: 'US Spanish',
+            Name: 'Lupe (neural)',
+            Engine: 'neural'
+		}
     };
 
 
