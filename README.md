@@ -29,7 +29,7 @@ This node transforms a text into a speech audio. It supports many voice language
 This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api. It supports PLAYERS GROUPING.<br/>
 You can use it with **your own audio file** as well and it can be used **totally offline** even without the use of TTS, without internet connection.
 
-[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday)  and <a href="http://eepurl.com/gJm095" target="_blank">subscribe to my channel</a> for the latest news, if you enjoy my node.
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday).
 
 ## CHANGELOG
 * See <a href="https://github.com/Supergiovane/node-red-contrib-sonospollytts/blob/master/CHANGELOG.md">here the changelog</a>

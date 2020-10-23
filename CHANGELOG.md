@@ -2,7 +2,6 @@
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
-<a href="http://eepurl.com/gJm095" target="_blank">Subscribe.</a>
 
 <p>
 <b>Version 1.1.29</b> September 2020<br/>

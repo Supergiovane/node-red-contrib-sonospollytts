@@ -846,8 +846,8 @@ module.exports = function (RED) {
                 node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued Hail' });
             }
 
-            // Add the message to the array
-            node.aMessageQueue.push(msg.payload);
+            // 26/10/2020 Add the message to the array, as string, otherwise it doe'snt work
+            node.aMessageQueue.push(msg.payload.toString());
             node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued ' + msg.payload });
 
         });
@@ -893,7 +893,7 @@ module.exports = function (RED) {
                 node.iTimeoutPollyState += 1; // Increase Timeout
                 if (node.iTimeoutPollyState > 15) {
                     node.iTimeoutPollyState = 0;
-                    node.sPollyState = "idle";
+                    node.sPollyState = "done";
                     RED.log.info('SonosPollyTTS: HandleQueue - Polly is in downloading Timeout');
                     node.setNodeStatus({
                         fill: 'yellow',
@@ -959,7 +959,7 @@ module.exports = function (RED) {
             }
             node.sSonosPlayState = "stopped";
             node.sSonosTrackTitle = "stopped";
-            node.sPollyState = "idle"
+            node.sPollyState = "done"
         }
 
         // Handle queue 2 
@@ -1053,7 +1053,7 @@ module.exports = function (RED) {
             } catch (error) { }
 
             // Play directly files starting with http://
-            if (msg.toLowerCase().startsWith("http://")) {
+            if (msg.toLowerCase().startsWith("http://") || msg.toLowerCase().startsWith("https://")) {
                 RED.log.info('SonosPollyTTS: Leggi HTTP filename: ' + msg);
                 PlaySonos(msg, node);
                 return;
@@ -1182,7 +1182,7 @@ module.exports = function (RED) {
             var sUrl = "";
 
             // Play directly files starting with http://
-            if (_songuri.toLowerCase().startsWith("http://")) {
+            if (_songuri.toLowerCase().startsWith("http://") || _songuri.toLowerCase().startsWith("https://")) {
                 sUrl = _songuri;
             } else {
                 sUrl = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
@@ -1207,8 +1207,9 @@ module.exports = function (RED) {
                     node.setNodeStatus({
                         fill: 'red',
                         shape: 'dot',
-                        text: 'Error Transport'
+                        text: 'Error Transport ' + err
                     });
+                    node.sSonosPlayState = "stopped";
                 });
             }).catch(err => {
                 // Polly has ended downloading file
@@ -1217,8 +1218,9 @@ module.exports = function (RED) {
                 node.setNodeStatus({
                     fill: 'red',
                     shape: 'dot',
-                    text: 'Error SetVolume'
+                    text: 'Error SetVolume '  + err
                 });
+                node.sSonosPlayState = "stopped";
             });
 
 
