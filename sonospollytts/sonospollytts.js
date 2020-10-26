@@ -47,19 +47,7 @@ module.exports = function (RED) {
     }
 
 
-    // 26/10/2020 Check for path and create it if doens't exists
-    function setupDirectory(_aPath) {
-
-        if (!fs.existsSync(_aPath)) {
-            // Create the path
-            try {
-                fs.mkdirSync(_aPath);
-                return true;
-            } catch (error) { return false; }
-        } else {
-            return true;
-        }
-    }
+   
 
 
     // Node Register
@@ -140,38 +128,7 @@ module.exports = function (RED) {
 
         }
 
-        // 03/06/2019 you can select the temp dir
-        if (!setupDirectory(node.userDir)) {
-            RED.log.error('SonosPollyTTS: Unable to set up MAIN directory: ' + node.userDir);
-        }
-        if (!setupDirectory(path.join(node.userDir, "ttsfiles"))) {
-            RED.log.error('SonosPollyTTS: Unable to set up cache directory: ' + path.join(node.userDir, "ttsfiles"));
-        } else {
-            RED.log.info('SonosPollyTTS: TTS cache set to ' + path.join(node.userDir, "ttsfiles"));
-        }
-        if (!setupDirectory(path.join(node.userDir, "hailingpermanentfiles"))) {
-            RED.log.error('SonosPollyTTS: Unable to set up hailing directory: ' + path.join(node.userDir, "hailingpermanentfiles"));
-        } else {
-            RED.log.info('SonosPollyTTS: hailing path set to ' + path.join(node.userDir, "hailingpermanentfiles"));
-            // 09/03/2020 Copy defaults to the userDir
-            fs.readdirSync(path.join(__dirname, "hailingpermanentfiles")).forEach(file => {
-                try {
-                    fs.copyFileSync(path.join(__dirname, "hailingpermanentfiles", file), path.join(node.userDir, "hailingpermanentfiles", file));
-                } catch (error) { }
-            });
-        }
-        if (!setupDirectory(path.join(node.userDir, "ttspermanentfiles"))) {
-            RED.log.error('SonosPollyTTS: Unable to set up permanent files directory: ' + path.join(node.userDir, "ttspermanentfiles"));
-        } else {
-            RED.log.info('SonosPollyTTS: permanent files path set to ' + path.join(node.userDir, "ttspermanentfiles"));
-            // 09/03/2020 // Copy the samples of permanent files into the userDir
-            fs.readdirSync(path.join(__dirname, "ttspermanentfiles")).forEach(file => {
-                try {
-                    fs.copyFileSync(path.join(__dirname, "ttspermanentfiles", file), path.join(node.userDir, "ttspermanentfiles", file));
-                } catch (error) { }
-            });
-        }
-
+       
 
         // Set ssml
         node.ssml = config.ssml;

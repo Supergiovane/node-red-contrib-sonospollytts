@@ -166,10 +166,6 @@ BE SURE TO FORWARD PORTS 1980 AND 1400 </p>
                     .remove()
                     .end();
                 $.getJSON("pollygetvoices", new Date().getTime(), (data) => {
-                    $("#node-input-voice").append($("<option></option>")
-                        .attr("value", "0")
-                        .text("Disable")
-                    )
                     data.sort(compareVoices).forEach(oVoice => {
                         $("#node-input-voice").append($("<option></option>")
                             .attr("value", oVoice.id)
