@@ -4,6 +4,8 @@ module.exports = function (RED) {
     var AWS = require('aws-sdk');
     var fs = require('fs');
     var path = require("path");
+    var formidable = require('formidable');
+    const oOS = require('os');
 
     AWS.config.update({
         region: 'us-east-1'
@@ -20,9 +22,130 @@ module.exports = function (RED) {
             apiVersion: '2016-06-10'
         };
         node.polly = new AWS.Polly(params);
+
+        // 21/03/2019 Endpoint for retrieving the default IP
+        RED.httpAdmin.get("/sonospollyTTSGetEthAddress", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            var oiFaces = oOS.networkInterfaces();
+            var jListInterfaces = [];
+            try {
+                Object.keys(oiFaces).forEach(ifname => {
+                    // Interface with single IP
+                    if (Object.keys(oiFaces[ifname]).length === 1) {
+                        if (Object.keys(oiFaces[ifname])[0].internal == false) jListInterfaces.push({ name: ifname, address: Object.keys(oiFaces[ifname])[0].address });
+                    } else {
+                        var sAddresses = "";
+                        oiFaces[ifname].forEach(function (iface) {
+                            if (iface.internal == false && iface.family === "IPv4") sAddresses = iface.address;
+                        });
+                        if (sAddresses !== "") jListInterfaces.push({ name: ifname, address: sAddresses });
+                    }
+                })
+            } catch (error) { }
+            if (jListInterfaces.length > 0) {
+                res.json(jListInterfaces[0].address); // Retunr the first usable IP
+            } else {
+                res.json("NO ETH INTERFACE FOUND");
+            }
+
+        });
+
+        // 20/03/2020 in the middle of coronavirus, get the sonos groups
+        RED.httpAdmin.get("/sonosgetAllGroups", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            var jListGroups = [];
+            try {
+                const discovery = new sonos.AsyncDeviceDiscovery()
+                discovery.discover().then((device, model) => {
+                    return device.getAllGroups().then((groups) => {
+                        //RED.log.warn('Groups ' + JSON.stringify(groups, null, 2))
+                        for (let index = 0; index < groups.length; index++) {
+                            const element = groups[index];
+                            jListGroups.push({ name: element.Name, host: element.host })
+                        }
+                        res.json(jListGroups)
+                        //return groups[0].CoordinatorDevice().togglePlayback()
+                    })
+                }).catch(e => {
+                    RED.log.warn('SonosPollyTTS: Error in discovery ' + e);
+                    res.json("ERRORDISCOVERY");
+                })
+            } catch (error) { }
+        });
+
+
+        // 09/03/2020 Get list of filenames in hailing folder
+        RED.httpAdmin.get("/getHailingFilesList", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            var jListOwnFiles = [];
+            var sName = "";
+            try {
+                fs.readdirSync(path.join(node.userDir, "hailingpermanentfiles")).forEach(file => {
+                    if (file.indexOf("Hailing_") > -1) {
+                        sName = file.replace("Hailing_", "").replace(".mp3", "");
+                        jListOwnFiles.push({ name: sName, filename: file });
+                    }
+                });
+
+            } catch (error) { }
+            res.json(jListOwnFiles)
+        });
+
+        // 09/03/2020 Delete Hailing
+        RED.httpAdmin.get("/deleteHailingFile", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            // Delete the file
+            try {
+                var newPath = path.join(node.userDir, "hailingpermanentfiles", req.query.FileName);
+                fs.unlinkSync(newPath)
+            } catch (error) { }
+            res.json({ status: 220 });
+        });
+
+        // 09/03/2020 Receive new hailing files from html
+        RED.httpAdmin.post("/node-red-contrib-sonospollyttsHailing", function (req, res) {
+            var form = new formidable.IncomingForm();
+            form.parse(req, function (err, fields, files) {
+                if (err) { };
+                // Allow only mp3
+                if (files.customHailing.name.indexOf(".mp3") !== -1) {
+                    var newPath = path.join(node.userDir, "hailingpermanentfiles", "Hailing_" + files.customHailing.name);
+                    fs.rename(files.customHailing.path, newPath, function (err) { });
+                }
+            });
+            res.json({ status: 220 });
+            res.end;
+        });
+
+
+
+        // 26/10/2020 Supergiovane, get the real updated voice list. 
+        RED.httpAdmin.get("/pollygetvoices", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            var jListVoices = [];
+            try {
+                // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Polly.html#describeVoices-property
+                var jfiltroVoci = {
+                    //Engine: standard | neural,
+                    //IncludeAdditionalLanguageCodes: true 
+                    //LanguageCode: arb | cmn-CN | cy-GB | da-DK | de-DE | en-AU | en-GB | en-GB-WLS | en-IN | en-US | es-ES | es-MX | es-US | fr-CA | fr-FR | is-IS | it-IT | ja-JP | hi-IN | ko-KR | nb-NO | nl-NL | pl-PL | pt-BR | pt-PT | ro-RO | ru-RU | sv-SE | tr-TR,
+                    //NextToken: "STRING_VALUE"
+                };
+                node.polly.describeVoices(jfiltroVoci, function (err, data) {
+                    if (err) {
+                        RED.log.warn('SonosPollyTTS: Error getting polly voices ' + err);
+                    } else {
+                        for (let index = 0; index < data.Voices.length; index++) {
+                            const oVoice = data.Voices[index];
+                            jListVoices.push({ name: oVoice.LanguageName + " (" + oVoice.LanguageCode + ") " + oVoice.Name + " - " + oVoice.Gender, id: oVoice.Id })
+                        } 
+                        res.json(jListVoices)
+                    }
+                });
+
+            } catch (error) { }
+        });
+
+
+
         node.oWebserver; // 11/11/2019 Stores the Webserver
         node.purgediratrestart = config.purgediratrestart || "leave"; // 26/02/2020
-        node.userDir = path.join(RED.settings.userDir , "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
+        node.userDir = path.join(RED.settings.userDir, "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
         node.noderedport = typeof config.noderedport === "undefined" ? "1980" : config.noderedport;
         // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
         if (node.noderedport.trim() == "1880") {
@@ -36,26 +159,26 @@ module.exports = function (RED) {
         if (node.purgediratrestart === "purge") {
             // Delete all files, that are'nt OwnFiles_
             try {
-                fs.readdirSync(path.join(node.userDir , "ttsfiles"), (err, files) => {
+                fs.readdirSync(path.join(node.userDir, "ttsfiles"), (err, files) => {
                     try {
                         if (files.length > 0) {
                             files.forEach(function (file) {
-                                RED.log.info("SonospollyTTS-config: Deleted TTS file " + path.join(node.userDir , "ttsfiles" , file));
+                                RED.log.info("SonospollyTTS-config: Deleted TTS file " + path.join(node.userDir, "ttsfiles", file));
                                 try {
-                                    fs.unlink(path.join(node.userDir , "ttsfiles" , file)), err => { };
+                                    fs.unlink(path.join(node.userDir, "ttsfiles", file)), err => { };
                                 } catch (error) {
                                 }
                             });
-                        };    
+                        };
                     } catch (error) {
-                        
+
                     }
-                    
+
                 });
             } catch (error) { }
         };
-        
-     
+
+
 
 
         // 11/11/2019 CREATE THE ENDPOINT

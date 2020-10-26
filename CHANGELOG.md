@@ -3,7 +3,13 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
-<b>Version 1.1.31</b> September 2020<br/>
+<b>Version 1.1.32</b> October 2020<br/>
+- Optimized the code to better handling HTTP calls for UI list.<br/>
+- NEW: from now, the avaiable voice list is downloaded directly from AWS Polly website. Non more "forgotten" voices.<br/>
+- Reordering of voices by language, to better find your preferred one.<br/>
+</p>
+<p>
+<b>Version 1.1.31</b> October 2020<br/>
 - FIX: fixed possible issue in saving/retrieving own audio files and own audio hailings, for node-red running in non standard way, like docker, home assistant plugin etc...<br/>
 </p>
 <p>
