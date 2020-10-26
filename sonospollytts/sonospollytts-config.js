@@ -3,6 +3,7 @@ module.exports = function (RED) {
 
     var AWS = require('aws-sdk');
     var fs = require('fs');
+    var path = require("path");
 
     AWS.config.update({
         region: 'us-east-1'
@@ -21,7 +22,7 @@ module.exports = function (RED) {
         node.polly = new AWS.Polly(params);
         node.oWebserver; // 11/11/2019 Stores the Webserver
         node.purgediratrestart = config.purgediratrestart || "leave"; // 26/02/2020
-        node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
+        node.userDir = path.join(RED.settings.userDir , "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
         node.noderedport = typeof config.noderedport === "undefined" ? "1980" : config.noderedport;
         // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
         if (node.noderedport.trim() == "1880") {
@@ -35,16 +36,21 @@ module.exports = function (RED) {
         if (node.purgediratrestart === "purge") {
             // Delete all files, that are'nt OwnFiles_
             try {
-                fs.readdir(node.userDir + "/ttsfiles/", (err, files) => {
-                    if (files.length > 0) {
-                        files.forEach(function (file) {
-                            RED.log.info("SonospollyTTS-config: Deleted TTS file " + node.userDir + "/ttsfiles/" + file);
-                            try {
-                                fs.unlink(node.userDir + "/ttsfiles/" + file), err => { };
-                            } catch (error) {
-                            }
-                        });
-                    };
+                fs.readdirSync(path.join(node.userDir , "ttsfiles"), (err, files) => {
+                    try {
+                        if (files.length > 0) {
+                            files.forEach(function (file) {
+                                RED.log.info("SonospollyTTS-config: Deleted TTS file " + path.join(node.userDir , "ttsfiles" , file));
+                                try {
+                                    fs.unlink(path.join(node.userDir , "ttsfiles" , file)), err => { };
+                                } catch (error) {
+                                }
+                            });
+                        };    
+                    } catch (error) {
+                        
+                    }
+                    
                 });
             } catch (error) { }
         };

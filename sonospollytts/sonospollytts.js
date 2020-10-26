@@ -3,7 +3,6 @@ module.exports = function (RED) {
 
     var AWS = require('aws-sdk');
     var fs = require('fs');
-    var mkdirp = require('mkdirp');
     var MD5 = require('crypto-js').MD5;
     var util = require('util');
     var path = require('path');
@@ -49,30 +48,17 @@ module.exports = function (RED) {
     }
 
 
-    function setupDirectory(aPath) {
-        try {
-            return fs.statSync(aPath).isDirectory();
-        } catch (e) {
+    // 26/10/2020 Check for path and create it if doens't exists
+    function setupDirectory(_aPath) {
 
-            // Path does not exist
-            if (e.code === 'ENOENT') {
-                // Try and create it
-                try {
-                    try {
-                        mkdirp.sync(aPath);
-                        RED.log.info('SonosPollyTTS: Created directory path: ' + aPath);
-                    } catch (error) {
-                        RED.log.info('SonosPollyTTS: Failed to access path:: ' + aPath + " : " + error.code);
-                        return false;
-                    }
-
-                    return true;
-                } catch (e) {
-                    RED.log.error('Failed to create path: ' + aPath + " : " + e.code);
-                }
-            }
-            // Otherwise failure
-            return false;
+        if (!fs.existsSync(_aPath)) {
+            // Create the path
+            try {
+                fs.mkdirSync(_aPath);
+                return true;
+            } catch (error) { return false; }
+        } else {
+            return true;
         }
     }
 
@@ -468,7 +454,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Matthew (neural)',
             Engine: 'neural'
-		},
+        },
         '49': {
             Gender: 'Female',
             Id: 'Amy',
@@ -476,7 +462,7 @@ module.exports = function (RED) {
             LanguageName: 'British English',
             Name: 'Amy (neural)',
             Engine: 'neural'
-		},
+        },
         '50': {
             Gender: 'Female',
             Id: 'Emma',
@@ -484,7 +470,7 @@ module.exports = function (RED) {
             LanguageName: 'British English',
             Name: 'Emma (neural)',
             Engine: 'neural'
-		},
+        },
         '51': {
             Gender: 'Male',
             Id: 'Brian',
@@ -492,7 +478,7 @@ module.exports = function (RED) {
             LanguageName: 'British English',
             Name: 'Brian (neural)',
             Engine: 'neural'
-		},
+        },
         '52': {
             Gender: 'Female',
             Id: 'Ivy',
@@ -500,7 +486,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Ivy (neural)',
             Engine: 'neural'
-		},
+        },
         '53': {
             Gender: 'Female',
             Id: 'Joanna',
@@ -508,7 +494,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Joanna (neural)',
             Engine: 'neural'
-		},
+        },
         '54': {
             Gender: 'Female',
             Id: 'Kendra',
@@ -516,7 +502,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Kendra (neural)',
             Engine: 'neural'
-		},
+        },
         '55': {
             Gender: 'Female',
             Id: 'Kimberly',
@@ -524,7 +510,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Kimberly (neural)',
             Engine: 'neural'
-		},
+        },
         '56': {
             Gender: 'Female',
             Id: 'Salli',
@@ -532,7 +518,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Salli (neural)',
             Engine: 'neural'
-		},
+        },
         '57': {
             Gender: 'Male',
             Id: 'Joey',
@@ -540,7 +526,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Joey (neural)',
             Engine: 'neural'
-		},
+        },
         '58': {
             Gender: 'Male',
             Id: 'Justin',
@@ -548,7 +534,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Justin (neural)',
             Engine: 'neural'
-		},
+        },
         '59': {
             Gender: 'Male',
             Id: 'Kevin',
@@ -556,7 +542,7 @@ module.exports = function (RED) {
             LanguageName: 'US English',
             Name: 'Kevin (neural)',
             Engine: 'neural'
-		},
+        },
         '60': {
             Gender: 'Female',
             Id: 'Camila',
@@ -564,7 +550,7 @@ module.exports = function (RED) {
             LanguageName: 'Brazilian Portuguese',
             Name: 'Camila (neural)',
             Engine: 'neural'
-		},
+        },
         '61': {
             Gender: 'Female',
             Id: 'Lupe',
@@ -572,7 +558,7 @@ module.exports = function (RED) {
             LanguageName: 'US Spanish',
             Name: 'Lupe (neural)',
             Engine: 'neural'
-		}
+        }
     };
 
 
@@ -598,7 +584,7 @@ module.exports = function (RED) {
         node.msg = {}; // 08/05/2019 Node message
         node.msg.completed = true;
         node.msg.connectionerror = true;
-        node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
+        node.userDir = path.join(RED.settings.userDir , "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
         node.oAdditionalSonosPlayers = []; // 20/03/2020 Contains other players to be grouped
         node.rules = config.rules || [{}];
         node.sNoderedURL = "";
@@ -660,7 +646,7 @@ module.exports = function (RED) {
             var jListOwnFiles = [];
             var sName = "";
             try {
-                fs.readdirSync(node.userDir + "/hailingpermanentfiles").forEach(file => {
+                fs.readdirSync(path.join(node.userDir , "hailingpermanentfiles")).forEach(file => {
                     if (file.indexOf("Hailing_") > -1) {
                         sName = file.replace("Hailing_", "").replace(".mp3", "");
                         jListOwnFiles.push({ name: sName, filename: file });
@@ -675,7 +661,7 @@ module.exports = function (RED) {
         RED.httpAdmin.get("/deleteHailingFile", RED.auth.needsPermission('PollyNode.read'), function (req, res) {
             // Delete the file
             try {
-                var newPath = node.userDir + "/hailingpermanentfiles/" + req.query.FileName;
+                var newPath = path.join(node.userDir , "hailingpermanentfiles" , req.query.FileName);
                 fs.unlinkSync(newPath)
             } catch (error) { }
             res.json({ status: 220 });
@@ -688,7 +674,7 @@ module.exports = function (RED) {
                 if (err) { };
                 // Allow only mp3
                 if (files.customHailing.name.indexOf(".mp3") !== -1) {
-                    var newPath = node.userDir + "/hailingpermanentfiles/Hailing_" + files.customHailing.name;
+                    var newPath = path.join(node.userDir , "hailingpermanentfiles" , "Hailing_" + files.customHailing.name);
                     fs.rename(files.customHailing.path, newPath, function (err) { });
                 }
             });
@@ -749,30 +735,30 @@ module.exports = function (RED) {
         if (!setupDirectory(node.userDir)) {
             RED.log.error('SonosPollyTTS: Unable to set up MAIN directory: ' + node.userDir);
         }
-        if (!setupDirectory(node.userDir + "/ttsfiles")) {
-            RED.log.error('SonosPollyTTS: Unable to set up cache directory: ' + node.userDir + "/ttsfiles");
+        if (!setupDirectory(path.join(node.userDir , "ttsfiles"))) {
+            RED.log.error('SonosPollyTTS: Unable to set up cache directory: ' + path.join(node.userDir , "ttsfiles"));
         } else {
-            RED.log.info('SonosPollyTTS: TTS cache set to ' + node.userDir + "/ttsfiles");
+            RED.log.info('SonosPollyTTS: TTS cache set to ' + path.join(node.userDir , "ttsfiles"));
         }
-        if (!setupDirectory(node.userDir + "/hailingpermanentfiles")) {
-            RED.log.error('SonosPollyTTS: Unable to set up hailing directory: ' + node.userDir + "/hailingpermanentfiles");
+        if (!setupDirectory(path.join(node.userDir , "hailingpermanentfiles"))) {
+            RED.log.error('SonosPollyTTS: Unable to set up hailing directory: ' + path.join(node.userDir , "hailingpermanentfiles"));
         } else {
-            RED.log.info('SonosPollyTTS: hailing path set to ' + node.userDir + "/hailingpermanentfiles");
+            RED.log.info('SonosPollyTTS: hailing path set to ' + path.join(node.userDir , "hailingpermanentfiles"));
             // 09/03/2020 Copy defaults to the userDir
-            fs.readdirSync(__dirname + "/hailingpermanentfiles").forEach(file => {
+            fs.readdirSync(path.join(__dirname , "hailingpermanentfiles")).forEach(file => {
                 try {
-                    fs.copyFileSync(__dirname + "/hailingpermanentfiles/" + file, node.userDir + "/hailingpermanentfiles/" + file);
+                    fs.copyFileSync(path.join(__dirname , "hailingpermanentfiles" , file), path.join(node.userDir , "hailingpermanentfiles" , file));
                 } catch (error) { }
             });
         }
-        if (!setupDirectory(node.userDir + "/ttspermanentfiles")) {
-            RED.log.error('SonosPollyTTS: Unable to set up permanent files directory: ' + node.userDir + "/ttspermanentfiles");
+        if (!setupDirectory(path.join(node.userDir , "ttspermanentfiles"))) {
+            RED.log.error('SonosPollyTTS: Unable to set up permanent files directory: ' + path.join(node.userDir , "ttspermanentfiles"));
         } else {
-            RED.log.info('SonosPollyTTS: permanent files path set to ' + node.userDir + "/ttspermanentfiles");
+            RED.log.info('SonosPollyTTS: permanent files path set to ' + path.join(node.userDir , "ttspermanentfiles"));
             // 09/03/2020 // Copy the samples of permanent files into the userDir
-            fs.readdirSync(__dirname + "/ttspermanentfiles").forEach(file => {
+            fs.readdirSync(path.join(__dirname , "ttspermanentfiles")).forEach(file => {
                 try {
-                    fs.copyFileSync(__dirname + "/ttspermanentfiles/" + file, node.userDir + "/ttspermanentfiles/" + file);
+                    fs.copyFileSync(path.join(__dirname , "ttspermanentfiles" , file), path.join(node.userDir , "ttspermanentfiles" , file));
                 } catch (error) { }
             });
         }
@@ -1152,7 +1138,7 @@ module.exports = function (RED) {
             // 27/02/2020 Handling OwnFile
             if (msg.indexOf("OwnFile_") !== -1) {
                 RED.log.info('SonosPollyTTS: OwnFile .MP3, skip polly, filename: ' + msg);
-                var newPath = node.userDir + "/ttspermanentfiles/" + msg;
+                var newPath = path.join(node.userDir , "ttspermanentfiles" , msg);
                 PlaySonos(newPath, node);
                 return;
             }
@@ -1160,7 +1146,7 @@ module.exports = function (RED) {
             // 09/03/2020 Handling Hailing_ files
             if (msg.indexOf("Hailing_") !== -1) {
                 RED.log.info('SonosPollyTTS: Hailing .MP3, skip polly, filename: ' + msg);
-                var newPath = node.userDir + "/hailingpermanentfiles/" + msg;
+                var newPath = path.join(node.userDir , "hailingpermanentfiles" , msg);
                 PlaySonos(newPath, node);
                 return;
             }
@@ -1170,7 +1156,7 @@ module.exports = function (RED) {
             var filename = getFilename(msg, node.iVoice, node.ssml, outputFormat);
 
             // Get real filename, codified.
-            filename = node.userDir + "/ttsfiles/" + filename;
+            filename = path.join(node.userDir , "ttsfiles" , filename);
 
             // Check if cached
             if (fs.existsSync(filename)) {
@@ -1308,7 +1294,7 @@ module.exports = function (RED) {
                 node.setNodeStatus({
                     fill: 'red',
                     shape: 'dot',
-                    text: 'Error SetVolume '  + err
+                    text: 'Error SetVolume ' + err
                 });
                 node.sSonosPlayState = "stopped";
             });

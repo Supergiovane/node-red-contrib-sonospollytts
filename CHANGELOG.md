@@ -3,6 +3,10 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 1.1.31</b> September 2020<br/>
+- FIX: fixed possible issue in saving/retrieving own audio files and own audio hailings, for node-red running in non standard way, like docker, home assistant plugin etc...<br/>
+</p>
+<p>
 <b>Version 1.1.30</b> September 2020<br/>
 - If you run node-red behind natted docker (for example kubertness) and you've added sonos devices to the group list, the devices belonging to the group doesn't accept volume setting. This has been fixed. Thanks @JorinL for raising the issue.<br/>
 - NEW: Added more voices and removed old ones no more present in Polly.<br/>

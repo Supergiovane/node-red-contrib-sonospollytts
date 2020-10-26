@@ -4,12 +4,13 @@
 module.exports = function (RED) {
     var formidable = require('formidable');
     var fs = require('fs');
+    var path = require('path');
 
     function ownfile(config) {
         RED.nodes.createNode(this, config);
         var node = this;
         node.selectedFile = config.selectedFile || "";
-        node.userDir = RED.settings.userDir + "/sonospollyttsstorage"; // 09/03/2020 Storage of sonospollytts
+        node.userDir = path.join(RED.settings.userDir , "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts
         
         // Receive new files from html
         RED.httpAdmin.post("/node-red-contrib-sonospollytts", function (req, res) {
@@ -18,7 +19,7 @@ module.exports = function (RED) {
                 if (err) { };
                 // Allow only mp3
                 if (files.customTTS.name.indexOf(".mp3") !== -1) {
-                    var newPath = node.userDir + "/ttspermanentfiles/OwnFile_" + files.customTTS.name;
+                    var newPath = path.join(node.userDir , "ttspermanentfiles", "OwnFile_" + files.customTTS.name);
                     fs.rename(files.customTTS.path, newPath, function (err) { });
                 }
             });
@@ -33,7 +34,7 @@ module.exports = function (RED) {
             var jListOwnFiles = [];
             var sName = "";
             try {
-                fs.readdirSync(node.userDir + "/ttspermanentfiles").forEach(file => {
+                fs.readdirSync(path.join(node.userDir , "ttspermanentfiles")).forEach(file => {
                     if (file.indexOf("OwnFile_") > -1) {
                         sName = file.replace("OwnFile_", '').replace(".mp3", '');
                         jListOwnFiles.push({ name: sName, filename: file });
@@ -50,12 +51,12 @@ module.exports = function (RED) {
                 if (req.query.FileName == "DELETEallFiles") {
                     // Delete all OwnFiles_
                     try {
-                        fs.readdir(node.userDir + "/ttspermanentfiles/", (err, files) => {
+                        fs.readdir(path.join(node.userDir , "ttspermanentfiles"), (err, files) => {
                             files.forEach(function (file) {
                                 if (file.indexOf("OwnFile_") !== -1) {
-                                    RED.log.warn("SonospollyTTS: Deleted file " + node.userDir + "/ttspermanentfiles/" + file);
+                                    RED.log.warn("SonospollyTTS: Deleted file " + path.join(node.userDir , "ttspermanentfiles" , file));
                                     try {
-                                        fs.unlink(node.userDir + "/ttspermanentfiles/" + file), err => { };
+                                        fs.unlink(path.join(node.userDir , "ttspermanentfiles" , file)), err => { };
                                     } catch (error) { }
                                 }
                             });
@@ -65,7 +66,7 @@ module.exports = function (RED) {
                 } else {
                     // Delete only one file
                     try {
-                        var newPath = node.userDir + "/ttspermanentfiles/" + req.query.FileName;
+                        var newPath = path.join(node.userDir , "ttspermanentfiles" , req.query.FileName);
                         try {
                             fs.unlinkSync(newPath)
                         } catch (error) { }
