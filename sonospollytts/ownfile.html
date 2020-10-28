@@ -23,18 +23,25 @@
             // refreshListaFiles
             // ##########################################################
             node.refreshListaFiles = () => {
-                $("#node-input-selectedFile")
-                    .find('option')
-                    .remove()
-                    .end();
-                $.getJSON('getOwnFilesList', new Date().getTime(), (data) => {
-                    data.sort().forEach(oFile => {
-                        $("#node-input-selectedFile").append($("<option></option>")
-                            .attr("value", oFile.filename)
-                            .text(oFile.name)
-                        )
-                    });
-                    $("#node-input-selectedFile").val(typeof node.selectedFile === "undefined" ? "" : node.selectedFile)
+                return new Promise((resolve, reject) => {
+                    $("#node-input-selectedFile")
+                        .find('option')
+                        .remove()
+                        .end();
+                    try {
+                        $.getJSON('getOwnFilesList', new Date().getTime(), (data) => {
+                            data.sort().forEach(oFile => {
+                                $("#node-input-selectedFile").append($("<option></option>")
+                                    .attr("value", oFile.filename)
+                                    .text(oFile.name)
+                                )
+                            });
+                            $("#node-input-selectedFile").val(typeof node.selectedFile === "undefined" ? "" : node.selectedFile)
+                            resolve(true);
+                        });
+                    } catch (error) {
+                        return reject(error);
+                    }
                 });
             }
             // ##########################################################
@@ -49,7 +56,7 @@
                     fdata.append("customTTS", file);
 
                     $.ajax({
-                        url: "node-red-contrib-sonospollytts",
+                        url: "sonospollyttsOwnFile",
                         type: "POST",
                         data: fdata, //add the FormData object to the data parameter
                         processData: false, //tell jquery not to process data
@@ -57,8 +64,10 @@
                         success: function (response, status, jqxhr) {
                             // The only way is to wait some time, then refresh
                             setTimeout(function () {
-                                node.refreshListaFiles();
-                                $("#ownFileUpload").val("");// Otherwise will not re-upload a file with the same name
+                                node.refreshListaFiles().then((success, error) => {
+                                    $("#ownFileUpload").val("");// Otherwise will not re-upload a file with the same name
+                                    $("#node-input-selectedFile").val("OwnFile_" + file.name);
+                                });;
                             }, 500);
                         },
                         error: function (jqxhr, status, errorMessage) {

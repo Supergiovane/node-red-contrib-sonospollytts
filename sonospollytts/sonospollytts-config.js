@@ -23,7 +23,7 @@ module.exports = function (RED) {
         };
         node.polly = new AWS.Polly(params);
         node.userDir = path.join(RED.settings.userDir, "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
-
+        
         // 26/10/2020 Check for path and create it if doens't exists
         function setupDirectory(_aPath) {
 
@@ -70,7 +70,8 @@ module.exports = function (RED) {
             });
         }
 
-
+        //#region SONOSPOLLY NODE
+        // ######################################################
         // 21/03/2019 Endpoint for retrieving the default IP
         RED.httpAdmin.get("/sonospollyTTSGetEthAddress", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
             var oiFaces = oOS.networkInterfaces();
@@ -147,7 +148,7 @@ module.exports = function (RED) {
         });
 
         // 09/03/2020 Receive new hailing files from html
-        RED.httpAdmin.post("/node-red-contrib-sonospollyttsHailing", function (req, res) {
+        RED.httpAdmin.post("/sonospollyttsHailing", function (req, res) {
             var form = new formidable.IncomingForm();
             form.parse(req, function (err, fields, files) {
                 if (err) { };
@@ -160,11 +161,9 @@ module.exports = function (RED) {
             res.json({ status: 220 });
             res.end;
         });
-
-
-
-        // 26/10/2020 Supergiovane, get the real updated voice list. 
-        RED.httpAdmin.get("/pollygetvoices", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+        
+         // 26/10/2020 Supergiovane, get the real updated voice list. 
+         RED.httpAdmin.get("/pollygetvoices", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
             var jListVoices = [];
             try {
                 // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Polly.html#describeVoices-property
@@ -189,11 +188,82 @@ module.exports = function (RED) {
             } catch (error) { }
         });
 
+        // ########################################################
+        //#endregion
 
+
+       
+        //#region OWNFILE NODE
+        // ######################################################
+
+        // Receive new files from html
+        RED.httpAdmin.post("/sonospollyttsOwnFile", function (req, res) {
+            var form = new formidable.IncomingForm();
+            form.parse(req, function (err, fields, files) {
+                if (err) { };
+                // Allow only mp3
+                if (files.customTTS.name.indexOf(".mp3") !== -1) {
+                    var newPath = path.join(node.userDir, "ttspermanentfiles", "OwnFile_" + files.customTTS.name);
+                    fs.rename(files.customTTS.path, newPath, function (err) { });
+                }
+            });
+            res.json({ status: 220 });
+            res.end;
+        });
+
+        // 27/02/2020 Get list of filenames starting with OwnFile_
+        RED.httpAdmin.get("/getOwnFilesList", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            var jListOwnFiles = [];
+            var sName = "";
+            try {
+                fs.readdirSync(path.join(node.userDir, "ttspermanentfiles")).forEach(file => {
+                    if (file.indexOf("OwnFile_") > -1) {
+                        sName = file.replace("OwnFile_", '').replace(".mp3", '');
+                        jListOwnFiles.push({ name: sName, filename: file });
+                    }
+                });
+
+            } catch (error) { }
+            res.json(jListOwnFiles)
+        });
+
+        // 27/02/2020 Delete OwnFile_
+        RED.httpAdmin.get("/deleteOwnFile", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            try {
+                if (req.query.FileName == "DELETEallFiles") {
+                    // Delete all OwnFiles_
+                    try {
+                        fs.readdir(path.join(node.userDir, "ttspermanentfiles"), (err, files) => {
+                            files.forEach(function (file) {
+                                if (file.indexOf("OwnFile_") !== -1) {
+                                    RED.log.warn("SonospollyTTS: Deleted file " + path.join(node.userDir, "ttspermanentfiles", file));
+                                    try {
+                                        fs.unlinkSync(path.join(node.userDir, "ttspermanentfiles", file));
+                                    } catch (error) { }
+                                }
+                            });
+                        });
+
+                    } catch (error) { }
+                } else {
+                    // Delete only one file
+                    try {
+                        var newPath = path.join(node.userDir, "ttspermanentfiles", req.query.FileName);
+                        try {
+                            fs.unlinkSync(newPath)
+                        } catch (error) { }
+
+                    } catch (error) { }
+                }
+            } catch (err) {
+            }
+            res.json({ status: 220 });
+        });
+        // ########################################################
+        //#endregion
 
         node.oWebserver; // 11/11/2019 Stores the Webserver
         node.purgediratrestart = config.purgediratrestart || "leave"; // 26/02/2020
-        node.userDir = path.join(RED.settings.userDir, "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
         node.noderedport = typeof config.noderedport === "undefined" ? "1980" : config.noderedport;
         // 11/11/2019 NEW in V 1.1.0, changed webserver behaviour. Redirect pre V. 1.1.0 1880 ports to the nde default 1980
         if (node.noderedport.trim() == "1880") {
@@ -213,7 +283,7 @@ module.exports = function (RED) {
                             files.forEach(function (file) {
                                 RED.log.info("SonospollyTTS-config: Deleted TTS file " + path.join(node.userDir, "ttsfiles", file));
                                 try {
-                                    fs.unlink(path.join(node.userDir, "ttsfiles", file)), err => { };
+                                    fs.unlinkSync(path.join(node.userDir, "ttsfiles", file));
                                 } catch (error) {
                                 }
                             });
