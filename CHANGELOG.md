@@ -4,7 +4,7 @@
 
 <p>
 <b>Version 1.1.33</b> October 2020<br/>
-- FIX: fixed problem preventing OwnFile node to accept files in non standard node-red installations (dockerized images, as homeassistant plugin etc..).<br/>
+- FIX: fixed problem preventing OwnFile node to accept files in non standard node-red installations (dockerized images, as homeassistant plugin etc..). Thanks @koburg for raising the issue.<br/>
 - Now, whenever you upload a new file in Ownfile or new Hailing in Sonospollytts node, the new file is autimatically selected.<br/>
 </p>
 <p>
