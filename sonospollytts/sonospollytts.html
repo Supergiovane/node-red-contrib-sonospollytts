@@ -108,18 +108,18 @@ BE SURE TO FORWARD PORTS 1980 AND 1400 </p>
                 name: { value: "" },
                 voice:
                 {
-                    value: "0",
-                    required: true
+                    value: "Ivy",
+                    required: false
                 },
                 ssml:
                 {
                     value: false,
-                    required: true
+                    required: false
                 },
                 sonosipaddress:
                 {
                     value: "",
-                    required: true
+                    required: false
                 },
                 sonosvolume:
                 {
@@ -151,11 +151,28 @@ BE SURE TO FORWARD PORTS 1980 AND 1400 </p>
             },
             oneditprepare: function () {
                 var node = this;
-
+                // var oNodeServer = RED.nodes.node($("#node-input-config").val()); // Store the config-node
+                // // 19/02/2020 Used to alert the user if the CSV file has not been loaded and to get the server sooner als deploy
+                // // ###########################
+                // $("#node-input-config").change(function () {
+                //     try {
+                //         oNodeServer = RED.nodes.node($(this).val());
+                //         if (typeof oNodeServer !== "undefined") {
+                //             $("#pleaseDeploy").hide();
+                //             $("#allGUI").show();
+                //         } else {
+                //             $("#allGUI").hide();
+                //         }
+                //     } catch (error) {
+                        
+                //     }
+                // });
+                // // ###########################
 
                 // 21/03/2020 Check if the node is the absolute first in the flow. In this case, it has no http server instatiaced
                 $.getJSON('sonospollyTTSGetEthAddress', (data) => {
                     $("#pleaseDeploy").hide();
+                    $("#allGUI").show();
                 }).fail(function (jqxhr) {
                     $("#allGUI").hide();
                 });;

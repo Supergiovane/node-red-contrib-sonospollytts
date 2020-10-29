@@ -7,7 +7,7 @@ module.exports = function (RED) {
     var formidable = require('formidable');
     const oOS = require('os');
     const sonos = require('sonos');
-    
+
     AWS.config.update({
         region: 'us-east-1'
     });
@@ -23,8 +23,45 @@ module.exports = function (RED) {
             apiVersion: '2016-06-10'
         };
         node.polly = new AWS.Polly(params);
+
+        // 28/10/2020 Refresh polly voices
+        // node.refreshVoices = function () {
+        //     return new Promise((resolve, reject) => {
+        //         var jListVoices = [];
+        //         try {
+        //             // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Polly.html#describeVoices-property
+        //             var jfiltroVoci = {
+        //                 //Engine: standard | neural,
+        //                 //IncludeAdditionalLanguageCodes: true 
+        //                 //LanguageCode: arb | cmn-CN | cy-GB | da-DK | de-DE | en-AU | en-GB | en-GB-WLS | en-IN | en-US | es-ES | es-MX | es-US | fr-CA | fr-FR | is-IS | it-IT | ja-JP | hi-IN | ko-KR | nb-NO | nl-NL | pl-PL | pt-BR | pt-PT | ro-RO | ru-RU | sv-SE | tr-TR,
+        //                 //NextToken: "STRING_VALUE"
+        //             };
+        //             node.polly.describeVoices(jfiltroVoci, function (err, data) {
+        //                 if (err) {
+        //                     RED.log.warn('SonosPollyTTS: Error getting polly voices ' + err);
+        //                     jListVoices.push({ name: "Error retrieving voices. Check your AWS credentials and full deploy again", id: "Ivy" })
+        //                     reject(jListVoices);
+        //                 } else {
+        //                     for (let index = 0; index < data.Voices.length; index++) {
+        //                         const oVoice = data.Voices[index];
+        //                         jListVoices.push({ name: oVoice.LanguageName + " (" + oVoice.LanguageCode + ") " + oVoice.Name + " - " + oVoice.Gender, id: oVoice.Id })
+        //                         //RED.log.info("BANANA VOCE AGGIUNTA " + oVoice.Name);
+        //                     }
+        //                     resolve(jListVoices);
+        //                 }
+        //             });
+
+        //         } catch (error) {
+        //             jListVoices.push({ name: "Error " + error, id: "Ivy" })
+        //             reject(jListVoices);
+        //         }
+        //     });
+        // };
+
         node.userDir = path.join(RED.settings.userDir, "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
-        
+
+        // 03/06/2019 you can select the temp dir
+        //#region "SETUP PATHS"
         // 26/10/2020 Check for path and create it if doens't exists
         function setupDirectory(_aPath) {
 
@@ -38,8 +75,6 @@ module.exports = function (RED) {
                 return true;
             }
         }
-
-        // 03/06/2019 you can select the temp dir
         if (!setupDirectory(node.userDir)) {
             RED.log.error('SonosPollyTTS: Unable to set up MAIN directory: ' + node.userDir);
         }
@@ -70,6 +105,7 @@ module.exports = function (RED) {
                 } catch (error) { }
             });
         }
+        //#endregion
 
         //#region SONOSPOLLY NODE
         // ######################################################
@@ -162,9 +198,15 @@ module.exports = function (RED) {
             res.json({ status: 220 });
             res.end;
         });
-        
-         // 26/10/2020 Supergiovane, get the real updated voice list. 
-         RED.httpAdmin.get("/pollygetvoices", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+
+        // 26/10/2020 Supergiovane, get the real updated voice list. 
+        RED.httpAdmin.get("/pollygetvoices", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
+            // node.refreshVoices().then(function (resolve) {
+            //     res.json(resolve);
+            // }).catch(function (reject) { 
+            //     res.json(reject);
+            //  });
+            
             var jListVoices = [];
             try {
                 // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Polly.html#describeVoices-property
@@ -177,6 +219,8 @@ module.exports = function (RED) {
                 node.polly.describeVoices(jfiltroVoci, function (err, data) {
                     if (err) {
                         RED.log.warn('SonosPollyTTS: Error getting polly voices ' + err);
+                        jListVoices.push({ name: "Error retrieving voices. Check your AWS credentials and restart node-red", id: "Ivy" })
+                        res.json(jListVoices)
                     } else {
                         for (let index = 0; index < data.Voices.length; index++) {
                             const oVoice = data.Voices[index];
@@ -186,14 +230,17 @@ module.exports = function (RED) {
                     }
                 });
 
-            } catch (error) { }
+            } catch (error) {
+                jListVoices.push({ name: "Error " + error, id: "Ivy" })
+                res.json(jListVoices)
+            }
         });
 
         // ########################################################
         //#endregion
 
 
-       
+
         //#region OWNFILE NODE
         // ######################################################
 

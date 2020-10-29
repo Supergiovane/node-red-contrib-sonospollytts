@@ -1,7 +1,7 @@
 module.exports = function (RED) {
     'use strict';
 
-    var AWS = require('aws-sdk');
+    //var AWS = require('aws-sdk');
     var fs = require('fs');
     var MD5 = require('crypto-js').MD5;
     var util = require('util');
@@ -9,9 +9,9 @@ module.exports = function (RED) {
     const sonos = require('sonos');
  
 
-    AWS.config.update({
-        region: 'us-east-1'
-    });
+    // AWS.config.update({
+    //     region: 'us-east-1'
+    // });
 
     function slug(_text) {
         var sRet = _text;

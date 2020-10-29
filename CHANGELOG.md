@@ -3,6 +3,11 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 1.1.35</b> October 2020<br/>
+- HOTFIX: Fix possible polly voice discovery issues if running in docker or under homeassistant.<br/>
+- Added a warning to restart node-red after each change in the config window.<br/>
+</p>
+<p>
 <b>Version 1.1.34</b> October 2020<br/>
 - HOTFIX: Fix possible sonos discovery issue<br/>
 </p>
