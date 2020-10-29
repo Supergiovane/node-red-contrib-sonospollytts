@@ -6,7 +6,8 @@ module.exports = function (RED) {
     var path = require("path");
     var formidable = require('formidable');
     const oOS = require('os');
-
+    const sonos = require('sonos');
+    
     AWS.config.update({
         region: 'us-east-1'
     });

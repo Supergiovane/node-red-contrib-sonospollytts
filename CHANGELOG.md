@@ -3,6 +3,10 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 1.1.34</b> October 2020<br/>
+- HOTFIX: Fix possible sonos discovery issue<br/>
+</p>
+<p>
 <b>Version 1.1.33</b> October 2020<br/>
 - FIX: fixed problem preventing OwnFile node to accept files in non standard node-red installations (dockerized images, as homeassistant plugin etc..). Thanks @koburg for raising the issue.<br/>
 - Now, whenever you upload a new file in Ownfile or new Hailing in Sonospollytts node, the new file is autimatically selected.<br/>
