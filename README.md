@@ -42,6 +42,10 @@ You can use it with **your own audio file** as well and it can be used **totally
 * **Can work offline**. You can use your own audio files to make the node works offline. If you use the node with the integrated TTS Polly, thank to the **offline cache**, once you played the TTS only one time, the node will cache this TTS and you can use it **even without internet connection**. 
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
 * Works with node-red in HTTP and in HTTPS mode.
+<br/><br/>
+> IF YOU RUN NODE-RED BEHIND DOCKER OR SOMETHING ELSE, BE AWARE: <br/>
+> PORT USED BY THE NODE ARE 1980 AND 1400 (FOR SONOS DISCOVER). <br/>
+> PLEASE ALLOW MDNS AND UDP AS WELL
 
 <br/><br/><br/><br/>
 
