@@ -24,40 +24,7 @@ module.exports = function (RED) {
         };
         node.polly = new AWS.Polly(params);
 
-        // 28/10/2020 Refresh polly voices
-        // node.refreshVoices = function () {
-        //     return new Promise((resolve, reject) => {
-        //         var jListVoices = [];
-        //         try {
-        //             // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Polly.html#describeVoices-property
-        //             var jfiltroVoci = {
-        //                 //Engine: standard | neural,
-        //                 //IncludeAdditionalLanguageCodes: true 
-        //                 //LanguageCode: arb | cmn-CN | cy-GB | da-DK | de-DE | en-AU | en-GB | en-GB-WLS | en-IN | en-US | es-ES | es-MX | es-US | fr-CA | fr-FR | is-IS | it-IT | ja-JP | hi-IN | ko-KR | nb-NO | nl-NL | pl-PL | pt-BR | pt-PT | ro-RO | ru-RU | sv-SE | tr-TR,
-        //                 //NextToken: "STRING_VALUE"
-        //             };
-        //             node.polly.describeVoices(jfiltroVoci, function (err, data) {
-        //                 if (err) {
-        //                     RED.log.warn('SonosPollyTTS: Error getting polly voices ' + err);
-        //                     jListVoices.push({ name: "Error retrieving voices. Check your AWS credentials and full deploy again", id: "Ivy" })
-        //                     reject(jListVoices);
-        //                 } else {
-        //                     for (let index = 0; index < data.Voices.length; index++) {
-        //                         const oVoice = data.Voices[index];
-        //                         jListVoices.push({ name: oVoice.LanguageName + " (" + oVoice.LanguageCode + ") " + oVoice.Name + " - " + oVoice.Gender, id: oVoice.Id })
-        //                         //RED.log.info("BANANA VOCE AGGIUNTA " + oVoice.Name);
-        //                     }
-        //                     resolve(jListVoices);
-        //                 }
-        //             });
-
-        //         } catch (error) {
-        //             jListVoices.push({ name: "Error " + error, id: "Ivy" })
-        //             reject(jListVoices);
-        //         }
-        //     });
-        // };
-
+      
         node.userDir = path.join(RED.settings.userDir, "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
 
         // 03/06/2019 you can select the temp dir
@@ -199,7 +166,7 @@ module.exports = function (RED) {
             res.end;
         });
 
-        // 26/10/2020 Supergiovane, get the real updated voice list. 
+        // 26/10/2020 Supergiovane, get the updated voice list from AWS. 
         RED.httpAdmin.get("/pollygetvoices", RED.auth.needsPermission('PollyConfigNode.read'), function (req, res) {
             // node.refreshVoices().then(function (resolve) {
             //     res.json(resolve);
@@ -415,7 +382,10 @@ module.exports = function (RED) {
             } catch (error) {
 
             }
-            done()
+            setTimeout(function () {
+                // Wait some time to allow time to do promises.
+                done();
+            }, 500);
         });
 
 

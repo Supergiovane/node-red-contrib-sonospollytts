@@ -797,23 +797,18 @@ module.exports = function (RED) {
         node.on('close', function (done) {
             clearTimeout(node.oTimer);
             clearTimeout(node.oTimerSonosConnectionCheck);
-            node.SonosClient.stop().then(() => {
-                node.ungroupSpeakers();
-            });
+            
+            // 10/11/2020 Avoit stopping sonos, if someone is using it for, for example, playing music.
+            // node.SonosClient.stop().then(() => {
+            //     node.ungroupSpeakers();
+            // });
+            
             node.msg.completed = true;
             node.send(node.msg);
             node.setNodeStatus({ fill: "green", shape: "ring", text: "Shutdown" });
             node.flushQueue();
-            // 11/11/2019 Close the Webserver
-            try {
-                node.oWebserver.close(function () { RED.log.info("SonosPollyTTS: Webserver UP. Closing down."); });
-            } catch (error) {
-
-            }
-            setTimeout(function () {
-                // Wait some time to allow time to do promises.
-                done();
-            }, 1000);
+            done();
+            
         });
 
 
