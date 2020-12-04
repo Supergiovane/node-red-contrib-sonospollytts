@@ -1,3 +1,6 @@
+const { clear } = require('console');
+const { clearInterval } = require('timers');
+
 module.exports = function (RED) {
     'use strict';
 
@@ -75,7 +78,13 @@ module.exports = function (RED) {
         node.oAdditionalSonosPlayers = []; // 20/03/2020 Contains other players to be grouped
         node.rules = config.rules || [{}];
         node.sNoderedURL = "";
+        node.oTimerGetCurrentQueue = null; // 04/12/2020
+        node.oTimerResumeCurrentQueue = null; // 04/12/2020
         node.currMusicTrack = null; // 04/12/2020 Current position of the currently playing music in the queue
+        node.busyGettingMusicQueue = false; // 04/12/2020 Signal busy getting usic queue
+        node.busyResumingMusicQueue = false; // 04/12/2020 Signal busy in resuming music queue
+        node.tempMSGStorage = []; // 04/12/2020 Temporary stores the flow messages
+
         if (typeof node.server !== "undefined" && node.server !== null) {
             node.sNoderedURL = node.server.sNoderedURL || "";
         }
@@ -666,7 +675,16 @@ module.exports = function (RED) {
         node.sSonosVolume = config.sonosvolume;
 
         // Start the TTS queue timer
-        node.oTimer = setTimeout(function () { HandleQueue(); }, 5000);
+        node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
+
+        // 04/12/2020 Start timer that read the music queue
+        node.oTimerGetCurrentQueue = setInterval(function () {
+            getMusicQueue().then(resolve => {
+                
+            }).catch(err => {
+                
+            });
+        }, 5000);
 
         // 27/11/2019 Start the connection healty check
         node.oTimerSonosConnectionCheck = setTimeout(function () { node.CheckSonosConnection(); }, 5000);
@@ -730,7 +748,6 @@ module.exports = function (RED) {
         }
         // ######################################################
 
-        node.curTrack;
         node.on('input', function (msg) {
 
             if (!msg.hasOwnProperty("payload")) {
@@ -738,47 +755,20 @@ module.exports = function (RED) {
                 return;
             }
 
-            // 04/12/2020 Handle music queue
-            //#region "HANDLE MUSIC QUEUE"
-            node.SonosClient.getCurrentState().then(state => {
-                //console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz" + node.msg.completed)
-                // A music queue is playing and no TTS is speaking?
-                if (state.toString().toLowerCase() === "playing" && node.msg.completed === true) {
-                    //console.log("AAaaaaAAaaaaAAaaaaAAaaaaAAaaaaAAaaaaAAaaaa")
-                    // Get current track
-                    node.SonosClient.currentTrack().then(track => {
-                        //console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-                        node.currMusicTrack = track;// .queuePosition || 1; // Get the current track  in the queue.
-                        node.SonosClient.getVolume().then(volume => {
-                            //console.log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
-                            node.currMusicTrack.currentVolume = volume; // Get the current volume
-                            console.log("VOLUMA " + volume);
-                            continueProcessingInputMSG();
-                        }).catch(err => {
-                            node.currMusicTrack = null;
-                            console.log('SonospollyTTS: getVolume Error occurred %j', err);
-                            continueProcessingInputMSG();
-                        })
-                    }).catch(err => {
-                        node.currMusicTrack = null;
-                        console.log('SonospollyTTS: Error currentTrackoccurred %j', err);
-                        continueProcessingInputMSG();
-                    })
-                } else {
-                    node.currMusicTrack = null;
-                    continueProcessingInputMSG();
-                };
-            }).catch(err => {
-                node.currMusicTrack = null;
-                console.log('SonospollyTTS: getCurrentState: Error occurred %j', err);
-                continueProcessingInputMSG();
-            })
-            //#endregion
+            // 04/12/2020
+            // If the queue management is still in process (starting or stopping the queue), store the input messages and send it upon end managing the queue
+            if (node.busyGettingMusicQueue || node.busyResumingMusicQueue) {
+                node.tempMSGStorage.push(msg.payload.toString());
+                if (node.busyGettingMusicQueue) node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Busy in reading music queue...retry' });
+                if (node.busyResumingMusicQueue) node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Busy in resuming music queue...retry' });
+                return;
+            }
 
+            // Clear the read music queue timer
+            if (node.oTimerGetCurrentQueue !== null) clearTimeout(node.oTimerGetCurrentQueue);
+            node.busyGettingMusicQueue = false; // Resetting the glaf indicating busy in read music queue
 
-            // Continue processing the input command
-            function continueProcessingInputMSG() {
-                // 12/06/2018 Controllo se il payload è un'impostazione del volume
+            // 12/06/2018 Controllo se il payload è un'impostazione del volume
             if (msg.hasOwnProperty("volume")) {
                 node.sSonosVolume = msg.volume;
             }
@@ -796,20 +786,6 @@ module.exports = function (RED) {
                 node.sonoshailing = "0";
             } else {
                 node.sonoshailing = config.sonoshailing;
-
-                // Backwart compatibiliyy, to remove with the next Version
-                // ################
-                if (node.sonoshailing == "0") {
-                    // Remove the hailing.mp3 default file
-                    RED.log.info('SonosPollyTTS: Hailing disabled');
-                } else if (node.sonoshailing == "1") {
-                    node.sonoshailing = "Hailing_Hailing.mp3";
-                } else if (node.sonoshailing == "2") {
-                    node.sonoshailing = "Hailing_ComputerCall.mp3";
-                } else if (node.sonoshailing == "3") {
-                    node.sonoshailing = "Hailing_VintageSpace.mp3";
-                }
-                // ################
             }
 
 
@@ -834,8 +810,6 @@ module.exports = function (RED) {
             // 26/10/2020 Add the message to the array, as string, otherwise it doe'snt work
             node.aMessageQueue.push(msg.payload.toString());
             node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued ' + msg.payload });
-            }
-            
 
         });
 
@@ -857,6 +831,121 @@ module.exports = function (RED) {
         });
 
 
+        // 04/12/2020
+        function getMusicQueue() {
+            return new Promise(function (resolve, reject) {
+                // 04/12/2020 Get music queue
+                if (!node.msg.completed) {
+                    resolve(true);
+                    return; // Is playing TTS, exit.
+                }
+                node.busyGettingMusicQueue = true; // Avoid enterint here while the promises below are not resolved
+                node.SonosClient.getCurrentState().then(state => {
+                    // A music queue is playing and no TTS is speaking?
+                    if (state.toString().toLowerCase() === "playing") {
+                        if (!node.msg.completed) {
+                            // Is playing TTS, exit.
+                            node.currMusicTrack = null;
+                            node.busyGettingMusicQueue = false; // Avoid enterint here while the promises below are not resolved
+                            reject(true);
+                            return;
+                        }
+                        // Get current track
+                        node.SonosClient.currentTrack().then(track => {
+                            if (!node.msg.completed) {
+                                // Is playing TTS, exit.
+                                node.currMusicTrack = null;
+                                node.busyGettingMusicQueue = false; // Avoid enterint here while the promises below are not resolved
+                                reject(true);
+                                return;
+                            }
+                            node.currMusicTrack = track;// .queuePosition || 1; // Get the current track  in the queue.
+                            node.SonosClient.getVolume().then(volume => {
+                                if (!node.msg.completed) {
+                                    // Is playing TTS, exit.
+                                    node.currMusicTrack = null;
+                                    node.busyGettingMusicQueue = false; // Avoid enterint here while the promises below are not resolved
+                                    reject(true);
+                                    return;
+                                }
+                                node.currMusicTrack.currentVolume = volume; // Get the current volume
+                                node.busyGettingMusicQueue = false; // finish handling music queue
+                                //console.log("TRACK MUSIC: " + JSON.stringify(node.currMusicTrack));
+                                node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Playing music queue pos: ' + node.currMusicTrack.queuePosition });
+                                resolve(true);
+                            }).catch(err => {
+                                node.currMusicTrack = null;
+                                node.busyGettingMusicQueue = false; // finish handling music queue
+                                //console.log('SonospollyTTS: getVolume Error occurred %j', err);
+                                reject(err);
+                            })
+                        }).catch(err => {
+                            node.currMusicTrack = null;
+                            node.busyGettingMusicQueue = false; // finish handling music queue
+                            reject(err);
+                            //console.log('SonospollyTTS: Error currentTrackoccurred %j', err);
+                        })
+                    } else {
+                        node.currMusicTrack = null; // Avoid play last queue at end of the tts speech
+                        node.busyGettingMusicQueue = false; // finish handling music queue
+                        resolve(true);
+                    };
+                }).catch(err => {
+                    //console.log('SonospollyTTS: getCurrentState: Error occurred %j', err);
+                    node.busyGettingMusicQueue = false; // finish handling music queue
+                    reject(err);
+                })
+            });
+
+
+        }
+
+        // 04/12/2020
+        function resumeMusicQueue() {
+            return new Promise(function (resolve, reject) {
+                if (node.currMusicTrack !== null) {
+                    node.SonosClient.selectQueue().then(success => {
+                        node.SonosClient.selectTrack(node.currMusicTrack.queuePosition).then(success => {
+                            node.SonosClient.seek(node.currMusicTrack.position).then(success => {
+                                node.SonosClient.setVolume(node.currMusicTrack.currentVolume).then(success => {
+                                    node.SonosClient.play().then(success => {
+                                        node.busyResumingMusicQueue = false;
+                                        resolve(true);
+                                    }).catch(err => {
+                                        //console.log('Error occurred PLAY %j', err)
+                                        node.busyResumingMusicQueue = false;
+                                        reject(Err);
+                                    })
+                                }).catch(err => {
+                                    //console.log('Error occurred setVolume %j', err)
+                                    snode.busyResumingMusicQueue = false;
+                                    reject(Err);
+                                })
+                            }).catch(err => {
+                                //console.log('Error occurred SEEK %j', err)
+                                node.busyResumingMusicQueue = false;
+                                reject(Err);
+                            })
+                        }).catch(err => {
+                            //console.log('Error occurred SELECTTRACK %j', err);
+                            node.busyResumingMusicQueue = false;
+                            reject(Err);
+                        })
+
+                    }).catch(err => {
+                        //console.log('Error occurred %j', err);
+                        node.busyResumingMusicQueue = false;
+                        reject(Err);
+                    })
+                } else {
+                    node.busyResumingMusicQueue = false; // 04/12/2020 Signal end in resuming queue
+                    resolve(true);
+                }
+
+            });
+        }
+
+
         // Handle the queue
         function HandleQueue() {
 
@@ -867,9 +956,25 @@ module.exports = function (RED) {
                 return;
             }
 
-            // try {
-            //     node.setNodeStatus({ fill: "yellow", shape: "dot", text: "Queue: " + node.sPollyState });
-            // } catch (error) { }
+            // 04/12/220 Busy handling music queue?
+            if (node.busyGettingMusicQueue || node.busyResumingMusicQueue) {
+                if (node.busyGettingMusicQueue) node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Busy in reading music queue...retry' });
+                if (node.busyResumingMusicQueue) node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Busy in resuming music queue...retry' });
+                node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
+                return;
+            }
+
+            // 04/12/2020 if there are flows messages to be handled, handles it
+            if (node.tempMSGStorage.length > 0) {
+                for (let index = 0; index < node.tempMSGStorage.length; index++) {
+                    const element = node.tempMSGStorage[index];
+                    node.aMessageQueue.push(element);
+                    setTimeout(() => {
+                        node.setNodeStatus({ fill: 'green', shape: 'dot', text: 'Queued from flow: ' + element });
+                    }, 1000);
+                }
+                node.tempMSGStorage = []; // Flush the array
+            }
 
             if (node.sPollyState == "transitioning") {
                 node.iTimeoutPollyState += 1; // Increase Timeout
@@ -1017,42 +1122,58 @@ module.exports = function (RED) {
                 // 07/05/2019 Check if i have ended playing the queue as well
                 try {
                     if (node.msg.completed === false && node.sSonosPlayState == "stopped") {
-                        node.msg.completed = true;
-                        node.ungroupSpeakers(); // 20/03/2020 Ungroup Speakers
-                        node.send(node.msg);
-                        node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
-
-                        // Resume the music queue at exact position and seek to exact time
-                        if (node.currMusicTrack !== null) {
-                            node.SonosClient.selectQueue().then(success => {
-                                node.SonosClient.selectTrack(node.currMusicTrack.queuePosition).then(success => {
-                                    node.SonosClient.seek(node.currMusicTrack.position).then(success => {
-                                        node.SonosClient.setVolume(node.currMusicTrack.currentVolume).then(success => {
-                                            node.SonosClient.play().then(success => {
-                                                node.currMusicTrack = null;
-                                            }).catch(err => {
-                                                node.currMusicTrack = null;
-                                                console.log('Error occurred PLAY %j', err)
-                                            })
-                                        }).catch(err => {
-                                            node.currMusicTrack = null;
-                                            console.log('Error occurred setVolume %j', err)
-                                        })
-                                    }).catch(err => {
-                                        node.currMusicTrack = null;
-                                        console.log('Error occurred SEEK %j', err)
-                                    })
-                                }).catch(err => {
-                                    node.currMusicTrack = null;
-                                    console.log('Error occurred SELECTTRACK %j', err)
-                                })
-
-                            }).catch(err => { console.log('Error occurred %j', err) })
+                        if (node.currMusicTrack === null) {
+                            node.ungroupSpeakers(); // 20/03/2020 Ungroup Speakers
+                            node.msg.completed = true;
+                            node.send(node.msg);
+                            node.setNodeStatus({ fill: "green", shape: "ring", text: "Done." });
+                            return;
                         }
+                        //console.log("PANAMA PANAMA PANAMA PANAMA PANAMA PANAMA " + node.busyGettingMusicQueue + " " + node.busyResumingMusicQueue)
+                        if (node.busyGettingMusicQueue || node.busyResumingMusicQueue) {
+                            if (node.oTimerResumeCurrentQueue !== null) clearTimeout(node.oTimerResumeCurrentQueue);
+
+                            node.oTimerResumeCurrentQueue = setTimeou(() => {
+                                resumeMusicQueue().then(success => {
+                                    if (node.oTimerResumeCurrentQueue !== null) clearInterval(node.oTimerResumeCurrentQueue);
+                                    node.msg.completed = true;
+                                    node.send(node.msg);
+                                    node.setNodeStatus({ fill: "green", shape: "ring", text: "Done." });
+
+                                }).catch(err => {
+                                    if (node.oTimerResumeCurrentQueue !== null) clearInterval(node.oTimerResumeCurrentQueue);
+                                    node.msg.completed = true;
+                                    node.send(node.msg);
+                                    node.busyResumingMusicQueue = false;
+                                    node.busyGettingMusicQueue = false;
+                                    node.setNodeStatus({ fill: "green", shape: "ring", text: "Done." });
+
+                                });
+                            }, 3000)
+                        } else {
+                            if (node.oTimerResumeCurrentQueue !== null) clearTimeout(node.oTimerResumeCurrentQueue);
+                            resumeMusicQueue().then(success => {
+                                node.msg.completed = true;
+                                node.send(node.msg);
+                                node.setNodeStatus({ fill: "green", shape: "ring", text: "Resuming queue." });
+
+                            }).catch(err => {
+                                node.msg.completed = true;
+                                node.send(node.msg);
+                                node.busyResumingMusicQueue = false;
+                                node.busyGettingMusicQueue = false;
+                                node.setNodeStatus({ fill: "green", shape: "ring", text: "Error resuming queue." });
+
+                            });
+                        }
+
+
                     }
 
 
-                } catch (error) { }
+                } catch (error) {
+
+                }
 
                 // Resume Queue
 
