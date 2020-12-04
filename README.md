@@ -25,9 +25,10 @@
 <br/>
 
 ## DESCRIPTION
-This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.
+This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.<br/>
 This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api. It supports PLAYERS GROUPING.<br/>
-You can use it with **your own audio file** as well and it can be used **totally offline** even without the use of TTS, without internet connection.
+You can use it with **your own audio file** as well and it can be used **totally offline** even without the use of TTS, without internet connection.<br/>
+If a previously music queue was playing, once the speech has finished, the node will resume the music queue at the exact track, at the exact seek time.
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday).
 
@@ -42,10 +43,15 @@ You can use it with **your own audio file** as well and it can be used **totally
 * **Can work offline**. You can use your own audio files to make the node works offline. If you use the node with the integrated TTS Polly, thank to the **offline cache**, once you played the TTS only one time, the node will cache this TTS and you can use it **even without internet connection**. 
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
 * Works with node-red in HTTP and in HTTPS mode.
+* Automatic resume of music queue.
 <br/><br/>
 > IF YOU RUN NODE-RED BEHIND DOCKER OR SOMETHING ELSE, BE AWARE: <br/>
 > PORT USED BY THE NODE ARE 1980 AND 1400 (FOR SONOS DISCOVER). <br/>
 > PLEASE ALLOW MDNS AND UDP AS WELL
+
+<br/>
+
+### HOW-TO in Deutsch: for german users, there is a very helpful how-to, where you can learn how to use the node and how to register to Amazon AWS Polly as well: here: https://technikkram.net/blog/2020/09/26/sonos-sprachausgabe-mit-raspberry-pi-node-red-und-amazon-polly-fuer-homematic-oder-knx-systeme
 
 <br/><br/><br/><br/>
 

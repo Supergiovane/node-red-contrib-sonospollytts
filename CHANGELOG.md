@@ -3,6 +3,10 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 1.1.37</b> November 2020<br/>
+- NEW: resume music queue after TTS speech. Once finished playing the voice speak, the music queue restart at the exact position, at the exact track time.<br/>
+</p>
+<p>
 <b>Version 1.1.36</b> November 2020<br/>
 - Whenever node-red is restarted or you make a deploy while Sonos is playing music, the node won't stop Sonos players anymore.<br/>
 - Speeded up the closing process.<br/>

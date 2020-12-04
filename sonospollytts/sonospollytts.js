@@ -7,7 +7,7 @@ module.exports = function (RED) {
     var util = require('util');
     var path = require('path');
     const sonos = require('sonos');
- 
+
 
     // AWS.config.update({
     //     region: 'us-east-1'
@@ -47,7 +47,7 @@ module.exports = function (RED) {
     }
 
 
-   
+
 
 
     // Node Register
@@ -75,6 +75,7 @@ module.exports = function (RED) {
         node.oAdditionalSonosPlayers = []; // 20/03/2020 Contains other players to be grouped
         node.rules = config.rules || [{}];
         node.sNoderedURL = "";
+        node.currMusicTrack = null; // 04/12/2020 Current position of the currently playing music in the queue
         if (typeof node.server !== "undefined" && node.server !== null) {
             node.sNoderedURL = node.server.sNoderedURL || "";
         }
@@ -128,7 +129,7 @@ module.exports = function (RED) {
 
         }
 
-       
+
 
         // Set ssml
         node.ssml = config.ssml;
@@ -729,16 +730,57 @@ module.exports = function (RED) {
         }
         // ######################################################
 
-
+        node.curTrack;
         node.on('input', function (msg) {
-            // 12/06/2018 Controllo se il payload è un'impostazione del volume
-            if (msg.hasOwnProperty("volume")) {
-                node.sSonosVolume = msg.volume;
-            }
 
             if (!msg.hasOwnProperty("payload")) {
                 notifyError(msg, 'msg.payload must be of type String');
                 return;
+            }
+
+            // 04/12/2020 Handle music queue
+            //#region "HANDLE MUSIC QUEUE"
+            node.SonosClient.getCurrentState().then(state => {
+                //console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz" + node.msg.completed)
+                // A music queue is playing and no TTS is speaking?
+                if (state.toString().toLowerCase() === "playing" && node.msg.completed === true) {
+                    //console.log("AAaaaaAAaaaaAAaaaaAAaaaaAAaaaaAAaaaaAAaaaa")
+                    // Get current track
+                    node.SonosClient.currentTrack().then(track => {
+                        //console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+                        node.currMusicTrack = track;// .queuePosition || 1; // Get the current track  in the queue.
+                        node.SonosClient.getVolume().then(volume => {
+                            //console.log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+                            node.currMusicTrack.currentVolume = volume; // Get the current volume
+                            console.log("VOLUMA " + volume);
+                            continueProcessingInputMSG();
+                        }).catch(err => {
+                            node.currMusicTrack = null;
+                            console.log('SonospollyTTS: getVolume Error occurred %j', err);
+                            continueProcessingInputMSG();
+                        })
+                    }).catch(err => {
+                        node.currMusicTrack = null;
+                        console.log('SonospollyTTS: Error currentTrackoccurred %j', err);
+                        continueProcessingInputMSG();
+                    })
+                } else {
+                    node.currMusicTrack = null;
+                    continueProcessingInputMSG();
+                };
+            }).catch(err => {
+                node.currMusicTrack = null;
+                console.log('SonospollyTTS: getCurrentState: Error occurred %j', err);
+                continueProcessingInputMSG();
+            })
+            //#endregion
+
+
+            // Continue processing the input command
+            function continueProcessingInputMSG() {
+                // 12/06/2018 Controllo se il payload è un'impostazione del volume
+            if (msg.hasOwnProperty("volume")) {
+                node.sSonosVolume = msg.volume;
             }
 
             try {
@@ -782,6 +824,7 @@ module.exports = function (RED) {
                 node.send(node.msg);
             }
 
+
             // If the queue is empty and if i can play the Haniling, add the hailing file first
             if (node.aMessageQueue.length == 0 && node.sonoshailing !== "0") {
                 node.aMessageQueue.push(node.sonoshailing);
@@ -791,24 +834,26 @@ module.exports = function (RED) {
             // 26/10/2020 Add the message to the array, as string, otherwise it doe'snt work
             node.aMessageQueue.push(msg.payload.toString());
             node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued ' + msg.payload });
+            }
+            
 
         });
 
         node.on('close', function (done) {
             clearTimeout(node.oTimer);
             clearTimeout(node.oTimerSonosConnectionCheck);
-            
+
             // 10/11/2020 Avoit stopping sonos, if someone is using it for, for example, playing music.
             // node.SonosClient.stop().then(() => {
             //     node.ungroupSpeakers();
             // });
-            
+
             node.msg.completed = true;
             node.send(node.msg);
             node.setNodeStatus({ fill: "green", shape: "ring", text: "Shutdown" });
             node.flushQueue();
             done();
-            
+
         });
 
 
@@ -971,18 +1016,51 @@ module.exports = function (RED) {
 
                 // 07/05/2019 Check if i have ended playing the queue as well
                 try {
-                    if (node.msg.completed == false && node.sSonosPlayState == "stopped") {
+                    if (node.msg.completed === false && node.sSonosPlayState == "stopped") {
                         node.msg.completed = true;
                         node.ungroupSpeakers(); // 20/03/2020 Ungroup Speakers
                         node.send(node.msg);
                         node.setNodeStatus({ fill: "green", shape: "ring", text: "" + node.sSonosPlayState });
+
+                        // Resume the music queue at exact position and seek to exact time
+                        if (node.currMusicTrack !== null) {
+                            node.SonosClient.selectQueue().then(success => {
+                                node.SonosClient.selectTrack(node.currMusicTrack.queuePosition).then(success => {
+                                    node.SonosClient.seek(node.currMusicTrack.position).then(success => {
+                                        node.SonosClient.setVolume(node.currMusicTrack.currentVolume).then(success => {
+                                            node.SonosClient.play().then(success => {
+                                                node.currMusicTrack = null;
+                                            }).catch(err => {
+                                                node.currMusicTrack = null;
+                                                console.log('Error occurred PLAY %j', err)
+                                            })
+                                        }).catch(err => {
+                                            node.currMusicTrack = null;
+                                            console.log('Error occurred setVolume %j', err)
+                                        })
+                                    }).catch(err => {
+                                        node.currMusicTrack = null;
+                                        console.log('Error occurred SEEK %j', err)
+                                    })
+                                }).catch(err => {
+                                    node.currMusicTrack = null;
+                                    console.log('Error occurred SELECTTRACK %j', err)
+                                })
+
+                            }).catch(err => { console.log('Error occurred %j', err) })
+                        }
                     }
+
+
                 } catch (error) { }
+
+                // Resume Queue
+
 
             }
         }
 
-        // Reas the text via Polly
+        // Read the text via Polly
         function Leggi(msg) {
 
             try {
@@ -1163,10 +1241,6 @@ module.exports = function (RED) {
 
 
         }
-
-
-
-
 
 
     }
