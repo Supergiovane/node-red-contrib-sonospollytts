@@ -479,14 +479,18 @@ module.exports = function (RED) {
 
             // Ungroup speaker
             try {
-                await node.groupSpeakers();
+                await node.ungroupSpeakers();
             } catch (error) {
             }
 
             // Resume music
             try {
-                await resumeMusicQueue(oCurTrack);
+                if (oCurTrack !== null) {
+                    node.setNodeStatus({ fill: 'gray', shape: 'ring', text: "Resuming music" });
+                    await resumeMusicQueue(oCurTrack);
+                }
             } catch (error) {
+                node.setNodeStatus({ fill: 'red', shape: 'ring', text: "Error resuming music: " + error.message });
             }
 
             node.msg.completed = true;
