@@ -486,8 +486,9 @@ module.exports = function (RED) {
             // Resume music
             try {
                 if (oCurTrack !== null) {
-                    node.setNodeStatus({ fill: 'gray', shape: 'ring', text: "Resuming music" });
+                    node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Resuming music.." });
                     await resumeMusicQueue(oCurTrack);
+                    node.setNodeStatus({ fill: 'green', shape: 'ring', text: "Done resuming music." });
                 }
             } catch (error) {
                 node.setNodeStatus({ fill: 'red', shape: 'ring', text: "Error resuming music: " + error.message });
