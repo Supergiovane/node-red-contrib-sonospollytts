@@ -3,7 +3,7 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
-<b>Version 1.1.38</b> December 2020<br/>
+<b>Version 1.1.39</b> December 2020<br/>
 - NEW: resume music queue after TTS speech. Once finished playing the voice speak, the music queue restart at the exact position, at the exact track time.<br/>
 - BUGFIX: fixing some issue when inbound msg to the node are very frequent. Should resume the music correctly.<br/>
 </p>
