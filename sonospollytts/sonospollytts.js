@@ -57,20 +57,20 @@ module.exports = function (RED) {
     function PollyNode(config) {
         RED.nodes.createNode(this, config);
         var node = this;
-        node.server = RED.nodes.getNode(config.config)
-        node.sPollyState = "done";
-        node.iTimeoutPollyState = 0;
-        node.aMessageQueue = []; // Array of incoming TTS messages
-        node.SonosClient;
-        node.voiceId;
-        node.oTimer;
+        node.server = RED.nodes.getNode(config.config);
+        if (!node.server) {
+            RED.log.error('Missing Polly config');
+            return;
+        }
+        node.ssml = config.ssml;
         node.oTimerSonosConnectionCheck;
-        node.sSonosVolume; // Sonos Volume
-        node.sSonosPlayState = "stopped"; // Play state
-        node.sSonosTrackTitle = ""; // Track title
         node.sSonosIPAddress = "";
         node.sSonosCoordinatorGroupName = "";
         node.sonoshailing = "0"; // Hailing file
+        node.sSonosIPAddress = config.sonosipaddress.trim();
+        node.voiceId = config.voice || 0;
+        node.sSonosVolume = config.sonosvolume;
+        node.sonoshailing = config.sonoshailing;
         node.msg = {}; // 08/05/2019 Node message
         node.msg.completed = true;
         node.msg.connectionerror = true;
@@ -78,10 +78,9 @@ module.exports = function (RED) {
         node.oAdditionalSonosPlayers = []; // 20/03/2020 Contains other players to be grouped
         node.rules = config.rules || [{}];
         node.sNoderedURL = "";
-        node.oTimerResumeCurrentQueue = null; // 04/12/2020
-        node.currMusicTrack = null; // 04/12/2020 Current position of the currently playing music in the queue
+        node.oTimerCacheFlowMSG = null; // 05/12/2020
         node.tempMSGStorage = []; // 04/12/2020 Temporary stores the flow messages
-        node.bResumeQueueAfterTTS = false;
+        node.bBusyPlayingQueue = false; // 04/12/2020 is busy during playing of the queue
         if (typeof node.server !== "undefined" && node.server !== null) {
             node.sNoderedURL = node.server.sNoderedURL || "";
         }
@@ -134,533 +133,17 @@ module.exports = function (RED) {
             });
 
         }
-
-
-
-        // Set ssml
-        node.ssml = config.ssml;
-
-        node.Pollyconfig = RED.nodes.getNode(config.config);
-
-        node.sSonosIPAddress = config.sonosipaddress.trim();
-
-        if (!node.Pollyconfig) {
-            RED.log.error('Missing Polly config');
-            return;
-        }
-
-        // 26/10/2020 Set the voice
-        // Backward compatibility, to remove in the future
-        // °°°°°°°°°°°°°
-        var voices = {
-            '0': {
-                Gender: 'Female',
-                Id: 'Joanna',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Joanna',
-                Engine: 'standard'
-            },
-            '1': {
-                Gender: 'Female',
-                Id: 'Mizuki',
-                LanguageCode: 'ja-JP',
-                LanguageName: 'Japanese',
-                Name: 'Mizuki',
-                Engine: 'standard'
-            },
-            '2': {
-                Gender: 'Female',
-                Id: 'Filiz',
-                LanguageCode: 'tr-TR',
-                LanguageName: 'Turkish',
-                Name: 'Filiz',
-                Engine: 'standard'
-            },
-            '3': {
-                Gender: 'Female',
-                Id: 'Astrid',
-                LanguageCode: 'sv-SE',
-                LanguageName: 'Swedish',
-                Name: 'Astrid',
-                Engine: 'standard'
-            },
-            '4': {
-                Gender: 'Male',
-                Id: 'Maxim',
-                LanguageCode: 'ru-RU',
-                LanguageName: 'Russian',
-                Name: 'Maxim',
-                Engine: 'standard'
-            },
-            '5': {
-                Gender: 'Female',
-                Id: 'Tatyana',
-                LanguageCode: 'ru-RU',
-                LanguageName: 'Russian',
-                Name: 'Tatyana',
-                Engine: 'standard'
-            },
-            '6': {
-                Gender: 'Female',
-                Id: 'Carmen',
-                LanguageCode: 'ro-RO',
-                LanguageName: 'Romanian',
-                Name: 'Carmen',
-                Engine: 'standard'
-            },
-            '7': {
-                Gender: 'Female',
-                Id: 'Ines',
-                LanguageCode: 'pt-PT',
-                LanguageName: 'Portuguese',
-                Name: 'Inês',
-                Engine: 'standard'
-            },
-            '8': {
-                Gender: 'Male',
-                Id: 'Cristiano',
-                LanguageCode: 'pt-PT',
-                LanguageName: 'Portuguese',
-                Name: 'Cristiano',
-                Engine: 'standard'
-            },
-            '9': {
-                Gender: 'Female',
-                Id: 'Vitoria',
-                LanguageCode: 'pt-BR',
-                LanguageName: 'Brazilian Portuguese',
-                Name: 'Vitória',
-                Engine: 'standard'
-            },
-            '10': {
-                Gender: 'Male',
-                Id: 'Ricardo',
-                LanguageCode: 'pt-BR',
-                LanguageName: 'Brazilian Portuguese',
-                Name: 'Ricardo',
-                Engine: 'standard'
-            },
-            '11': {
-                Gender: 'Female',
-                Id: 'Maja',
-                LanguageCode: 'pl-PL',
-                LanguageName: 'Polish',
-                Name: 'Maja',
-                Engine: 'standard'
-            },
-            '12': {
-                Gender: 'Male',
-                Id: 'Jan',
-                LanguageCode: 'pl-PL',
-                LanguageName: 'Polish',
-                Name: 'Jan',
-                Engine: 'standard'
-            },
-            '13': {
-                Gender: 'Female',
-                Id: 'Ewa',
-                LanguageCode: 'pl-PL',
-                LanguageName: 'Polish',
-                Name: 'Ewa',
-                Engine: 'standard'
-            },
-            '14': {
-                Gender: 'Male',
-                Id: 'Ruben',
-                LanguageCode: 'nl-NL',
-                LanguageName: 'Dutch',
-                Name: 'Ruben',
-                Engine: 'standard'
-            },
-            '15': {
-                Gender: 'Female',
-                Id: 'Lotte',
-                LanguageCode: 'nl-NL',
-                LanguageName: 'Dutch',
-                Name: 'Lotte',
-                Engine: 'standard'
-            },
-            '16': {
-                Gender: 'Female',
-                Id: 'Liv',
-                LanguageCode: 'nb-NO',
-                LanguageName: 'Norwegian',
-                Name: 'Liv',
-                Engine: 'standard'
-            },
-            '17': {
-                Gender: 'Male',
-                Id: 'Giorgio',
-                LanguageCode: 'it-IT',
-                LanguageName: 'Italian',
-                Name: 'Giorgio',
-                Engine: 'standard'
-            },
-            '18': {
-                Gender: 'Female',
-                Id: 'Carla',
-                LanguageCode: 'it-IT',
-                LanguageName: 'Italian',
-                Name: 'Carla',
-                Engine: 'standard'
-            },
-            '19': {
-                Gender: 'Male',
-                Id: 'Karl',
-                LanguageCode: 'is-IS',
-                LanguageName: 'Icelandic',
-                Name: 'Karl',
-                Engine: 'standard'
-            },
-            '20': {
-                Gender: 'Female',
-                Id: 'Dora',
-                LanguageCode: 'is-IS',
-                LanguageName: 'Icelandic',
-                Name: 'Dóra',
-                Engine: 'standard'
-            },
-            '21': {
-                Gender: 'Male',
-                Id: 'Mathieu',
-                LanguageCode: 'fr-FR',
-                LanguageName: 'French',
-                Name: 'Mathieu',
-                Engine: 'standard'
-            },
-            '22': {
-                Gender: 'Female',
-                Id: 'Celine',
-                LanguageCode: 'fr-FR',
-                LanguageName: 'French',
-                Name: 'Céline',
-                Engine: 'standard'
-            },
-            '23': {
-                Gender: 'Female',
-                Id: 'Chantal',
-                LanguageCode: 'fr-CA',
-                LanguageName: 'Canadian French',
-                Name: 'Chantal',
-                Engine: 'standard'
-            },
-            '24': {
-                Gender: 'Female',
-                Id: 'Penelope',
-                LanguageCode: 'es-US',
-                LanguageName: 'US Spanish',
-                Name: 'Penélope',
-                Engine: 'standard'
-            },
-            '25': {
-                Gender: 'Male',
-                Id: 'Miguel',
-                LanguageCode: 'es-US',
-                LanguageName: 'US Spanish',
-                Name: 'Miguel',
-                Engine: 'standard'
-            },
-            '26': {
-                Gender: 'Male',
-                Id: 'Enrique',
-                LanguageCode: 'es-ES',
-                LanguageName: 'Castilian Spanish',
-                Name: 'Enrique',
-                Engine: 'standard'
-            },
-            '27': {
-                Gender: 'Female',
-                Id: 'Conchita',
-                LanguageCode: 'es-ES',
-                LanguageName: 'Castilian Spanish',
-                Name: 'Conchita',
-                Engine: 'standard'
-            },
-            '28': {
-                Gender: 'Male',
-                Id: 'Geraint',
-                LanguageCode: 'en-GB-WLS',
-                LanguageName: 'Welsh English',
-                Name: 'Geraint',
-                Engine: 'standard'
-            },
-            '29': {
-                Gender: 'Female',
-                Id: 'Salli',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Salli',
-                Engine: 'standard'
-            },
-            '30': {
-                Gender: 'Female',
-                Id: 'Kimberly',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Kimberly',
-                Engine: 'standard'
-            },
-            '31': {
-                Gender: 'Female',
-                Id: 'Kendra',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Kendra',
-                Engine: 'standard'
-            },
-            '32': {
-                Gender: 'Male',
-                Id: 'Justin',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Justin',
-                Engine: 'standard'
-            },
-            '33': {
-                Gender: 'Male',
-                Id: 'Joey',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Joey',
-                Engine: 'standard'
-            },
-            '34': {
-                Gender: 'Female',
-                Id: 'Ivy',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Ivy',
-                Engine: 'standard'
-            },
-            '35': {
-                Gender: 'Female',
-                Id: 'Raveena',
-                LanguageCode: 'en-IN',
-                LanguageName: 'Indian English',
-                Name: 'Raveena',
-                Engine: 'standard'
-            },
-            '36': {
-                Gender: 'Female',
-                Id: 'Emma',
-                LanguageCode: 'en-GB',
-                LanguageName: 'British English',
-                Name: 'Emma',
-                Engine: 'standard'
-            },
-            '37': {
-                Gender: 'Male',
-                Id: 'Brian',
-                LanguageCode: 'en-GB',
-                LanguageName: 'British English',
-                Name: 'Brian',
-                Engine: 'standard'
-            },
-            '38': {
-                Gender: 'Female',
-                Id: 'Amy',
-                LanguageCode: 'en-GB',
-                LanguageName: 'British English',
-                Name: 'Amy',
-                Engine: 'standard'
-            },
-            '39': {
-                Gender: 'Male',
-                Id: 'Russell',
-                LanguageCode: 'en-AU',
-                LanguageName: 'Australian English',
-                Name: 'Russell',
-                Engine: 'standard'
-            },
-            '40': {
-                Gender: 'Female',
-                Id: 'Nicole',
-                LanguageCode: 'en-AU',
-                LanguageName: 'Australian English',
-                Name: 'Nicole',
-                Engine: 'standard'
-            },
-            '41': {
-                Gender: 'Female',
-                Id: 'Marlene',
-                LanguageCode: 'de-DE',
-                LanguageName: 'German',
-                Name: 'Marlene',
-                Engine: 'standard'
-            },
-            '42': {
-                Gender: 'Male',
-                Id: 'Hans',
-                LanguageCode: 'de-DE',
-                LanguageName: 'German',
-                Name: 'Hans',
-                Engine: 'standard'
-            },
-            '43': {
-                Gender: 'Female',
-                Id: 'Naja',
-                LanguageCode: 'da-DK',
-                LanguageName: 'Danish',
-                Name: 'Naja',
-                Engine: 'standard'
-            },
-            '44': {
-                Gender: 'Male',
-                Id: 'Mads',
-                LanguageCode: 'da-DK',
-                LanguageName: 'Danish',
-                Name: 'Mads',
-                Engine: 'standard'
-            },
-            '45': {
-                Gender: 'Female',
-                Id: 'Gwyneth',
-                LanguageCode: 'cy-GB',
-                LanguageName: 'Welsh',
-                Name: 'Gwyneth',
-                Engine: 'standard'
-            },
-            '46': {
-                Gender: 'Male',
-                Id: 'Jacek',
-                LanguageCode: 'pl-PL',
-                LanguageName: 'Polish',
-                Name: 'Jacek',
-                Engine: 'standard'
-            },
-            '47': {
-                Gender: 'Male',
-                Id: 'Matthew',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Matthew',
-                Engine: 'standard'
-            },
-            '48': {
-                Gender: 'Male',
-                Id: 'Matthew',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Matthew (neural)',
-                Engine: 'neural'
-            },
-            '49': {
-                Gender: 'Female',
-                Id: 'Amy',
-                LanguageCode: 'en-GB',
-                LanguageName: 'British English',
-                Name: 'Amy (neural)',
-                Engine: 'neural'
-            },
-            '50': {
-                Gender: 'Female',
-                Id: 'Emma',
-                LanguageCode: 'en-GB',
-                LanguageName: 'British English',
-                Name: 'Emma (neural)',
-                Engine: 'neural'
-            },
-            '51': {
-                Gender: 'Male',
-                Id: 'Brian',
-                LanguageCode: 'en-GB',
-                LanguageName: 'British English',
-                Name: 'Brian (neural)',
-                Engine: 'neural'
-            },
-            '52': {
-                Gender: 'Female',
-                Id: 'Ivy',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Ivy (neural)',
-                Engine: 'neural'
-            },
-            '53': {
-                Gender: 'Female',
-                Id: 'Joanna',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Joanna (neural)',
-                Engine: 'neural'
-            },
-            '54': {
-                Gender: 'Female',
-                Id: 'Kendra',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Kendra (neural)',
-                Engine: 'neural'
-            },
-            '55': {
-                Gender: 'Female',
-                Id: 'Kimberly',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Kimberly (neural)',
-                Engine: 'neural'
-            },
-            '56': {
-                Gender: 'Female',
-                Id: 'Salli',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Salli (neural)',
-                Engine: 'neural'
-            },
-            '57': {
-                Gender: 'Male',
-                Id: 'Joey',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Joey (neural)',
-                Engine: 'neural'
-            },
-            '58': {
-                Gender: 'Male',
-                Id: 'Justin',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Justin (neural)',
-                Engine: 'neural'
-            },
-            '59': {
-                Gender: 'Male',
-                Id: 'Kevin',
-                LanguageCode: 'en-US',
-                LanguageName: 'US English',
-                Name: 'Kevin (neural)',
-                Engine: 'neural'
-            },
-            '60': {
-                Gender: 'Female',
-                Id: 'Camila',
-                LanguageCode: 'pt-BR',
-                LanguageName: 'Brazilian Portuguese',
-                Name: 'Camila (neural)',
-                Engine: 'neural'
-            },
-            '61': {
-                Gender: 'Female',
-                Id: 'Lupe',
-                LanguageCode: 'es-US',
-                LanguageName: 'US Spanish',
-                Name: 'Lupe (neural)',
-                Engine: 'neural'
-            }
-        };
-        // °°°°°°°°°°°°°
-        node.voiceId = (!isNaN(config.voice) ? voices[config.voice].Id : config.voice); // Transform the old number in a new voice ID, by choiching Ivy as default
-
         // Create sonos client
         node.SonosClient = new sonos.Sonos(node.sSonosIPAddress);
 
         // 20/03/2020 Set the coorinator's zone name
         node.SonosClient.getName().then(info => {
             node.sSonosCoordinatorGroupName = info;
-            RED.log.info("SonosPollyTTS: ZONE COORDINATOR " + info);
+            RED.log.info("SonosPollyTTS: ZONE COORDINATOR " + JSON.stringify(info));
+        }).catch(err => {
+
         });
+
         // Fill the node.oAdditionalSonosPlayers with all sonos object in the rules
         for (let index = 0; index < node.rules.length; index++) {
             const element = node.rules[index];
@@ -668,75 +151,55 @@ module.exports = function (RED) {
             RED.log.info("SonosPollyTTS: FOUND ADDITIONAL PLAYER " + element.host);
         }
 
-        // Get default sonos volume
-        node.sSonosVolume = config.sonosvolume;
-
-        // Start the TTS queue timer
-        node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
-
         // 27/11/2019 Start the connection healty check
         node.oTimerSonosConnectionCheck = setTimeout(function () { node.CheckSonosConnection(); }, 5000);
 
-        node.sonoshailing = config.sonoshailing;
-
-        // Backwart compatibiliyy, to remove with the next Version
-        // ################
-        if (node.sonoshailing == "0") {
-            // Remove the hailing.mp3 default file
-            RED.log.info('SonosPollyTTS: Hailing disabled');
-        } else if (node.sonoshailing == "1") {
-            node.sonoshailing = "Hailing_Hailing.mp3";
-        } else if (node.sonoshailing == "2") {
-            node.sonoshailing = "Hailing_ComputerCall.mp3";
-        } else if (node.sonoshailing == "3") {
-            node.sonoshailing = "Hailing_VintageSpace.mp3";
-        }
-        // ################
-
-
-        node.setNodeStatus({
-            fill: 'green',
-            shape: 'ring',
-            text: 'Ready'
-        });
+        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Initialized.' });
 
 
         // 20/03=2020 QUEUINPLAYERS
         // ######################################################
         // 20/03/2020 Join Coordinator queue
         node.groupSpeakers = () => {
-            // 30/03/2020 in the middle of coronavirus emergency. Group Speakers
-            // You don't have to worry about who is the coordinator.
-            for (let index = 0; index < node.oAdditionalSonosPlayers.length; index++) {
-                const element = node.oAdditionalSonosPlayers[index];
-                element.joinGroup(node.sSonosCoordinatorGroupName).then(success => {
-                    // 24/09/2020 Set Volume of each device in the group
-                    try {
-                        element.setVolume(node.sSonosVolume).then(success => {
-                            // element.getVolume().then(sVol => {
-                            //     RED.log.warn('SonosPollyTTS: get volume of grouped device: ' + JSON.stringify(sVol));
-                            // }).catch(err => { });
-                        }).catch(err => { });
-                    } catch (error) { }
-                }).catch(err => {
-                    RED.log.warn('SonosPollyTTS: Error joining device ' + err)
-                });
-            }
+            return new Promise(function (resolve, reject) {
+                // 30/03/2020 in the middle of coronavirus emergency. Group Speakers
+                // You don't have to worry about who is the coordinator.
+                for (let index = 0; index < node.oAdditionalSonosPlayers.length; index++) {
+                    const element = node.oAdditionalSonosPlayers[index];
+                    element.joinGroup(node.sSonosCoordinatorGroupName).then(success => {
+                        // 24/09/2020 Set Volume of each device in the group
+                        try {
+                            element.setVolume(node.sSonosVolume).then(success => {
+                                // element.getVolume().then(sVol => {
+                                //     RED.log.warn('SonosPollyTTS: get volume of grouped device: ' + JSON.stringify(sVol));
+                                // }).catch(err => { });
+                            }).catch(err => { });
+                        } catch (error) { }
+                    }).catch(err => {
+                        RED.log.warn('SonosPollyTTS: Error joining device ' + err);
+                        reject(err);
+                    });
+                };
+                resolve(true);
+            });
         }
         // 20/03/2020 Ungroup Coordinator queue
         node.ungroupSpeakers = () => {
-            for (let index = 0; index < node.oAdditionalSonosPlayers.length; index++) {
-                const element = node.oAdditionalSonosPlayers[index];
-                element.leaveGroup().then(success => {
-                    //RED.log.warn('Leaving the group is a ' + (success ? 'Success' : 'Failure'))
-                }).catch(err => {
-                    RED.log.warn('SonosPollyTTS: Error joining device ' + err)
-                })
-            }
+            return new Promise(function (resolve, reject) {
+                for (let index = 0; index < node.oAdditionalSonosPlayers.length; index++) {
+                    const element = node.oAdditionalSonosPlayers[index];
+                    element.leaveGroup().then(success => {
+                        //RED.log.warn('Leaving the group is a ' + (success ? 'Success' : 'Failure'))
+                    }).catch(err => {
+                        RED.log.warn('SonosPollyTTS: Error leaving group device ' + err)
+                        reject(err);
+                    })
+                }
+                resolve(true);
+            });
         }
         // ######################################################
 
-        node.bGettingQueueMusic = false;
         node.on('input', function (msg) {
 
             if (!msg.hasOwnProperty("payload")) {
@@ -744,93 +207,34 @@ module.exports = function (RED) {
                 return;
             }
 
-            // Am i busy in getting music queue?
-            if (node.bGettingQueueMusic) {
-                console.log("TEMPING " + msg.payload.toString());
-                node.tempMSGStorage.push(msg.payload.toString());
-                return;
+            // 05/12/2020 handlong Hailing
+            var hailingMSG = null;
+            if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) {
+                hailingMSG = null;
+            } else {
+                hailingMSG = { payload: config.sonoshailing };
+                if (msg.hasOwnProperty("sonoshailing")) hailingMSG = { payload: "Hailing_" + msg.sonoshailing + ".mp3" };
             }
 
-            // Was playing music?
-            if (node.aMessageQueue.length === 0) {
-                node.bGettingQueueMusic = true;
-                getMusicQueue().then(ret => {
-                    node.bResumeQueueAfterTTS = ret;
-                    node.bGettingQueueMusic = false;
-                    proceedWithmsg();
-                }).catch(err => {
-                    node.bResumeQueueAfterTTS = false;
-                    node.bGettingQueueMusic = false;
-                    proceedWithmsg();
-                });
+            // If the queue is empty and if i can play the Haniling, add the hailing file first
+            if (node.tempMSGStorage.length == 0 && hailingMSG !== null) {
+                node.tempMSGStorage.push(hailingMSG);
+                node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Queued Hail' });
             }
-            function proceedWithmsg() {
-                if (msg.hasOwnProperty("volume")) {
-                    node.sSonosVolume = msg.volume;
-                }
+            node.tempMSGStorage.push(msg);
 
-                try {
-                    node.setNodeStatus({
-                        fill: 'yellow',
-                        shape: 'dot',
-                        text: 'Processing ' + msg.payload
-                    });
-                } catch (error) { }
-
-                // 17/04/2019 Verifico se possso mandare in play l'hailing
-                if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) {
-                    node.sonoshailing = "0";
-                } else {
-                    node.sonoshailing = config.sonoshailing;
-                }
-
-
-                // 09/03/2020 Change hailing
-                if (msg.hasOwnProperty("sonoshailing")) node.sonoshailing = "Hailing_" + msg.sonoshailing + ".mp3";
-
-
-                // 07/05/2019 Set "completed" to false and send it
-                if (node.aMessageQueue.length == 0) {
-                    node.msg.completed = false;
-                    node.groupSpeakers(); // 20/03/2020 Group Speakers toghether
-                    node.send(node.msg);
-                }
-
-
-                // If the queue is empty and if i can play the Haniling, add the hailing file first
-                if (node.aMessageQueue.length == 0 && node.sonoshailing !== "0") {
-                    node.aMessageQueue.push(node.sonoshailing);
-                    node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued Hail' });
-                }
-
-                // 04/12/2020 if there are flows messages to be handled, handles it
-                if (node.tempMSGStorage.length > 0) {
-                    for (let index = 0; index < node.tempMSGStorage.length; index++) {
-                        const element = node.tempMSGStorage[index];
-                        node.aMessageQueue.push(element);
-                        node.setNodeStatus({ fill: 'green', shape: 'dot', text: 'Queued from flow: ' + element });
-                    }
-                    node.tempMSGStorage = []; // Flush the array
-                }
-
-                // 26/10/2020 Add the message to the array, as string, otherwise it doe'snt work
-                node.aMessageQueue.push(msg.payload.toString());
-                node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'Queued ' + msg.payload });
-            }
-
-
+            // Allow some time to wait for all messages from flow
+            if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
+            node.oTimerCacheFlowMSG = setTimeout(() => {
+                if (!node.bBusyPlayingQueue) HandleQueue();
+             }, 1000);
+            
 
         });
 
         node.on('close', function (done) {
-            clearTimeout(node.oTimer);
             clearTimeout(node.oTimerSonosConnectionCheck);
-
-            // 10/11/2020 Avoit stopping sonos, if someone is using it for, for example, playing music.
-            // node.SonosClient.stop().then(() => {
-            //     node.ungroupSpeakers();
-            // });
-
+            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
             node.msg.completed = true;
             node.send(node.msg);
             node.setNodeStatus({ fill: "green", shape: "ring", text: "Shutdown" });
@@ -843,31 +247,28 @@ module.exports = function (RED) {
         // 04/12/2020
         function getMusicQueue() {
             return new Promise(function (resolve, reject) {
-
+                var oRet = null;
                 node.SonosClient.getCurrentState().then(state => {
                     // A music queue is playing and no TTS is speaking?
-                    if (state.toString().toLowerCase() === "playing" && node.msg.completed) {
+                    if (state.toString().toLowerCase() === "playing") {
                         // Get current track
                         node.SonosClient.currentTrack().then(track => {
-                            node.currMusicTrack = track;// .queuePosition || 1; // Get the current track  in the queue.
+                            oRet = track;// .queuePosition || 1; // Get the current track  in the queue.
                             node.SonosClient.getVolume().then(volume => {
-                                node.currMusicTrack.currentVolume = volume; // Get the current volume
+                                oRet.currentVolume = volume; // Get the current volume
                                 //console.log("TRACK MUSIC: " + JSON.stringify(node.currMusicTrack));
-                                node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Playing music queue pos: ' + node.currMusicTrack.queuePosition });
-                                resolve(true);
+                                node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Playing music queue pos: ' + oRet.queuePosition });
+                                resolve(oRet);
                             }).catch(err => {
-                                node.currMusicTrack = null;
                                 //console.log('SonospollyTTS: getVolume Error occurred %j', err);
                                 reject(err);
                             })
                         }).catch(err => {
-                            node.currMusicTrack = null;
                             reject(err);
                             //console.log('SonospollyTTS: Error currentTrackoccurred %j', err);
                         })
                     } else {
-                        node.currMusicTrack = null; // Avoid play last queue at end of the tts speech
-                        resolve(false);
+                        resolve(null);
                     };
                 }).catch(err => {
                     //console.log('SonospollyTTS: getCurrentState: Error occurred %j', err);
@@ -879,15 +280,15 @@ module.exports = function (RED) {
         }
 
         // 04/12/2020
-        function resumeMusicQueue() {
+        function resumeMusicQueue(oTrack) {
             return new Promise(function (resolve, reject) {
-                if (node.currMusicTrack !== null) {
+                if (oTrack !== null) {
                     node.SonosClient.selectQueue().then(success => {
-                        node.SonosClient.selectTrack(node.currMusicTrack.queuePosition).then(success => {
-                            node.SonosClient.seek(node.currMusicTrack.position).then(success => {
-                                node.SonosClient.setVolume(node.currMusicTrack.currentVolume).then(success => {
+                        node.SonosClient.selectTrack(oTrack.queuePosition).then(success => {
+                            node.SonosClient.seek(oTrack.position).then(success => {
+                                node.SonosClient.setVolume(oTrack.currentVolume).then(success => {
                                     node.SonosClient.play().then(success => {
-                                        resolve(true);
+                                        setTimeout(() => { resolve(true) }, 5000); // Wait some seconds to the music to start playing
                                     }).catch(err => {
                                         //console.log('Error occurred PLAY %j', err)
                                         reject(Err);
@@ -918,265 +319,196 @@ module.exports = function (RED) {
 
 
         // Handle the queue
-        function HandleQueue() {
+        async function HandleQueue() {
+            node.bBusyPlayingQueue = true;
 
-            // 06/05/2019 check if the SonosClient is already instantiate (an error can occur if a very slow PC is used)
-            if (node.SonosClient == null) {
-                RED.log.info('SonosPollyTTS: InfoHandleQueue0 SonosClient not instantiate. Retry later...');
-                node.oTimer = setTimeout(function () { HandleQueue(); }, 5000);
-                return;
+            // Get the current music queue, if one
+            var oCurTrack = null;
+            try {
+                oCurTrack = await getMusicQueue();
+            } catch (error) {
+                oCurTrack = null;
             }
 
-            // 04/12/220 Busy handling music queue?
-            if (node.busyGettingMusicQueue || node.busyResumingMusicQueue) {
-                if (node.busyGettingMusicQueue) node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Busy in reading music queue...retry' });
-                if (node.busyResumingMusicQueue) node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Busy in resuming music queue...retry' });
-                node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
-                return;
-            }
+            // 05/12/2020 Set "completed" to false and send it
+            node.msg.completed = false;
+            await node.groupSpeakers(); // 20/03/2020 Group Speakers toghether
+            node.send(node.msg);
 
+           
+            while (node.tempMSGStorage.length > 0) {
+                const flowMessage = node.tempMSGStorage[0];
+                const msg = flowMessage.payload; // Get the text to be speeched
+                node.tempMSGStorage.splice(0, 1); // Remove the first item in the array
+                var sFileToBePlayed = "";
+                node.setNodeStatus({ fill: "gray", shape: "ring", text: "Read " + msg });
 
-            if (node.sPollyState == "transitioning") {
-                node.iTimeoutPollyState += 1; // Increase Timeout
-                if (node.iTimeoutPollyState > 15) {
-                    node.iTimeoutPollyState = 0;
-                    node.sPollyState = "done";
-                    RED.log.info('SonosPollyTTS: HandleQueue - Polly is in downloading Timeout');
-                    node.setNodeStatus({
-                        fill: 'yellow',
-                        shape: 'dot',
-                        text: 'SonosPollyTTS: HandleQueue - Polly is in downloading Timeout'
-                    });
-                    node.sSonosPlayState = "stopped";
-                    node.oTimer = setTimeout(function () { HandleQueue(); }, 1000);
-                    return;
+                // 04/12/2020 check what really is the file to be played
+                if (msg.toLowerCase().startsWith("http://") || msg.toLowerCase().startsWith("https://")) {
+                    RED.log.info('SonosPollyTTS: Leggi HTTP filename: ' + msg);
+                    sFileToBePlayed = msg;
+                } else if (msg.indexOf("OwnFile_") !== -1) {
+                    RED.log.info('SonosPollyTTS: OwnFile .MP3, skip polly, filename: ' + msg);
+                    sFileToBePlayed = path.join(node.userDir, "ttspermanentfiles", msg);
+                } else if (msg.indexOf("Hailing_") !== -1) {
+                    RED.log.info('SonosPollyTTS: Hailing .MP3, skip polly, filename: ' + msg);
+                    sFileToBePlayed = path.join(node.userDir, "hailingpermanentfiles", msg);
+                } else {
+                    sFileToBePlayed = getFilename(msg, node.voiceId, node.ssml, "mp3");
+                    sFileToBePlayed = path.join(node.userDir, "ttsfiles", sFileToBePlayed);
+                    // Check if cached
+                    if (!fs.existsSync(sFileToBePlayed)) {
+                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Downloading from amazon...' });
+                        try {
+                            // No file in cache. Wownload from Amazon.
+                            var params = {
+                                OutputFormat: outputFormat,
+                                SampleRate: '22050',
+                                Text: msg,
+                                TextType: node.ssml ? 'ssml' : 'text',
+                                VoiceId: node.voiceId
+                            };
+                            var data = await synthesizeSpeech([node.server.polly, params]);
+                            // Save the downloaded file into the cache
+                            try {
+                                fs.writeFile(sFileToBePlayed, data.AudioStream);
+                            } catch (error) {
+                                throw new Error("Unable to save the file " + sFileToBePlayed + " " + error.message);
+                            }
+                        } catch (error) {
+                            node.setNodeStatus({ fill: 'red', shape: 'ring', text: 'Error Downloading from amazon:' + error.message });
+                            sFileToBePlayed = "";
+                        }
+                    }
                 }
 
-                // Not cached
-                node.setNodeStatus({
-                    fill: 'yellow',
-                    shape: 'dot',
-                    text: 'downloading'
-                });
-                RED.log.info('SonosPollyTTS: HandleQueue - Polly is downloading the file, exit');
-                node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
-                return;
+                // Ready to play
+                if (sFileToBePlayed !== "") {
+
+                    // Now i am ready to play the file
+                    node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Play ' + msg });
+                    // Play directly files starting with http://
+                    if (!sFileToBePlayed.toLowerCase().startsWith("http://") && !sFileToBePlayed.toLowerCase().startsWith("https://")) {
+                        sFileToBePlayed = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(sFileToBePlayed);
+                    }
+
+                    // Set Volume
+                    try {
+                        if (flowMessage.hasOwnProperty("volume")) {
+                            await node.SonosClient.setVolume(flowMessage.volume);
+                        } else {
+                            await node.SonosClient.setVolume(node.sSonosVolume);
+                        }
+
+                    } catch (error) {
+                        RED.log.error("SonosPollyTTS: Unable to set the volume for " + sFileToBePlayed);
+                    }
+                    try {
+
+                        await node.SonosClient.setAVTransportURI(sFileToBePlayed);
+
+                        // Wait for start playing
+                        var state = "";
+                        node.bTimeOutPlay = false;
+                        node.timerbTimeOutPlay = setTimeout(() => {
+                            node.bTimeOutPlay = true;
+                        }, 5000);
+                        while (state !== "playing" && !node.bTimeOutPlay) {
+                            try {
+                                state = await node.SonosClient.getCurrentState();
+                                //node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'STETE ' + state });
+                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                            } catch (error) {
+                                node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'Error getCurrentState of playing ' + msg });
+                                RED.log.error("SonosPollyTTS: Error getCurrentState of playing " + error.message);
+                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                                throw new MessageEvent("Error getCurrentState of playing " + error.message);
+                            }
+                        }
+                        switch (node.bTimeOutPlay) {
+                            case false:
+                                node.setNodeStatus({ fill: 'green', shape: 'dot', text: 'Playing ' + msg });
+                                break;
+                            default:
+                                node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Timeout waiting start play state: ' + msg });
+                                break;
+                        }
+
+                        // Wait for end
+                        node.bTimeOutPlay = false;
+                        state = "";
+                        if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                        node.timerbTimeOutPlay = setTimeout(() => {
+                            node.bTimeOutPlay = true;
+                        }, 5000);
+                        while (state !== "stopped" && !node.bTimeOutPlay) {
+                            try {
+                                state = await node.SonosClient.getCurrentState();
+                                //node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'STETE ' + state });
+                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                            } catch (error) {
+                                node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'Error getCurrentState of stopped ' + msg });
+                                RED.log.error("SonosPollyTTS: Error  getCurrentState of stopped " + error.message);
+                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                                throw new MessageEvent("Error  getCurrentState of stopped " + error.message);
+                            }
+                        }
+                        switch (node.bTimeOutPlay) {
+                            case false:
+                                node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'End playing ' + msg });
+                                break;
+                            default:
+                                node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Timeout waiting end play state: ' + msg });
+                                break;
+                        }
+
+                    } catch (error) {
+                        RED.log.error("SonosPollyTTS: Error HandleQueue for " + sFileToBePlayed + " " + error.message);
+                        node.setNodeStatus({ fill: 'red', shape: 'dot', text: 'Error ' + msg + " " + error.message });
+                    }
+
+                }
 
 
-            } else {
-                node.iTimeoutPollyState = 0; // Reset Timer
-            }
+            }; // End Loop
 
-            // 06/05/2019 moved the code into the "try" 
+            // Ungroup speaker
             try {
-
-                node.SonosClient.getCurrentState().then(state => {
-                    node.sSonosPlayState = state;
-                    node.SonosClient.currentTrack().then(track => {
-                        node.sSonosTrackTitle = track.uri;
-                        HandleQueue2();
-                        node.oTimer = setTimeout(function () { HandleQueue(); }, 500);
-                        return;
-                    }).catch(err => {
-                        node.flushQueue();
-                        node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
-                    }); // node.SonosClient.currentTrack().then(track=>{
-
-
-                }).catch(err => {
-                    node.setNodeStatus({ fill: "red", shape: "dot", text: "err currstate: " + err });
-                    node.flushQueue();
-                    node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
-                }); // node.SonosClient.getCurrentState().then(state=>{
+                await node.groupSpeakers();
             } catch (error) {
-
-                // 06/05/2019 restart timer. To be removed if the try catch is removed as well.
-                RED.log.info('SonosPollyTTS: errHandleQueue1 ' + error.toString());
-                node.flushQueue();
-                node.oTimer = setTimeout(function () { HandleQueue(); }, 2000);
             }
 
+            // Resume music
+            try {
+                await resumeMusicQueue(oCurTrack);
+            } catch (error) {
+            }
+
+            node.msg.completed = true;
+            node.send(node.msg);
+            
+            // Check if someone pushed a flow message while completing the playing
+            node.oTimerCacheFlowMSG = setTimeout(() => {
+                if (node.tempMSGStorage.length > 0) {
+                    HandleQueue();
+                } else {
+                    node.bBusyPlayingQueue = false
+                }
+            }, 1000);
+            
+             
         }
 
         // 22/09/2020 Flush Queue and set to stopped
         node.flushQueue = () => {
             // 10/04/2018 Remove the TTS message from the queue
-            if (node.aMessageQueue.length > 0) {
-                node.aMessageQueue = [];
-            }
+            node.aMessageQueue = []
+            node.tempMSGStorage = []
             node.sSonosPlayState = "stopped";
             node.sSonosTrackTitle = "stopped";
             node.sPollyState = "done"
         }
 
-        // Handle queue 2 
-        function HandleQueue2() {
-
-            // Play next msg
-            if (node.aMessageQueue.length > 0) {
-
-                try {
-                    node.setNodeStatus({ fill: "yellow", shape: "dot", text: "HandleQueue2: " + node.aMessageQueue.length });
-                } catch (error) { }
-
-                // It's playing something. Check what's playing.
-                // If Music, then stop the music and play the TTS message
-                // If playing TTS message, waits until it's finished.
-                if (node.sSonosPlayState == "stopped" || node.sSonosPlayState == "paused") {
-                    var sMsg = node.aMessageQueue[0];
-
-                    // Remove the TTS message from the queue
-                    node.aMessageQueue.splice(0, 1);
-
-                    node.sPollyState = "transitioning";
-                    node.sSonosPlayState = "transitioning";
-                    node.setNodeStatus({
-                        fill: 'yellow',
-                        shape: 'dot',
-                        text: 'preparing...'
-                    });
-                    // Create the TTS mp3 with Polly
-                    Leggi(sMsg);
-
-                } else if (node.sSonosPlayState == "playing" && node.sSonosTrackTitle.toLocaleLowerCase().indexOf(".mp3") == -1) {
-
-                    //RED.log.info('SonosPollyTTS: HandleQueue2 - stopping: ' + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
-
-                    // It's playing something. Stop
-                    node.SonosClient.pause().then(success => {
-                        //RED.log.info('SonosPollyTTS: HandleQueue2 - stopped: ' + success + " " + node.sSonosPlayState + " Track:" + node.sSonosTrackTitle);
-                        try {
-                            var sMsg = node.aMessageQueue[0];
-                            node.aMessageQueue.splice(0, 1); // Remove the TTS message from the queue
-                        } catch (error) {
-                        }
-                        // Create the TTS mp3 with Polly
-                        node.sPollyState = "transitioning";
-                        node.sSonosPlayState = "transitioning";
-                        Leggi(sMsg);
-
-                    }).catch(err => {
-                        try {
-                            node.setNodeStatus({ fill: "red", shape: "dot", text: node.sSonosIPAddress + " Error pausing: " + err });
-                        } catch (error) { }
-
-                        // 15/11/2019 Workaround for grouping
-                        try {
-                            var sMsg = node.aMessageQueue[0];
-                            node.aMessageQueue.splice(0, 1); // Remove the TTS message from the queue
-                        } catch (error) {
-                        }
-                        // Create the TTS mp3 with Polly
-                        node.sPollyState = "transitioning";
-                        node.sSonosPlayState = "transitioning";
-                        Leggi(sMsg);
-                    });
-
-                } else {
-                    // Reset status
-                    node.setNodeStatus({ fill: "green", shape: "dot", text: "" + node.sSonosPlayState });
-                }
-
-            } else {
-
-                // 07/05/2019 Check if i have ended playing the queue as well
-                try {
-                    if (node.msg.completed === false && node.sSonosPlayState == "stopped") {
-                        if (node.bResumeQueueAfterTTS) {
-                            // Resume Queue
-                            resumeMusicQueue().then(success => {
-                                node.msg.completed = true;
-                                node.send(node.msg);
-                                node.setNodeStatus({ fill: "green", shape: "ring", text: "Resuming queue." });
-
-                            }).catch(err => {
-                                node.msg.completed = true;
-                                node.send(node.msg);
-                                node.busyResumingMusicQueue = false;
-                                node.setNodeStatus({ fill: "green", shape: "ring", text: "Error resuming queue." });
-
-                            });
-                        } else {
-                            // I don't need to resume the queue
-                            node.ungroupSpeakers(); // 20/03/2020 Ungroup Speakers
-                            node.msg.completed = true;
-                            node.send(node.msg);
-                            node.setNodeStatus({ fill: "green", shape: "ring", text: "Done." });
-                            return;
-                        }
-                    }
-
-                } catch (error) {
-
-                }
-
-            }
-        }
-
-        // Read the text via Polly
-        function Leggi(msg) {
-
-            try {
-                node.setNodeStatus({ fill: "yellow", shape: "dot", text: "Leggi: " + msg });
-            } catch (error) { }
-
-            // Play directly files starting with http://
-            if (msg.toLowerCase().startsWith("http://") || msg.toLowerCase().startsWith("https://")) {
-                RED.log.info('SonosPollyTTS: Leggi HTTP filename: ' + msg);
-                PlaySonos(msg, node);
-                return;
-            }
-
-            // 27/02/2020 Handling OwnFile
-            if (msg.indexOf("OwnFile_") !== -1) {
-                RED.log.info('SonosPollyTTS: OwnFile .MP3, skip polly, filename: ' + msg);
-                var newPath = path.join(node.userDir, "ttspermanentfiles", msg);
-                PlaySonos(newPath, node);
-                return;
-            }
-
-            // 09/03/2020 Handling Hailing_ files
-            if (msg.indexOf("Hailing_") !== -1) {
-                RED.log.info('SonosPollyTTS: Hailing .MP3, skip polly, filename: ' + msg);
-                var newPath = path.join(node.userDir, "hailingpermanentfiles", msg);
-                PlaySonos(newPath, node);
-                return;
-            }
-
-            // Otherwise, it's a TTS
-            var outputFormat = "mp3";
-            var filename = getFilename(msg, node.voiceId, node.ssml, outputFormat);
-
-            // Get real filename, codified.
-            filename = path.join(node.userDir, "ttsfiles", filename);
-
-            // Check if cached
-            if (fs.existsSync(filename)) {
-                node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'from cache' });
-                RED.log.info('SonosPollyTTS: DEBUG - fromcache : ' + filename);
-                PlaySonos(filename, node);
-                return;
-            }
-
-            // Not cached
-            node.setNodeStatus({ fill: 'yellow', shape: 'dot', text: 'asking online' });
-
-            var params = {
-                OutputFormat: outputFormat,
-                SampleRate: '22050',
-                Text: msg,
-                TextType: node.ssml ? 'ssml' : 'text',
-                VoiceId: node.voiceId
-            };
-
-            var polly = node.Pollyconfig.polly;
-            synthesizeSpeech([polly, params]).then(data => { return [filename, data.AudioStream]; }).then(cacheSpeech).then(function () {
-                // Play
-                PlaySonos(filename, node);
-
-            }).catch(error => { notifyError(filename, error); });
-
-        }
 
         function synthesizeSpeech([polly, params]) {
             return new Promise((resolve, reject) => {
@@ -1189,15 +521,6 @@ module.exports = function (RED) {
             });
         }
 
-        function cacheSpeech([path, data]) {
-            return new Promise((resolve, reject) => {
-                //RED.log.info("cacheSpeech path " + path);
-                fs.writeFile(path, data, function (err) {
-                    if (err !== null) return reject(err);
-                    resolve();
-                });
-            });
-        }
 
         function getFilename(text, _iVoice, isSSML, extension) {
             // Slug the text.
@@ -1237,61 +560,6 @@ module.exports = function (RED) {
             //RED.log.error('SonosPollyTTS: notifyError - msg: ' + msg + ' error: ' + errorMessage);
             // Set error in message
             msg.error = errorMessage;
-
-        }
-
-
-
-
-
-        // ---------------------- SONOS ----------------------------
-        function PlaySonos(_songuri, node) {
-
-            var sUrl = "";
-
-            // Play directly files starting with http://
-            if (_songuri.toLowerCase().startsWith("http://") || _songuri.toLowerCase().startsWith("https://")) {
-                sUrl = _songuri;
-            } else {
-                sUrl = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(_songuri);
-            }
-
-            node.SonosClient.setVolume(node.sSonosVolume).then(success => {
-                node.SonosClient.setAVTransportURI(sUrl).then(playing => {
-
-                    // Polly has ended downloading file
-                    node.sPollyState = "done";
-                    // Signalling
-                    node.setNodeStatus({
-                        fill: 'green',
-                        shape: 'dot',
-                        text: 'Playing'
-                    });
-
-                }).catch(err => {
-                    // Polly has ended downloading file
-                    node.sPollyState = "done";
-                    // Signalling
-                    node.setNodeStatus({
-                        fill: 'red',
-                        shape: 'dot',
-                        text: 'Error Transport ' + err
-                    });
-                    node.sSonosPlayState = "stopped";
-                });
-            }).catch(err => {
-                // Polly has ended downloading file
-                node.sPollyState = "done";
-                // Signalling
-                node.setNodeStatus({
-                    fill: 'red',
-                    shape: 'dot',
-                    text: 'Error SetVolume ' + err
-                });
-                node.sSonosPlayState = "stopped";
-            });
-
-
 
         }
 

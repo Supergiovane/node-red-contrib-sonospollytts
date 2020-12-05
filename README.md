@@ -28,7 +28,8 @@
 This node transforms a text into a speech audio. It supports many voice languages. You can hear the voice through Sonos.<br/>
 This node uses <a href="https://aws.amazon.com/polly/">Polly</a> TTS and Sonos api. It supports PLAYERS GROUPING.<br/>
 You can use it with **your own audio file** as well and it can be used **totally offline** even without the use of TTS, without internet connection.<br/>
-If a previously music queue was playing, once the speech has finished, the node will resume the music queue at the exact track, at the exact seek time.
+If a previously music queue was playing, once the speech has finished, the node will resume the music queue at the exact track, at the exact seek time.<br/>
+**Node v.10.0.0 or newer is needed**.
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday).
 
