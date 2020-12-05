@@ -227,8 +227,8 @@ module.exports = function (RED) {
             if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
             node.oTimerCacheFlowMSG = setTimeout(() => {
                 if (!node.bBusyPlayingQueue) HandleQueue();
-             }, 1000);
-            
+            }, 1000);
+
 
         });
 
@@ -335,7 +335,7 @@ module.exports = function (RED) {
             await node.groupSpeakers(); // 20/03/2020 Group Speakers toghether
             node.send(node.msg);
 
-           
+
             while (node.tempMSGStorage.length > 0) {
                 const flowMessage = node.tempMSGStorage[0];
                 const msg = flowMessage.payload; // Get the text to be speeched
@@ -362,7 +362,7 @@ module.exports = function (RED) {
                         try {
                             // No file in cache. Wownload from Amazon.
                             var params = {
-                                OutputFormat: outputFormat,
+                                OutputFormat: "mp3",
                                 SampleRate: '22050',
                                 Text: msg,
                                 TextType: node.ssml ? 'ssml' : 'text',
@@ -371,7 +371,9 @@ module.exports = function (RED) {
                             var data = await synthesizeSpeech([node.server.polly, params]);
                             // Save the downloaded file into the cache
                             try {
-                                fs.writeFile(sFileToBePlayed, data.AudioStream);
+                                await fs.writeFile(sFileToBePlayed, data.AudioStream, function (err, result) {
+                                    if (err) throw (err);
+                                });
                             } catch (error) {
                                 throw new Error("Unable to save the file " + sFileToBePlayed + " " + error.message);
                             }
@@ -379,6 +381,9 @@ module.exports = function (RED) {
                             node.setNodeStatus({ fill: 'red', shape: 'ring', text: 'Error Downloading from amazon:' + error.message });
                             sFileToBePlayed = "";
                         }
+                    }
+                    else {
+                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Reading offline from cache'});
                     }
                 }
 
@@ -486,7 +491,7 @@ module.exports = function (RED) {
 
             node.msg.completed = true;
             node.send(node.msg);
-            
+
             // Check if someone pushed a flow message while completing the playing
             node.oTimerCacheFlowMSG = setTimeout(() => {
                 if (node.tempMSGStorage.length > 0) {
@@ -495,18 +500,15 @@ module.exports = function (RED) {
                     node.bBusyPlayingQueue = false
                 }
             }, 1000);
-            
-             
+
+
         }
 
         // 22/09/2020 Flush Queue and set to stopped
         node.flushQueue = () => {
             // 10/04/2018 Remove the TTS message from the queue
-            node.aMessageQueue = []
-            node.tempMSGStorage = []
-            node.sSonosPlayState = "stopped";
-            node.sSonosTrackTitle = "stopped";
-            node.sPollyState = "done"
+            node.tempMSGStorage = [];
+            node.bTimeOutPlay = true; // Exit whatever cycle
         }
 
 
