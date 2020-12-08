@@ -39,12 +39,13 @@ If a previously music queue was playing, once the speech has finished, the node 
 ## FEATURES
 * **Automatic grouping** is supported. You can group all players you want to play your announcements.
 * **Automatic discovery** of your players.
+* **Automatic resume of music** queue.
 * **TTS caching**. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
 * **UPLOAD your own audio files**. You can upload your own audio files with OwnFile node.
 * **Can work offline**. You can use your own audio files to make the node works offline. If you use the node with the integrated TTS Polly, thank to the **offline cache**, once you played the TTS only one time, the node will cache this TTS and you can use it **even without internet connection**. 
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
-* Works with node-red in HTTP and in HTTPS mode.
-* NEW FROM V. 2.0.0 ---->>>  Automatic resume of music queue.
+* **Works with node-red in HTTP and in HTTPS** mode.
+
 <br/><br/>
 > IF YOU RUN NODE-RED BEHIND DOCKER OR SOMETHING ELSE, BE AWARE: <br/>
 > PORT USED BY THE NODE ARE 1980 AND 1400 (FOR SONOS DISCOVER). <br/>
