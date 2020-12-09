@@ -40,6 +40,7 @@ If a previously music queue was playing, once the speech has finished, the node 
 * **Automatic grouping** is supported. You can group all players you want to play your announcements.
 * **Automatic discovery** of your players.
 * **Automatic resume of music** queue.
+* **Automatic resume of radio station**. If a radio station support seeking, the node will resume the radio at exact seek time.
 * **TTS caching**. Amazon AWS charges you if you use Polly for a very high rate of text to speech request. The node caches the TTS, so if you requests the same TTS the second time, the node will take it from the cache instead of asking to the Amazon Polly service.
 * **UPLOAD your own audio files**. You can upload your own audio files with OwnFile node.
 * **Can work offline**. You can use your own audio files to make the node works offline. If you use the node with the integrated TTS Polly, thank to the **offline cache**, once you played the TTS only one time, the node will cache this TTS and you can use it **even without internet connection**. 

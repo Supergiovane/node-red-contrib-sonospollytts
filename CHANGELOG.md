@@ -3,6 +3,10 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 2.0.1</b> December 2020<br/>
+- NEW: automatic resume of radio station. If the station support seeking, the node'll resume at exct time position.<br/>
+</p>
+<p>
 <b>Version 2.0.0</b> December 2020<br/>
 - NEW: Completely rewritten the code, to getting rid of very old implementations.<br/>
 - Resume queued music now works correctly everytime.<br/>

@@ -254,6 +254,7 @@ module.exports = function (RED) {
                         // Get current track
                         node.SonosClient.currentTrack().then(track => {
                             oRet = track;// .queuePosition || 1; // Get the current track  in the queue.
+                            //console.log("BANANA RADIO " + JSON.stringify(oRet));
                             node.SonosClient.getVolume().then(volume => {
                                 oRet.currentVolume = volume; // Get the current volume
                                 //console.log("TRACK MUSIC: " + JSON.stringify(node.currMusicTrack));
@@ -283,37 +284,59 @@ module.exports = function (RED) {
         function resumeMusicQueue(oTrack) {
             return new Promise(function (resolve, reject) {
                 if (oTrack !== null) {
-                    node.SonosClient.selectQueue().then(success => {
-                        node.SonosClient.selectTrack(oTrack.queuePosition).then(success => {
-                            node.SonosClient.seek(oTrack.position).then(success => {
-                                node.SonosClient.setVolume(oTrack.currentVolume).then(success => {
-                                    node.SonosClient.play().then(success => {
-                                        setTimeout(() => { resolve(true) }, 5000); // Wait some seconds to the music to start playing
-                                    }).catch(err => {
-                                        //console.log('Error occurred PLAY %j', err)
-                                        reject(Err);
-                                    })
+                    if (oTrack.hasOwnProperty("duration") && oTrack.duration === 0) {
+                        // It's a radio station or a generic stream, not a queue.
+
+                        node.SonosClient.setVolume(oTrack.currentVolume).then(success => {
+                            node.SonosClient.play(oTrack.uri).then(success => {
+                                node.SonosClient.seek(oTrack.position).then(success => {
+                                    setTimeout(() => { resolve(true) }, 5000); // Wait some seconds to the music to start playing
                                 }).catch(err => {
-                                    //console.log('Error occurred setVolume %j', err)
-                                    reject(Err);
+                                    // No problems, some radio station does'nt have a position.
+                                    setTimeout(() => { resolve(true) }, 5000); // Wait some seconds to the music to start playing
                                 })
                             }).catch(err => {
-                                //console.log('Error occurred SEEK %j', err)
-                                reject(Err);
+                                //console.log('Error occurred PLAY %j', err)
+                                reject(err);
                             })
                         }).catch(err => {
-                            //console.log('Error occurred SELECTTRACK %j', err);
-                            reject(Err);
+                            //console.log('Error occurred setVolume %j', err)
+                            reject(err);
                         })
 
-                    }).catch(err => {
-                        //console.log('Error occurred %j', err);
-                        reject(Err);
-                    })
+                    } else {
+                        // It's a music queue
+                        node.SonosClient.selectQueue().then(success => {
+                            node.SonosClient.selectTrack(oTrack.queuePosition).then(success => {
+                                node.SonosClient.seek(oTrack.position).then(success => {
+                                    node.SonosClient.setVolume(oTrack.currentVolume).then(success => {
+                                        node.SonosClient.play().then(success => {
+                                            setTimeout(() => { resolve(true) }, 5000); // Wait some seconds to the music to start playing
+                                        }).catch(err => {
+                                            //console.log('Error occurred PLAY %j', err)
+                                            reject(err);
+                                        })
+                                    }).catch(err => {
+                                        //console.log('Error occurred setVolume %j', err)
+                                        reject(err);
+                                    })
+                                }).catch(err => {
+                                    //console.log('Error occurred SEEK %j', err)
+                                    reject(err);
+                                })
+                            }).catch(err => {
+                                //console.log('Error occurred SELECTTRACK %j', err);
+                                reject(err);
+                            })
+
+                        }).catch(err => {
+                            //console.log('Error occurred %j', err);
+                            reject(err);
+                        })
+                    }
                 } else {
                     resolve(false);
                 }
-
             });
         }
 
@@ -383,7 +406,7 @@ module.exports = function (RED) {
                         }
                     }
                     else {
-                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Reading offline from cache'});
+                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Reading offline from cache' });
                     }
                 }
 
