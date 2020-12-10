@@ -47,16 +47,17 @@ If a previously music queue was playing, once the speech has finished, the node 
 * Send a simple payload with the text you want to speech out. For example <code>node.send({payload:"Hello there!"});</code>.
 * **Works with node-red in HTTP and in HTTPS** mode.
 
-<br/><br/>
+<br/>
+
 > IF YOU RUN NODE-RED BEHIND DOCKER OR SOMETHING ELSE, BE AWARE: <br/>
 > PORT USED BY THE NODE ARE 1980 AND 1400 (FOR SONOS DISCOVER). <br/>
 > PLEASE ALLOW MDNS AND UDP AS WELL
 
 <br/>
 
-### HOW-TO in Deutsch: for german users, there is a very helpful how-to, where you can learn how to use the node and how to register to Amazon AWS Polly as well: here: https://technikkram.net/blog/2020/09/26/sonos-sprachausgabe-mit-raspberry-pi-node-red-und-amazon-polly-fuer-homematic-oder-knx-systeme
+HOW-TO in Deutsch: for german users, there is a very helpful how-to, where you can learn how to use the node and how to register to Amazon AWS Polly as well: here: https://technikkram.net/blog/2020/09/26/sonos-sprachausgabe-mit-raspberry-pi-node-red-und-amazon-polly-fuer-homematic-oder-knx-systeme
 
-<br/><br/><br/><br/>
+<br/><br/>
 
 # SONOSPOLLYTTS-CONFIG NODE
 

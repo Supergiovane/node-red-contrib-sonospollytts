@@ -98,38 +98,25 @@ module.exports = function (RED) {
         node.CheckSonosConnection = () => {
 
             node.SonosClient.getCurrentState().then(state => {
-                node.SonosClient.currentTrack().then(track => {
-                    // 27/11/2019 Set node output to signal connectio error
-                    if (node.msg.connectionerror == true) {
-                        node.setNodeStatus({ fill: "green", shape: "ring", text: "Sonos is connected." });
-                        node.msg.connectionerror = false;
-                        node.send({ "connectionerror": node.msg.connectionerror });
-                    }
-                    node.oTimerSonosConnectionCheck = setTimeout(function () { node.CheckSonosConnection(); }, 2000);
 
-                }).catch(err => {
+                // 11/12/202020 Set node output to signal connectio error
+                if (node.msg.connectionerror == true) {
                     node.flushQueue();
-                    // 27/11/2019 Set node output to signal connectio error
-                    if (node.msg.connectionerror == false) {
-                        node.setNodeStatus({ fill: "red", shape: "dot", text: "Sonos connection is DOWN: " + err });
-                        node.msg.connectionerror = true;
-                        node.send({ "connectionerror": node.msg.connectionerror });
-                    }
-                    node.oTimerSonosConnectionCheck = setTimeout(function () { node.CheckSonosConnection(); }, 2000);
-
-                });
-
+                    node.setNodeStatus({ fill: "green", shape: "dot", text: "Sonos is connected." });
+                    node.msg.connectionerror = false;
+                    node.send({ connectionerror: node.msg.connectionerror });
+                }
+                node.oTimerSonosConnectionCheck = setTimeout(function () { node.CheckSonosConnection(); }, 5000);
 
             }).catch(err => {
+                node.setNodeStatus({ fill: "red", shape: "dot", text: "Sonos connection is DOWN: " + err.message });
                 node.flushQueue();
-                // 27/11/2019 Set node output to signal connectio error
+                // 11/12/2020 Set node output to signal connectio error
                 if (node.msg.connectionerror == false) {
-                    node.setNodeStatus({ fill: "red", shape: "dot", text: "Sonos connection is DOWN: " + err });
                     node.msg.connectionerror = true;
-                    node.send({ "connectionerror": node.msg.connectionerror });
+                    node.send({ connectionerror: node.msg.connectionerror });
                 }
-                node.oTimerSonosConnectionCheck = setTimeout(function () { node.CheckSonosConnection(); }, 2000);
-
+                node.oTimerSonosConnectionCheck = setTimeout(function () { node.CheckSonosConnection(); }, 10000);
             });
 
         }
@@ -207,11 +194,37 @@ module.exports = function (RED) {
                 return;
             }
 
+            // In case of connection error, doesn't accept any message
+            if (node.msg.connectionerror) {
+                RED.log.warn("SonosPollyTTS: Sonos is offline. The new msg coming from the flow will be rejected.");
+                node.setNodeStatus({ fill: 'red', shape: 'ring', text: "Sonos is offline. The msg has been rejected." });
+                return;
+            }
+
             // 05/12/2020 handlong Hailing
             var hailingMSG = null;
             if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) {
                 hailingMSG = null;
             } else {
+
+                // Backward compatibiliyy, to remove with the next Version
+                // ################
+                if (config.sonoshailing == "0") {
+                    // Remove the hailing.mp3 default file
+                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
+                    RED.log.info('SonosPollyTTS: Hailing disabled');
+                } else if (config.sonoshailing == "1") {
+                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
+                    config.sonoshailing = "Hailing_Hailing.mp3";
+                } else if (config.sonoshailing == "2") {
+                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
+                    config.sonoshailing = "Hailing_ComputerCall.mp3";
+                } else if (config.sonoshailing == "3") {
+                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
+                    config.sonoshailing = "Hailing_VintageSpace.mp3";
+                }
+                // ################
+
                 hailingMSG = { payload: config.sonoshailing };
                 if (msg.hasOwnProperty("sonoshailing")) hailingMSG = { payload: "Hailing_" + msg.sonoshailing + ".mp3" };
             }
@@ -226,7 +239,9 @@ module.exports = function (RED) {
             // Allow some time to wait for all messages from flow
             if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
             node.oTimerCacheFlowMSG = setTimeout(() => {
-                if (!node.bBusyPlayingQueue) HandleQueue();
+                if (!node.bBusyPlayingQueue) {
+                    HandleQueue();
+                } else { node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Busy handling queue... Retry..." }); }
             }, 1000);
 
 
@@ -344,191 +359,198 @@ module.exports = function (RED) {
         // Handle the queue
         async function HandleQueue() {
             node.bBusyPlayingQueue = true;
-
-            // Get the current music queue, if one
-            var oCurTrack = null;
             try {
-                oCurTrack = await getMusicQueue();
-            } catch (error) {
-                oCurTrack = null;
-            }
 
-            // 05/12/2020 Set "completed" to false and send it
-            node.msg.completed = false;
-            await node.groupSpeakers(); // 20/03/2020 Group Speakers toghether
-            node.send(node.msg);
+                // Get the current music queue, if one
+                var oCurTrack = null;
+                try {
+                    oCurTrack = await getMusicQueue();
+                } catch (error) {
+                    oCurTrack = null;
+                }
+
+                // 05/12/2020 Set "completed" to false and send it
+                node.msg.completed = false;
+                await node.groupSpeakers(); // 20/03/2020 Group Speakers toghether
+                node.send(node.msg);
 
 
-            while (node.tempMSGStorage.length > 0) {
-                const flowMessage = node.tempMSGStorage[0];
-                const msg = flowMessage.payload; // Get the text to be speeched
-                node.tempMSGStorage.splice(0, 1); // Remove the first item in the array
-                var sFileToBePlayed = "";
-                node.setNodeStatus({ fill: "gray", shape: "ring", text: "Read " + msg });
+                while (node.tempMSGStorage.length > 0) {
+                    const flowMessage = node.tempMSGStorage[0];
+                    const msg = flowMessage.payload; // Get the text to be speeched
+                    node.tempMSGStorage.splice(0, 1); // Remove the first item in the array
+                    var sFileToBePlayed = "";
+                    node.setNodeStatus({ fill: "gray", shape: "ring", text: "Read " + msg });
 
-                // 04/12/2020 check what really is the file to be played
-                if (msg.toLowerCase().startsWith("http://") || msg.toLowerCase().startsWith("https://")) {
-                    RED.log.info('SonosPollyTTS: Leggi HTTP filename: ' + msg);
-                    sFileToBePlayed = msg;
-                } else if (msg.indexOf("OwnFile_") !== -1) {
-                    RED.log.info('SonosPollyTTS: OwnFile .MP3, skip polly, filename: ' + msg);
-                    sFileToBePlayed = path.join(node.userDir, "ttspermanentfiles", msg);
-                } else if (msg.indexOf("Hailing_") !== -1) {
-                    RED.log.info('SonosPollyTTS: Hailing .MP3, skip polly, filename: ' + msg);
-                    sFileToBePlayed = path.join(node.userDir, "hailingpermanentfiles", msg);
-                } else {
-                    sFileToBePlayed = getFilename(msg, node.voiceId, node.ssml, "mp3");
-                    sFileToBePlayed = path.join(node.userDir, "ttsfiles", sFileToBePlayed);
-                    // Check if cached
-                    if (!fs.existsSync(sFileToBePlayed)) {
-                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Downloading from amazon...' });
+                    // 04/12/2020 check what really is the file to be played
+                    if (msg.toLowerCase().startsWith("http://") || msg.toLowerCase().startsWith("https://")) {
+                        RED.log.info('SonosPollyTTS: Leggi HTTP filename: ' + msg);
+                        sFileToBePlayed = msg;
+                    } else if (msg.indexOf("OwnFile_") !== -1) {
+                        RED.log.info('SonosPollyTTS: OwnFile .MP3, skip polly, filename: ' + msg);
+                        sFileToBePlayed = path.join(node.userDir, "ttspermanentfiles", msg);
+                    } else if (msg.indexOf("Hailing_") !== -1) {
+                        RED.log.info('SonosPollyTTS: Hailing .MP3, skip polly, filename: ' + msg);
+                        sFileToBePlayed = path.join(node.userDir, "hailingpermanentfiles", msg);
+                    } else {
+                        sFileToBePlayed = getFilename(msg, node.voiceId, node.ssml, "mp3");
+                        sFileToBePlayed = path.join(node.userDir, "ttsfiles", sFileToBePlayed);
+                        // Check if cached
+                        if (!fs.existsSync(sFileToBePlayed)) {
+                            node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Downloading from amazon...' });
+                            try {
+                                // No file in cache. Wownload from Amazon.
+                                var params = {
+                                    OutputFormat: "mp3",
+                                    SampleRate: '22050',
+                                    Text: msg,
+                                    TextType: node.ssml ? 'ssml' : 'text',
+                                    VoiceId: node.voiceId
+                                };
+                                var data = await synthesizeSpeech([node.server.polly, params]);
+                                // Save the downloaded file into the cache
+                                try {
+                                    await fs.writeFile(sFileToBePlayed, data.AudioStream, function (err, result) {
+                                        if (err) throw (err);
+                                    });
+                                } catch (error) {
+                                    throw new Error("Unable to save the file " + sFileToBePlayed + " " + error.message);
+                                }
+                            } catch (error) {
+                                node.setNodeStatus({ fill: 'red', shape: 'ring', text: 'Error Downloading from amazon:' + error.message });
+                                sFileToBePlayed = "";
+                            }
+                        }
+                        else {
+                            node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Reading offline from cache' });
+                        }
+                    }
+
+                    // Ready to play
+                    if (sFileToBePlayed !== "") {
+
+                        // Now i am ready to play the file
+                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Play ' + msg });
+                        // Play directly files starting with http://
+                        if (!sFileToBePlayed.toLowerCase().startsWith("http://") && !sFileToBePlayed.toLowerCase().startsWith("https://")) {
+                            sFileToBePlayed = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(sFileToBePlayed);
+                        }
+
+                        // Set Volume
                         try {
-                            // No file in cache. Wownload from Amazon.
-                            var params = {
-                                OutputFormat: "mp3",
-                                SampleRate: '22050',
-                                Text: msg,
-                                TextType: node.ssml ? 'ssml' : 'text',
-                                VoiceId: node.voiceId
-                            };
-                            var data = await synthesizeSpeech([node.server.polly, params]);
-                            // Save the downloaded file into the cache
-                            try {
-                                await fs.writeFile(sFileToBePlayed, data.AudioStream, function (err, result) {
-                                    if (err) throw (err);
-                                });
-                            } catch (error) {
-                                throw new Error("Unable to save the file " + sFileToBePlayed + " " + error.message);
+                            if (flowMessage.hasOwnProperty("volume")) {
+                                await node.SonosClient.setVolume(flowMessage.volume);
+                            } else {
+                                await node.SonosClient.setVolume(node.sSonosVolume);
                             }
+
                         } catch (error) {
-                            node.setNodeStatus({ fill: 'red', shape: 'ring', text: 'Error Downloading from amazon:' + error.message });
-                            sFileToBePlayed = "";
+                            RED.log.error("SonosPollyTTS: Unable to set the volume for " + sFileToBePlayed);
                         }
-                    }
-                    else {
-                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Reading offline from cache' });
-                    }
-                }
+                        try {
 
-                // Ready to play
-                if (sFileToBePlayed !== "") {
+                            await node.SonosClient.setAVTransportURI(sFileToBePlayed);
 
-                    // Now i am ready to play the file
-                    node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Play ' + msg });
-                    // Play directly files starting with http://
-                    if (!sFileToBePlayed.toLowerCase().startsWith("http://") && !sFileToBePlayed.toLowerCase().startsWith("https://")) {
-                        sFileToBePlayed = node.sNoderedURL + "/tts/tts.mp3?f=" + encodeURIComponent(sFileToBePlayed);
-                    }
-
-                    // Set Volume
-                    try {
-                        if (flowMessage.hasOwnProperty("volume")) {
-                            await node.SonosClient.setVolume(flowMessage.volume);
-                        } else {
-                            await node.SonosClient.setVolume(node.sSonosVolume);
-                        }
-
-                    } catch (error) {
-                        RED.log.error("SonosPollyTTS: Unable to set the volume for " + sFileToBePlayed);
-                    }
-                    try {
-
-                        await node.SonosClient.setAVTransportURI(sFileToBePlayed);
-
-                        // Wait for start playing
-                        var state = "";
-                        node.bTimeOutPlay = false;
-                        node.timerbTimeOutPlay = setTimeout(() => {
-                            node.bTimeOutPlay = true;
-                        }, 5000);
-                        while (state !== "playing" && !node.bTimeOutPlay) {
-                            try {
-                                state = await node.SonosClient.getCurrentState();
-                                //node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'STETE ' + state });
-                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
-                            } catch (error) {
-                                node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'Error getCurrentState of playing ' + msg });
-                                RED.log.error("SonosPollyTTS: Error getCurrentState of playing " + error.message);
-                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
-                                throw new MessageEvent("Error getCurrentState of playing " + error.message);
+                            // Wait for start playing
+                            var state = "";
+                            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                            node.bTimeOutPlay = false;
+                            node.timerbTimeOutPlay = setTimeout(() => {
+                                node.bTimeOutPlay = true;
+                            }, 10000);
+                            while (state !== "playing" && !node.bTimeOutPlay) {
+                                try {
+                                    state = await node.SonosClient.getCurrentState();
+                                } catch (error) {
+                                    node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'Error getCurrentState of playing ' + msg });
+                                    RED.log.error("SonosPollyTTS: Error getCurrentState of playing " + error.message);
+                                    throw new MessageEvent("Error getCurrentState of playing " + error.message);
+                                }
                             }
-                        }
-                        switch (node.bTimeOutPlay) {
-                            case false:
-                                node.setNodeStatus({ fill: 'green', shape: 'dot', text: 'Playing ' + msg });
-                                break;
-                            default:
-                                node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Timeout waiting start play state: ' + msg });
-                                break;
-                        }
-
-                        // Wait for end
-                        node.bTimeOutPlay = false;
-                        state = "";
-                        if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
-                        node.timerbTimeOutPlay = setTimeout(() => {
-                            node.bTimeOutPlay = true;
-                        }, 5000);
-                        while (state !== "stopped" && !node.bTimeOutPlay) {
-                            try {
-                                state = await node.SonosClient.getCurrentState();
-                                //node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'STETE ' + state });
-                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
-                            } catch (error) {
-                                node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'Error getCurrentState of stopped ' + msg });
-                                RED.log.error("SonosPollyTTS: Error  getCurrentState of stopped " + error.message);
-                                if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
-                                throw new MessageEvent("Error  getCurrentState of stopped " + error.message);
+                            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                            switch (node.bTimeOutPlay) {
+                                case false:
+                                    node.setNodeStatus({ fill: 'green', shape: 'dot', text: 'Playing ' + msg });
+                                    break;
+                                default:
+                                    node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Timeout waiting start play state: ' + msg });
+                                    break;
                             }
-                        }
-                        switch (node.bTimeOutPlay) {
-                            case false:
-                                node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'End playing ' + msg });
-                                break;
-                            default:
-                                node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Timeout waiting end play state: ' + msg });
-                                break;
+
+                            // Wait for end
+                            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                            node.bTimeOutPlay = false;
+                            state = "";
+                            node.timerbTimeOutPlay = setTimeout(() => {
+                                node.bTimeOutPlay = true;
+                            }, 60000);
+                            while (state !== "stopped" && !node.bTimeOutPlay) {
+                                try {
+                                    state = await node.SonosClient.getCurrentState();
+                                } catch (error) {
+                                    node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: 'Error getCurrentState of stopped ' + msg });
+                                    RED.log.error("SonosPollyTTS: Error  getCurrentState of stopped " + error.message);
+                                    throw new MessageEvent("Error  getCurrentState of stopped " + error.message);
+                                }
+                            }
+                            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+                            switch (node.bTimeOutPlay) {
+                                case false:
+                                    node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'End playing ' + msg });
+                                    break;
+                                default:
+                                    node.setNodeStatus({ fill: 'grey', shape: 'dot', text: 'Timeout waiting end play state: ' + msg });
+                                    break;
+                            }
+
+                        } catch (error) {
+                            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay); // Clear the player timeout
+                            RED.log.error("SonosPollyTTS: Error HandleQueue for " + sFileToBePlayed + " " + error.message);
+                            node.setNodeStatus({ fill: 'red', shape: 'dot', text: 'Error ' + msg + " " + error.message });
                         }
 
-                    } catch (error) {
-                        RED.log.error("SonosPollyTTS: Error HandleQueue for " + sFileToBePlayed + " " + error.message);
-                        node.setNodeStatus({ fill: 'red', shape: 'dot', text: 'Error ' + msg + " " + error.message });
                     }
 
+
+                }; // End Loop
+
+                // Ungroup speaker
+                try {
+                    await node.ungroupSpeakers();
+                } catch (error) {
                 }
 
+                // Resume music
+                try {
+                    if (oCurTrack !== null) {
+                        node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Resuming music.." });
+                        await resumeMusicQueue(oCurTrack);
+                        node.setNodeStatus({ fill: 'green', shape: 'ring', text: "Done resuming music." });
+                    }
+                } catch (error) {
+                    node.setNodeStatus({ fill: 'red', shape: 'ring', text: "Error resuming music: " + error.message });
+                }
 
-            }; // End Loop
+                // Check if someone pushed a flow message while completing the playing
+                if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
+                node.oTimerCacheFlowMSG = setTimeout(() => {
+                    if (node.tempMSGStorage.length > 0) {
+                        HandleQueue();
+                    } else {
+                        setTimeout(() => {
+                            node.msg.completed = true;
+                            node.send(node.msg);
+                            node.bBusyPlayingQueue = false
+                        }, 1000)
+                    }
+                }, 1000);
 
-            // Ungroup speaker
-            try {
-                await node.ungroupSpeakers();
             } catch (error) {
+                // Should'nt be there
+                RED.log.error("SonosPollyTTS: BIG Error HandleQueue MAIN " + error.message);
+                node.setNodeStatus({ fill: "grey", shape: "ring", text: "Error Handlequeue " + error.message });
+                node.flushQueue();
             }
-
-            // Resume music
-            try {
-                if (oCurTrack !== null) {
-                    node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Resuming music.." });
-                    await resumeMusicQueue(oCurTrack);
-                    node.setNodeStatus({ fill: 'green', shape: 'ring', text: "Done resuming music." });
-                }
-            } catch (error) {
-                node.setNodeStatus({ fill: 'red', shape: 'ring', text: "Error resuming music: " + error.message });
-            }
-
-            node.msg.completed = true;
-            node.send(node.msg);
-
-            // Check if someone pushed a flow message while completing the playing
-            node.oTimerCacheFlowMSG = setTimeout(() => {
-                if (node.tempMSGStorage.length > 0) {
-                    HandleQueue();
-                } else {
-                    node.bBusyPlayingQueue = false
-                }
-            }, 1000);
-
 
         }
 
@@ -536,7 +558,9 @@ module.exports = function (RED) {
         node.flushQueue = () => {
             // 10/04/2018 Remove the TTS message from the queue
             node.tempMSGStorage = [];
-            node.bTimeOutPlay = true; // Exit whatever cycle
+            // Exit whatever cycle
+            node.bTimeOutPlay = true;
+            node.bBusyPlayingQueue = false;
         }
 
 
