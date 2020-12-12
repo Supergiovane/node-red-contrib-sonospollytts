@@ -9,6 +9,7 @@
 [![MIT License][license-image]][license-url]
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
+[![Facebook][facebook-image]][facebook-url]
 
 <img src='https://raw.githubusercontent.com/Supergiovane/node-red-contrib-sonospollytts/master/img/Readme.png' width="80%">
 
@@ -162,3 +163,5 @@ Select a file to be played. You can upload one or multiple files at the same tim
 [npm-version-image]: https://img.shields.io/npm/v/node-red-contrib-sonospollytts.svg
 [npm-downloads-month-image]: https://img.shields.io/npm/dm/node-red-contrib-sonospollytts.svg
 [npm-downloads-total-image]: https://img.shields.io/npm/dt/node-red-contrib-sonospollytts.svg
+[facebook-image]: https://img.shields.io/badge/Visit%20me-Facebook-blue
+[facebook-url]: https://www.facebook.com/supergiovaneDev
