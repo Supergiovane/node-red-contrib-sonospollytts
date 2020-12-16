@@ -50,9 +50,6 @@ module.exports = function (RED) {
     }
 
 
-
-
-
     // Node Register
     function PollyNode(config) {
         RED.nodes.createNode(this, config);
@@ -99,7 +96,7 @@ module.exports = function (RED) {
 
             node.SonosClient.getCurrentState().then(state => {
 
-                // 11/12/202020 Set node output to signal connectio error
+                // 11/12/202020 The connection with Sonos is OK. 
                 if (node.msg.connectionerror == true) {
                     node.flushQueue();
                     node.setNodeStatus({ fill: "green", shape: "dot", text: "Sonos is connected." });
@@ -120,6 +117,7 @@ module.exports = function (RED) {
             });
 
         }
+
         // Create sonos client
         node.SonosClient = new sonos.Sonos(node.sSonosIPAddress);
 
@@ -155,13 +153,8 @@ module.exports = function (RED) {
                     const element = node.oAdditionalSonosPlayers[index];
                     element.joinGroup(node.sSonosCoordinatorGroupName).then(success => {
                         // 24/09/2020 Set Volume of each device in the group
-                        try {
-                            element.setVolume(node.sSonosVolume).then(success => {
-                                // element.getVolume().then(sVol => {
-                                //     RED.log.warn('SonosPollyTTS: get volume of grouped device: ' + JSON.stringify(sVol));
-                                // }).catch(err => { });
-                            }).catch(err => { });
-                        } catch (error) { }
+                        element.setVolume(node.sSonosVolume).then(success => {
+                        }).catch(err => { });
                     }).catch(err => {
                         RED.log.warn('SonosPollyTTS: Error joining device ' + err);
                         reject(err);
@@ -178,8 +171,8 @@ module.exports = function (RED) {
                     element.leaveGroup().then(success => {
                         //RED.log.warn('Leaving the group is a ' + (success ? 'Success' : 'Failure'))
                     }).catch(err => {
-                        RED.log.warn('SonosPollyTTS: Error leaving group device ' + err)
-                        reject(err);
+                        RED.log.warn('SonosPollyTTS: Error leaving group device ' + err);
+                        reject(false)
                     })
                 }
                 resolve(true);
@@ -187,76 +180,15 @@ module.exports = function (RED) {
         }
         // ######################################################
 
-        node.on('input', function (msg) {
 
-            if (!msg.hasOwnProperty("payload")) {
-                notifyError(msg, 'msg.payload must be of type String');
-                return;
-            }
-
-            // In case of connection error, doesn't accept any message
-            if (node.msg.connectionerror) {
-                RED.log.warn("SonosPollyTTS: Sonos is offline. The new msg coming from the flow will be rejected.");
-                node.setNodeStatus({ fill: 'red', shape: 'ring', text: "Sonos is offline. The msg has been rejected." });
-                return;
-            }
-
-            // 05/12/2020 handlong Hailing
-            var hailingMSG = null;
-            if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) {
-                hailingMSG = null;
-            } else {
-
-                // Backward compatibiliyy, to remove with the next Version
-                // ################
-                if (config.sonoshailing == "0") {
-                    // Remove the hailing.mp3 default file
-                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
-                    RED.log.info('SonosPollyTTS: Hailing disabled');
-                } else if (config.sonoshailing == "1") {
-                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
-                    config.sonoshailing = "Hailing_Hailing.mp3";
-                } else if (config.sonoshailing == "2") {
-                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
-                    config.sonoshailing = "Hailing_ComputerCall.mp3";
-                } else if (config.sonoshailing == "3") {
-                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
-                    config.sonoshailing = "Hailing_VintageSpace.mp3";
-                }
-                // ################
-
-                hailingMSG = { payload: config.sonoshailing };
-                if (msg.hasOwnProperty("sonoshailing")) hailingMSG = { payload: "Hailing_" + msg.sonoshailing + ".mp3" };
-            }
-
-            // If the queue is empty and if i can play the Haniling, add the hailing file first
-            if (node.tempMSGStorage.length == 0 && hailingMSG !== null) {
-                node.tempMSGStorage.push(hailingMSG);
-                node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Queued Hail' });
-            }
-            node.tempMSGStorage.push(msg);
-
-            // Allow some time to wait for all messages from flow
-            if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
-            node.oTimerCacheFlowMSG = setTimeout(() => {
-                if (!node.bBusyPlayingQueue) {
-                    HandleQueue();
-                } else { node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Busy handling queue... Retry..." }); }
-            }, 1000);
-
-
-        });
-
-        node.on('close', function (done) {
-            clearTimeout(node.oTimerSonosConnectionCheck);
-            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
-            node.msg.completed = true;
-            node.send(node.msg);
-            node.setNodeStatus({ fill: "green", shape: "ring", text: "Shutdown" });
-            node.flushQueue();
-            done();
-
-        });
+        // 22/09/2020 Flush Queue and set to stopped
+        node.flushQueue = () => {
+            // 10/04/2018 Remove the TTS message from the queue
+            node.tempMSGStorage = [];
+            // Exit whatever cycle
+            node.bTimeOutPlay = true;
+            node.bBusyPlayingQueue = false;
+        }
 
 
         // 04/12/2020
@@ -301,7 +233,6 @@ module.exports = function (RED) {
                 if (oTrack !== null) {
                     if (oTrack.hasOwnProperty("duration") && oTrack.duration === 0) {
                         // It's a radio station or a generic stream, not a queue.
-
                         node.SonosClient.setVolume(oTrack.currentVolume).then(success => {
                             node.SonosClient.play(oTrack.uri).then(success => {
                                 node.SonosClient.seek(oTrack.position).then(success => {
@@ -318,7 +249,6 @@ module.exports = function (RED) {
                             //console.log('Error occurred setVolume %j', err)
                             reject(err);
                         })
-
                     } else {
                         // It's a music queue
                         node.SonosClient.selectQueue().then(success => {
@@ -343,7 +273,6 @@ module.exports = function (RED) {
                                 //console.log('Error occurred SELECTTRACK %j', err);
                                 reject(err);
                             })
-
                         }).catch(err => {
                             //console.log('Error occurred %j', err);
                             reject(err);
@@ -371,7 +300,13 @@ module.exports = function (RED) {
 
                 // 05/12/2020 Set "completed" to false and send it
                 node.msg.completed = false;
-                await node.groupSpeakers(); // 20/03/2020 Group Speakers toghether
+                try {
+                    await node.groupSpeakers(); // 20/03/2020 Group Speakers toghether    
+                } catch (error) {
+                    // Don't care.
+                    node.setNodeStatus({ fill: "red", shape: "ring", text: "Error grouping speakers: " + error.message });
+                }
+
                 node.send(node.msg);
 
 
@@ -409,13 +344,12 @@ module.exports = function (RED) {
                                 };
                                 var data = await synthesizeSpeech([node.server.polly, params]);
                                 // Save the downloaded file into the cache
-                                try {
-                                    await fs.writeFile(sFileToBePlayed, data.AudioStream, function (err, result) {
-                                        if (err) throw (err);
-                                    });
-                                } catch (error) {
-                                    throw new Error("Unable to save the file " + sFileToBePlayed + " " + error.message);
-                                }
+                                fs.writeFile(sFileToBePlayed, data.AudioStream, function (error, result) {
+                                    if (error) {
+                                        node.setNodeStatus({ fill: "red", shape: "ring", text: "Unable to save the file " + sFileToBePlayed + " " + error.message });
+                                        throw (error);
+                                    }
+                                });
                             } catch (error) {
                                 node.setNodeStatus({ fill: 'red', shape: 'ring', text: 'Error Downloading from amazon:' + error.message });
                                 sFileToBePlayed = "";
@@ -518,6 +452,8 @@ module.exports = function (RED) {
                 try {
                     await node.ungroupSpeakers();
                 } catch (error) {
+                    // Don't care.
+                    node.setNodeStatus({ fill: "red", shape: "ring", text: "Error ungrouping speakers: " + error.message });
                 }
 
                 // Resume music
@@ -532,18 +468,18 @@ module.exports = function (RED) {
                 }
 
                 // Check if someone pushed a flow message while completing the playing
-                if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
-                node.oTimerCacheFlowMSG = setTimeout(() => {
-                    if (node.tempMSGStorage.length > 0) {
-                        HandleQueue();
-                    } else {
-                        setTimeout(() => {
-                            node.msg.completed = true;
-                            node.send(node.msg);
-                            node.bBusyPlayingQueue = false
-                        }, 1000)
-                    }
-                }, 1000);
+                // if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
+                // node.oTimerCacheFlowMSG = setTimeout(() => {
+                //     if (node.tempMSGStorage.length > 0) {
+                //         HandleQueue();
+                //     } else {
+                setTimeout(() => {
+                    node.msg.completed = true;
+                    node.send(node.msg);
+                    node.bBusyPlayingQueue = false
+                }, 1000)
+                //     }
+                // }, 1000);
 
             } catch (error) {
                 // Should'nt be there
@@ -554,15 +490,83 @@ module.exports = function (RED) {
 
         }
 
-        // 22/09/2020 Flush Queue and set to stopped
-        node.flushQueue = () => {
-            // 10/04/2018 Remove the TTS message from the queue
-            node.tempMSGStorage = [];
-            // Exit whatever cycle
-            node.bTimeOutPlay = true;
-            node.bBusyPlayingQueue = false;
+        node.on('input', function (msg) {
+
+            if (!msg.hasOwnProperty("payload")) {
+                notifyError(msg, 'msg.payload must be of type String');
+                return;
+            }
+
+            // In case of connection error, doesn't accept any message
+            if (node.msg.connectionerror) {
+                RED.log.warn("SonosPollyTTS: Sonos is offline. The new msg coming from the flow will be rejected.");
+                node.setNodeStatus({ fill: 'red', shape: 'ring', text: "Sonos is offline. The msg has been rejected." });
+                return;
+            }
+
+            // 05/12/2020 handlong Hailing
+            var hailingMSG = null;
+            if (msg.hasOwnProperty("nohailing") && (msg.nohailing == "1" || msg.nohailing.toLowerCase() == "true")) {
+                hailingMSG = null;
+            } else {
+
+                // Backward compatibiliyy, to remove with the next Version
+                // ################
+                if (config.sonoshailing == "0") {
+                    // Remove the hailing.mp3 default file
+                    RED.log.info('SonosPollyTTS: Hailing disabled');
+                } else if (config.sonoshailing == "1") {
+                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
+                    config.sonoshailing = "Hailing_Hailing.mp3";
+                } else if (config.sonoshailing == "2") {
+                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
+                    config.sonoshailing = "Hailing_ComputerCall.mp3";
+                } else if (config.sonoshailing == "3") {
+                    RED.log.warn("SonosPollyTTS you've an old hailing setting. PLEASE SET AGAIN THE HAILING IN THE CONFIG NODE");
+                    config.sonoshailing = "Hailing_VintageSpace.mp3";
+                }
+                // ################
+
+                hailingMSG = { payload: config.sonoshailing };
+                if (msg.hasOwnProperty("sonoshailing")) hailingMSG = { payload: "Hailing_" + msg.sonoshailing + ".mp3" };
+            }
+
+            // If the queue is empty and if i can play the Haniling, add the hailing file first
+            if (node.tempMSGStorage.length == 0 && hailingMSG !== null && !node.bBusyPlayingQueue) {
+                node.tempMSGStorage.push(hailingMSG);
+                node.setNodeStatus({ fill: 'green', shape: 'ring', text: 'Queued Hail' });
+            }
+            node.tempMSGStorage.push(msg);
+
+            // Starts main queue watching
+            node.waitForQueue();
+
+        });
+
+        // This starts a timer watching for queue each second.
+        node.waitForQueue = () => {
+            // Allow some time to wait for all messages from flow
+            if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
+            node.oTimerCacheFlowMSG = setTimeout(() => {
+                if (!node.bBusyPlayingQueue && node.tempMSGStorage.length > 0) {
+                    HandleQueue();
+                } else {
+                    if (node.tempMSGStorage.length > 0) node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Busy with " + node.tempMSGStorage.length + " items in queue. Retry..." });  
+                }
+                node.waitForQueue();
+            }, 1000);
         }
 
+        node.on('close', function (done) {
+            clearTimeout(node.oTimerSonosConnectionCheck);
+            if (node.timerbTimeOutPlay !== null) clearTimeout(node.timerbTimeOutPlay);
+            node.msg.completed = true;
+            node.send(node.msg);
+            node.setNodeStatus({ fill: "green", shape: "ring", text: "Shutdown" });
+            node.flushQueue();
+            done();
+
+        });
 
         function synthesizeSpeech([polly, params]) {
             return new Promise((resolve, reject) => {

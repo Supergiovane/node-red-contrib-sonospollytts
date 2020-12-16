@@ -24,7 +24,6 @@ module.exports = function (RED) {
         };
         node.polly = new AWS.Polly(params);
 
-      
         node.userDir = path.join(RED.settings.userDir, "sonospollyttsstorage"); // 09/03/2020 Storage of sonospollytts (otherwise, at each upgrade to a newer version, the node path is wiped out and recreated, loosing all custom files)
 
         // 03/06/2019 you can select the temp dir
