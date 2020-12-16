@@ -3,6 +3,10 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 2.0.3</b> December 2020<br/>
+- FIX: sonospollytts can remain stuck on "Busy handling queue.." if if fails grouping more than one speaker. Fixed.<br/>
+</p>
+<p>
 <b>Version 2.0.2</b> December 2020<br/>
 - FIX: if you hear "zero" instead of hailing, you need to re-select again the hailing in the config node. This is due to an old setting. Currently this has been work-arounded, so you should hear the hailing instead of "zero", but please select again the hailing, because this workaround is time limited.<br/>
 - NEW: now, when sonos becames disconnected or the ethernet connection is down, the node won't accept any new messages until the reconnetion is re-established. The queue of messages is flushed as well.<br/>
