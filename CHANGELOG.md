@@ -3,6 +3,10 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 2.0.4</b> December 2020<br/>
+- NEW: multiple sonospollytts node coordinator. Now, if you use more than one sonospollytts node, the server will coordinate the play between all, without conflicts.<br/>
+</p>
+<p>
 <b>Version 2.0.3</b> December 2020<br/>
 - FIX: sonospollytts can remain stuck on "Busy handling queue.." if if fails grouping more than one speaker. Fixed.<br/>
 </p>

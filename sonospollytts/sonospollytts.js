@@ -188,6 +188,7 @@ module.exports = function (RED) {
             // Exit whatever cycle
             node.bTimeOutPlay = true;
             node.bBusyPlayingQueue = false;
+            if (node.server.whoIsUsingTheServer === node.id) node.server.whoIsUsingTheServer = "";
         }
 
 
@@ -288,6 +289,7 @@ module.exports = function (RED) {
         // Handle the queue
         async function HandleQueue() {
             node.bBusyPlayingQueue = true;
+            node.server.whoIsUsingTheServer = node.id; // Signal to other sonospollytts node, that i'm using the Sonos device
             try {
 
                 // Get the current music queue, if one
@@ -477,6 +479,7 @@ module.exports = function (RED) {
                     node.msg.completed = true;
                     node.send(node.msg);
                     node.bBusyPlayingQueue = false
+                    node.server.whoIsUsingTheServer = ""; // Signal to other sonospollytts node, that i'm not using the Sonos device anymore
                 }, 1000)
                 //     }
                 // }, 1000);
@@ -548,10 +551,15 @@ module.exports = function (RED) {
             // Allow some time to wait for all messages from flow
             if (node.oTimerCacheFlowMSG !== null) clearTimeout(node.oTimerCacheFlowMSG);
             node.oTimerCacheFlowMSG = setTimeout(() => {
-                if (!node.bBusyPlayingQueue && node.tempMSGStorage.length > 0) {
-                    HandleQueue();
+                // Checks if someone else is using the server node
+                if (node.server.whoIsUsingTheServer === "" || node.server.whoIsUsingTheServer === node.id) {
+                    if (!node.bBusyPlayingQueue && node.tempMSGStorage.length > 0) {
+                        HandleQueue();
+                    } else {
+                        if (node.tempMSGStorage.length > 0) node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Busy with " + node.tempMSGStorage.length + " items in queue. Retry..." });
+                    }
                 } else {
-                    if (node.tempMSGStorage.length > 0) node.setNodeStatus({ fill: 'grey', shape: 'ring', text: "Busy with " + node.tempMSGStorage.length + " items in queue. Retry..." });  
+                    node.setNodeStatus({ fill: 'yellow', shape: 'ring', text: "Sonos is occupied by " + node.server.whoIsUsingTheServer + " Retry..." });
                 }
                 node.waitForQueue();
             }, 1000);
@@ -613,9 +621,6 @@ module.exports = function (RED) {
                 shape: 'dot',
                 text: 'notifyError: ' + errorMessage
             });
-            //node.sPollyState == "criticalwriting";
-            // RED.log.error('SonosPollyTTS: notifyError - unable to write TTS file. Check user permissions');
-            //RED.log.error('SonosPollyTTS: notifyError - msg: ' + msg + ' error: ' + errorMessage);
             // Set error in message
             msg.error = errorMessage;
 
