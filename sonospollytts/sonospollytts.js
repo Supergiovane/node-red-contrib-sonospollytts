@@ -314,7 +314,7 @@ module.exports = function (RED) {
 
                 while (node.tempMSGStorage.length > 0) {
                     const flowMessage = node.tempMSGStorage[0];
-                    const msg = flowMessage.payload; // Get the text to be speeched
+                    const msg = flowMessage.payload.toString(); // Get the text to be speeched
                     node.tempMSGStorage.splice(0, 1); // Remove the first item in the array
                     var sFileToBePlayed = "";
                     node.setNodeStatus({ fill: "gray", shape: "ring", text: "Read " + msg });
@@ -515,7 +515,7 @@ module.exports = function (RED) {
 
                 // Backward compatibiliyy, to remove with the next Version
                 // ################
-                if (config.sonoshailing == "0") {
+                if (config.sonoshailing === "0") {
                     // Remove the hailing.mp3 default file
                     RED.log.info('SonosPollyTTS: Hailing disabled');
                 } else if (config.sonoshailing == "1") {
@@ -529,8 +529,11 @@ module.exports = function (RED) {
                     config.sonoshailing = "Hailing_VintageSpace.mp3";
                 }
                 // ################
-
-                hailingMSG = { payload: config.sonoshailing };
+                if (config.sonoshailing !== "0") {
+                    hailingMSG = { payload: config.sonoshailing };
+                } else {
+                    hailingMSG = null;
+                }
                 if (msg.hasOwnProperty("sonoshailing")) hailingMSG = { payload: "Hailing_" + msg.sonoshailing + ".mp3" };
             }
 

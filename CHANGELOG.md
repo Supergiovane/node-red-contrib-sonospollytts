@@ -3,6 +3,11 @@
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
 <p>
+<b>Version 2.0.5</b> December 2020<br/>
+- FIX: if you pass a numeric value as payload, the node thows an error in the status and the payload is not handled.</br>
+- FIX: if you disable the Hailing, you could hear "zero" instead of not having Haliling at all.
+</p>
+<p>
 <b>Version 2.0.4</b> December 2020<br/>
 - NEW: multiple sonospollytts node coordinator. Now, if you use more than one sonospollytts node, the server will coordinate the play between all, without conflicts.<br/>
 </p>
