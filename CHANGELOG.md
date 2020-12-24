@@ -2,6 +2,16 @@
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://www.paypal.me/techtoday) 
 
+<br/>
+
+# THIS NODE HAS BEEN DEPRECATED. PLEASE INSTALL TTS-ULTIMATE INSTEAD
+[TTS-Ultimate](https://www.npmjs.com/package/node-red-contrib-tts-ultimate)  
+[Update path instructions](https://github.com/Supergiovane/node-red-contrib-sonospollytts) 
+<br/>
+<br/>
+<br/>
+<br/>
+
 <p>
 <b>Version 2.0.5</b> December 2020<br/>
 - FIX: if you pass a numeric value as payload, the node thows an error in the status and the payload is not handled.</br>
