@@ -43,6 +43,12 @@
 </script>
 
 <script type="text/x-red" data-template-name="sonospollytts">
+<p><b><font color="red">THIS NODE HAS BEEN DEPRECATED. PLEASE USE TTS-ULTIMATE INSTEAD</b></font><br/>
+    For the update path from SonosSpollyTTS to TTS-Ultimate,<b> <a target="_blank" href="https://flows.nodered.org/node/node-red-contrib-sonospollytts">click here.</a></b><br/>
+    TTS-Ultimate supports both AMAZON and GOOGLE TTS<br/>
+    TTT-Ultimate <b><a target="_blank" href="https://flows.nodered.org/node/node-red-contrib-tts-ultimate">is here.</a></b>
+</p>
+    
 
     <div class="form-row">
         <label for="node-input-config"><i class="icon-tag"></i> Polly Config</label>
@@ -145,7 +151,7 @@ BE SURE TO FORWARD PORTS 1980 AND 1400 </p>
             outputs: 1,
             icon: "sonospollytts.png",
             label: function () {
-                return this.name || "SonosPollyTTS";
+                return "Replace this with TTS-Ultimate " + this.name || "SonosPollyTTS has been replaced with TTS-Ultimate";
             },
             oneditprepare: function () {
                 var node = this;

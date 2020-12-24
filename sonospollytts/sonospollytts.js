@@ -86,7 +86,8 @@ module.exports = function (RED) {
         node.setNodeStatus = ({ fill, shape, text }) => {
             try {
                 var dDate = new Date();
-                node.status({ fill: fill, shape: shape, text: text + " (" + dDate.getDate() + ", " + dDate.toLocaleTimeString() + ")" });
+                //node.status({ fill: fill, shape: shape, text: text + " (" + dDate.getDate() + ", " + dDate.toLocaleTimeString() + ")" });
+                node.status({ fill: fill, shape: shape, text: "THIS NODE HAS BEEN DEPRECATED. REPLACE IT WITH TTS-ULTIMATE. " + text + " (" + dDate.getDate() + ", " + dDate.toLocaleTimeString() + ")" });
             } catch (error) { }
 
         }
